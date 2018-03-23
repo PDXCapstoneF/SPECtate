@@ -25,15 +25,24 @@ def create_run_dict(runtype, *args):
 def create_run_dict_list(runtype, args):
     return create_run_dict(runtype, *args)
 
-def execute_run(run_dict):
-    runtype_option_dict = read_json('runtype_options.json')
+def create_run_sh_invocation(run_dict):
     try:
+        runtype_option_dict = read_json('runtype_options.json')
         parameters = runtype_option_dict[run_dict['Run Type']]
-        print('./run.sh {}'.format(
-            ' '.join(str(run_dict[p]) for p in parameters)))
+        return './run.sh {}'.format(
+            ' '.join(str(run_dict[p]) for p in parameters))
     except: # Probably a dictionary failure.
-        return False
-    return True
+        return ''
+
+
+def execute_run(run_dict):
+    # We'll eventually invoke this for realsies. For now, we're just going to
+    # print it.
+    invocation = create_run_sh_invocation(run_dict)
+    if invocation:
+        print(invocation)
+        return True
+    return False
 
 def execute_runs(run_dict_list):
     return [execute_run(run_dict) for run_dict in run_dict_list]
