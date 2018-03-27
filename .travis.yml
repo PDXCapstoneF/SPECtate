@@ -16,6 +16,9 @@ script:
 after_success:
   - pip install pyinstaller
   - pyinstaller --onefile main.py
+before_deploy:
+  - pipenv uninstall --dev
+  - pipenv install
 deploy:
   provider: releases
   api_key: ${GITHUB_OAUTH_TOKEN}
