@@ -1,3 +1,8 @@
+| Service        | Master           | Development  |
+| ------------- |:-------------:| ------------------:|
+| CI Status      | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=master)](https://travis-ci.org/PDXCapstoneF/SPECtate)    | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=dev)](https://travis-ci.org/PDXCapstoneF/SPECtate) |
+
+
 # SPECtate
 
 SPECtate is a configuration tool that interfaces with the benchmarking software [SPECjbb®2015](https://www.spec.org/jbb2015/). SPECtate is designed to to be a more user-friendly alternative for configuring and invoking the SPECjbb®2015 benchmarking software, providing: 
@@ -45,12 +50,15 @@ $ python -m unittest discover -s .
 
 * Unittests 
 
-* Continuous integration
+* Travis-CI for Continuous integration testing during development
 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/PDXCapstoneF/SPECtate/blob/dev/README.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/PDXCapstoneF/SPECtate/blob/dev/README.md) file for details.
 
-## Authors
+## Contact
+
+* [Andrew Waugh](mailto:**************@pdx.edu) (Product Owner)
+
 
