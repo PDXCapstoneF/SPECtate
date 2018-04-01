@@ -45,6 +45,18 @@ $ python -m unittest discover -s .
 * Invoke SPECjbb using json/hjson/yaml file
 
 
+## Documentation
+
+* SPECtate documentation can be found on the project [wiki](https://github.com/PDXCapstoneF/SPECtate/wiki) page and in the Python scripts themselves. Documentation of SPECtate scripts can be generated directly by using Python's standard library `pydoc`.
+
+Example:
+
+```
+$ cd SPECtate/
+$ pydoc -w dialogue; open dialogue.html
+```
+
+The `-w` flag in the above command will "Write out the HTML documentation for a module to a file in the current directory."
 
 ## Testing
 
@@ -60,5 +72,3 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ## Contact
 
 * [Andrew Waugh](mailto:**************@pdx.edu) (Product Owner)
-
-
