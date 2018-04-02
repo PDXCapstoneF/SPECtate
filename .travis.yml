@@ -5,8 +5,9 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.6-dev"  # 3.6 development branch
-  - "3.7-dev"  # 3.7 development branch
+os:
+  - linux
+  - osx
 install:
   - python -m pip install --upgrade pip setuptools wheel
   - pip install pipenv
