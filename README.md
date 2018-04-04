@@ -77,4 +77,4 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 
 ## Contact
 
-* [Andrew Waugh](mailto:**************@pdx.edu) (Product Owner)
+* [Andrew Waugh](mailto:ZonrZero@gmail.com) (Product Owner)
