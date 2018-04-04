@@ -1,0 +1,31 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+os:
+  - linux
+install:
+  - python -m pip install --upgrade pip setuptools wheel
+  - pip install pipenv
+  - pipenv install --dev
+script:
+  - python -m unittest discover
+after_success:
+  - pip install pyinstaller
+  - pyinstaller --onefile main.py
+before_deploy:
+  - pipenv uninstall --dev
+  - pipenv install
+deploy:
+  provider: releases
+  api_key: ${GITHUB_OAUTH_TOKEN}
+  file:
+    - dist/main
+  skip_cleanup: true
+  on:
+    branch: 
+    - master
+    - dev
