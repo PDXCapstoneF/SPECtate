@@ -1,0 +1,36 @@
+{
+	"run_type": "i made my own run type and its cool",
+	"meta": {
+		"creation_date": "2012 23 1 1",
+		"name": "single run",
+		"company": "ACME"
+	},
+
+	"speccjbb": {
+		"injectors": 4,
+		"backends": 2,
+		"jvm_path": "/path/to/jvm",
+		"jar_path": "/path/to/specjbb/jar"
+	},
+
+	"jvm_options": [
+		"option 1",
+		"option 2",
+		"option 3"
+	],
+
+	"props": {
+		"specjbb.controller.type": "runtype",
+		"specjbb.controller.rtcurve.start": "0.0",
+		"specjbb.controller.type": "HBIR"
+	},
+
+	"other": {
+		"stuff": "we might decide to",
+		"add": "later"
+	},
+
+	"extra": {
+		"options": "we don't use yet"
+	}
+}
