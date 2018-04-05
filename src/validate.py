@@ -1,10 +1,10 @@
 from schema import Schema, And, Or, Optional
 
 # used for python2 and python3 string types
-from six import string_types
+from six import text_type
 
 def is_stringy(v):
-    return type(v) in [*string_types]
+    return type(v) is text_type
 
 ConfigSchema = Schema({
     "run_type": And(is_stringy,
