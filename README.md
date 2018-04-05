@@ -1,6 +1,6 @@
 # SPECTate
 
-This uses python 3.5.
+This uses python 3.6.4.
 
 ## Developing
 
