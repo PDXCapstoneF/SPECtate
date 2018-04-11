@@ -25,7 +25,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 * UNIX (Linux, Mac OSX), or Windows
-* [python](https://www.python.org/downloads/) >= 2.6
+* [python](https://www.python.org/downloads/) >= 3.6
 * [SPECjbb®2015](https://www.spec.org/order.html)
 
 
