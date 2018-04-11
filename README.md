@@ -37,6 +37,8 @@ $ cd SPECtate/
 $ python -m unittest discover -s .
 ```
 
+This project uses `pipenv` to manage dependencies. A suggested python manager is `pyenv`.
+
 
 ## Example CLI Usage
 
