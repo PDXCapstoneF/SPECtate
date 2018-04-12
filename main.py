@@ -8,6 +8,7 @@ Usage:
 """
 # library imports
 import json
+import os
 from subprocess import call
 
 # external imports
@@ -53,8 +54,10 @@ def do_run(arguments):
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
     stringified = list(map(lambda arg: str(arg), to_list(args['specjbb'])))
-    call(['bash', 'scripts/run.sh'] + stringified)
-
+    call(
+        ['bash', 'run.sh'] + stringified,
+        cwd=os.path.join(os.path.dirname(__file__), 'scripts')
+        )
 
 # dictionary of runnables
 # these are functions that take arguments from the
