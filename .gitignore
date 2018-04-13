@@ -1,3 +1,6 @@
+# developer workspace, for example configs and stuff not to be committed
+hide
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
