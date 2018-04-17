@@ -1,0 +1,16 @@
+{
+	"main_window": {
+		"width": 900,
+		"height": 600
+	},
+	"group_window": {
+		"width": 600,
+		"height": 400
+	},
+	"menu_dialog": ["Create Group",
+		"Save Group",
+		"Load Goup",
+		"Run Group",
+		"Exit"
+	]
+}

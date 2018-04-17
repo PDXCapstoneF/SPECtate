@@ -3,14 +3,15 @@ from tkinter import filedialog
 from tkinter import messagebox
 from multiListBox import *
 import properties
-
+import dialogue as d
 
 class MainWindow(Frame):
     def __init__(self):
         super().__init__()
         self.master.title("Spec Configurator")
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.master.minsize(width=properties.main_width, height=properties.main_height)
+        self.master.minsize(width=d.read_json('properties.json')["main_window"]["width"],
+                            height=d.read_json('properties.json')["main_window"]["height"])
         menubar = Menu(self.master)
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label="Create Group", command=self.create_group)
@@ -48,5 +49,6 @@ class MainWindow(Frame):
 
 if __name__ == '__main__':
     master = Tk()
+    master.resizable(0,0)
     MainWindow()
     master.mainloop()
