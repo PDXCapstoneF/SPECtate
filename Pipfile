@@ -6,6 +6,7 @@ name = "pypi"
 [dev-packages]
 
 [packages]
+docopt = "*"
 
 [requires]
 python_version = "3.6"
