@@ -10,6 +10,7 @@ Usage:
 import json
 import os
 from subprocess import call
+from shutil import copy, rmtree
 
 # external imports
 from docopt import docopt
@@ -47,6 +48,16 @@ def to_list(s):
                 s["t"][2], # t3
                 ]
 
+def relative_to_main(relname):
+    return os.path.join(os.path.dirname(__file__), relname)
+
+blackbox_artifacts = [
+    '.run_number',
+    'controller.out',
+    'specjbb2015.props',
+    'sut.txt',
+        ]
+
 def do_run(arguments):
     """
     Does a run using scripts/run.sh from the provided property template and configuration.
@@ -54,10 +65,30 @@ def do_run(arguments):
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
     stringified = list(map(lambda arg: str(arg), to_list(args['specjbb'])))
-    call(
-        ['bash', 'run.sh'] + stringified,
-        cwd=os.path.join(os.path.dirname(__file__), 'scripts')
-        )
+    workdir = args['specjbb'].get('workdir', 'scripts')
+    scripts_abspath = relative_to_main(workdir)
+    workdir_abspath = relative_to_main('scripts')
+
+    # if we don't already have the scripts available to us
+    # copy them into the new location
+    if workdir != 'scripts':
+        copy(scripts_abspath, workdir_abspath)
+
+    def cleanup():
+        # we need to cleanup the cwd or worktree for some reason
+        if workdir != 'scripts':
+            rmtree(workdir_abspath)
+        else:
+            for name in map(lambda name: os.path.join(scripts_abspath, name), 
+                blackbox_artifacts):
+                os.remove(name)
+
+    try:
+        if not call(['bash', 'run.sh'] + stringified, cwd=workdir_abspath):
+            cleanup()
+    except:
+        cleanup()
+
 
 # dictionary of runnables
 # these are functions that take arguments from the
