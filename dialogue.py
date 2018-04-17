@@ -36,7 +36,7 @@ def print_dict(d):
 
 def print_all_runs(run_dict, runtype_dict):
     for k, v in sorted(run_dict.items(), key=lambda x : x[0]):
-        print('Run {}'.format(k))
+        print('\nTag {}\n'.format(k))
         print_dict(v)
 
 def create_run(run_dict, runtype_dict):
@@ -207,7 +207,7 @@ def dialogue():
     user_input = ""
 
     while user_input.lower() not in ['q', 'quit']:
-        print("What would you like to do?")
+        print("\nWhat would you like to do?\n")
         print_dict(option_description_dict)
         user_input = input("-> ")
         if user_input.lower() not in ['q', 'quit']:
