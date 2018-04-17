@@ -3,10 +3,9 @@ from tkinter import filedialog
 from tkinter import messagebox
 from multiListBox import *
 import properties
-#import sys
-#sys.path.append("..")
-#import dialogue as d
-from .. import dialogue
+import sys, os.path
+sys.path.append(os.path.abspath('../'))
+import dialogue as d
 
 class MainWindow(Frame):
     def __init__(self):
