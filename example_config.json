@@ -1,0 +1,23 @@
+{
+	"specjbb": {
+		"run_type": "LOADLEVEL",
+		"kit_version": "RC3",
+		"tag": "Run-Identifier",
+		"jdk": "jdk.8-u121",
+		"rt_start": 30,
+		"duration": 60,
+		"jvm_options": [
+			"-Xms29g",
+			"-Xmx29g",
+			"-Xmn27g",
+			"-XX:ParallelGCThreads=48"
+		],
+		"numa_node": 4,
+		"data": "NONE",
+		"t": [
+			154,
+			45,
+			23
+		]
+	}
+}
