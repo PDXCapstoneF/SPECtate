@@ -66,7 +66,7 @@ do = {
         'run': do_run,
         }
 
-if __name__ == "__main__":
+def main():
     arguments = docopt(__doc__, version='SPECtate v0.1')
 
     for key, func in do.items():
@@ -75,3 +75,6 @@ if __name__ == "__main__":
 
             if r is None:
                 exit(1)
+
+if __name__ == "__main__":
+    main()
