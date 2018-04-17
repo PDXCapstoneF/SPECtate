@@ -17,9 +17,9 @@ from docopt import docopt
 # source imports
 
 def to_list(s):
-    if s['run_type'].lower() in ["hbir", "hbir_rt"]:
+    if s["run_type"].lower() in ["hbir", "hbir_rt"]:
         return [
-                s['run_type'], # RUNTYPE
+                s["run_type"], # RUNTYPE
                 s["kit_version"], # kitVersion
                 s["tag"], # tag
                 s["jdk"], # JDK
@@ -33,7 +33,7 @@ def to_list(s):
                 ]
     else:
         return [
-                s['run_type'], # runtype
+                s["run_type"], # runtype
                 s["kit_version"], # kitversion
                 s["tag"], # tag
                 s["jdk"], # jdk
