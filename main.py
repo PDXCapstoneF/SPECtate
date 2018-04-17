@@ -2,6 +2,7 @@
 
 Usage:
     main.py run <config> [--props <props>]
+    main.py validate <config>
     main.py (-h | --help)
     main.py --version
 
@@ -15,6 +16,7 @@ from subprocess import call
 from docopt import docopt
 
 # source imports
+from src import validate
 
 def to_list(s):
     if s['run_type'].lower() in ["hbir", "hbir_rt"]:
@@ -59,11 +61,20 @@ def do_run(arguments):
         cwd=os.path.join(os.path.dirname(__file__), 'scripts')
         )
 
+def do_validate(arguments):
+    """
+    Validate a configuration based on the schema provided.
+    """
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    return validate.validate(args) is None
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
+        'validate': do_validate,
         }
 
 if __name__ == "__main__":
@@ -73,5 +84,5 @@ if __name__ == "__main__":
         if arguments[key]:
             r = func(arguments)
 
-            if r is None:
-                exit(1)
+            if r is not None:
+                exit(r)
