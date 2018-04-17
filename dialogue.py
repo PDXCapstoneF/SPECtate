@@ -4,8 +4,11 @@
 # Invokes run.sh with configurations stored in the file
 # 'runtype_options.json'
 
-
 import json
+
+EXIT_CONSTS = set(['q', 'quit', 'exit'])
+YES_CONSTS = set(['y', 'yes'])
+
 
 def write_json(filename, python_dict):
     """
@@ -50,7 +53,7 @@ def create_run(run_dict, runtype_dict):
     run_type = input('-> ')
     if run_type not in runtype_dict.keys():
         user_input = input('{} is not currently an option. Add it? ')
-        if user_input.lower() in ['y', 'yes']:
+        if user_input.lower() in YES_CONSTS:
             create_runtype(runtype_dict)
         return
     run_dict[run_name] = create_run_dialogue(runtype_dict[run_type])
@@ -59,18 +62,18 @@ def create_runtype(run_dict, runtype_dict):
     option_set = set()
     user_input = input('Input a name for the runtype. ')
     while (user_input in runtype_dict and
-           user_input.lower() not in ['q', 'quit']):
+           user_input.lower() not in EXIT_CONSTS):
         user_input = ('Name already exists. Input a different name. ')
 
     runtype_name = user_input
 
-    while user_input.lower() not in ['q', 'quit']:
+    while user_input.lower() not in EXIT_CONSTS:
         user_input = input('Input a new run attribute. ')
         if user_input in option_set:
             print('{} has already been added!'.format(user_input))
         option_set.add(user_input)
     
-    if runtype_name.lower() not in ['q', 'quit']:
+    if runtype_name.lower() not in EXIT_CONSTS: 
         runtype_dict[runtype_name] = list(option_set)
 
 def delete_run(run_dict, runtype_dict):
@@ -131,7 +134,7 @@ def load_runlist(run_dict, runtype_dict):
 
 def new_runlist(run_dict, runtype_dict):
     user_input = input('Are you sure? This will remove all runs from the RunDict!')
-    if user_input.lower() in ['y', 'yes']:
+    if user_input.lower() in YES_CONSTS:
         run_dict = {}
         print('RunDict has been cleared.')
     else:
@@ -206,11 +209,11 @@ def dialogue():
 
     user_input = ""
 
-    while user_input.lower() not in ['q', 'quit']:
+    while user_input.lower() not in EXIT_CONSTS:
         print("\nWhat would you like to do?\n")
         print_dict(option_description_dict)
         user_input = input("-> ")
-        if user_input.lower() not in ['q', 'quit']:
+        if user_input.lower() not in EXIT_CONSTS:
             function_dict.get(user_input, error)(run_dict, runtype_dict)
     print('Exiting.')
     
