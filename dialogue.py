@@ -7,6 +7,7 @@
 
 import json
 
+
 def write_json(filename, python_dict):
     """
     Serialize python_dict (dictionary) to filename (text file).
@@ -16,6 +17,7 @@ def write_json(filename, python_dict):
     with open(filename, 'w') as f:
         json.dump(python_dict, f, indent=4)
 
+
 def read_json(filename):
     """
     Deserializes json formatted string from filename (text file) as a dictionary.
@@ -23,6 +25,7 @@ def read_json(filename):
     """
     with open(filename) as f:
         return json.load(f)
+
 
 def create_run_dict(runtype, *args):
     """
@@ -41,12 +44,14 @@ def create_run_dict(runtype, *args):
         return return_dict
     return {}
 
+
 def create_run_dict_list(runtype, args):
     """
     Returns a dictionary of run-type option objects.
     :param runtype: (HBIR || HBIR_RT || PRESET || LOADLEVEL)
     """
     return create_run_dict(runtype, *args)
+
 
 def create_run_sh_invocation(run_dict):
     """
@@ -78,6 +83,7 @@ def execute_run(run_dict):
         return True
     return False
 
+
 def execute_runs(run_dict_list):
     """
     A wrapper for `execute_run(...)`, which is invoked repeatedly for each set
@@ -87,24 +93,18 @@ def execute_runs(run_dict_list):
     return [execute_run(run_dict) for run_dict in run_dict_list]
 
 
-
-
-
-
-
-
 # Utility functions.
-
 def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x : x[0]):
         print("{}: {}".format(key, value))
 
-# Level-one layer of dialogue.
 
+# Level-one layer of dialogue.
 def print_all_runs(run_dict, runtype_dict):
     for k, v in sorted(run_dict.items(), key=lambda x : x[0]):
         print('Run {}'.format(k))
         print_dict(v)
+
 
 def create_run(run_dict, runtype_dict):
     run_name = input('Input a name for the run. ')
@@ -121,6 +121,7 @@ def create_run(run_dict, runtype_dict):
             create_runtype(runtype_dict)
         return
     run_dict[run_name] = create_run_dialogue(runtype_dict[run_type])
+
 
 def create_runtype(run_dict, runtype_dict):
     option_set = set()
@@ -140,6 +141,7 @@ def create_runtype(run_dict, runtype_dict):
     if runtype_name.lower() not in ['q', 'quit']:
         runtype_dict[runtype_name] = list(option_set)
 
+
 def delete_run(run_dict, runtype_dict):
     try:
         print('Input the tag of the run you want to delete.')
@@ -147,11 +149,11 @@ def delete_run(run_dict, runtype_dict):
             ' '.join(sorted(run_dict.keys()))))
         user_input = input('-> ')
         del run_dict[user_input]
-
     except:
         print('Unable to remove tag {}.'.format(user_input))
         return
     print('Run deleted.')
+
 
 def copy_run(run_dict, runtype_dict):
     try:
@@ -166,6 +168,7 @@ def copy_run(run_dict, runtype_dict):
         print('Unable to copy tag {}.'.format(old_run))
     print('Run copied to {}.'.format(new_run))
 
+
 def edit_run(run_dict, runtype_dict):
     try:
         print('Input the tag of the run you want to edit.')
@@ -178,6 +181,7 @@ def edit_run(run_dict, runtype_dict):
         return
     print('Run edited.')
 
+
 def save_runlist(run_dict, runtype_dict):
     filename = input('Input a filename to save the RunDict. ')
     try:
@@ -186,6 +190,7 @@ def save_runlist(run_dict, runtype_dict):
         print('Unable to save to {}'.format(filename))
         return
     print('Saved to {}'.format(filename))
+
 
 def load_runlist(run_dict, runtype_dict):
     filename = input('Input a filename to load a RunDict from. ')
@@ -196,6 +201,7 @@ def load_runlist(run_dict, runtype_dict):
         return
     print('RunDict loaded from {}'.format(filename))
 
+
 def new_runlist(run_dict, runtype_dict):
     user_input = input('Are you sure? This will remove all runs from the RunDict!')
     if user_input.lower() in ['y', 'yes']:
@@ -204,14 +210,17 @@ def new_runlist(run_dict, runtype_dict):
     else:
         print('RunDict has not been modified.')
 
+
 def error(run_dict, runtype_dict):
     print('Invalid input.')
-    
+
+
 def create_run_dialogue(arg_list):
     new_run = {}
     for arg in arg_list:
         new_run[arg] = input("Input value for {}: ".format(arg))
     return new_run
+
 
 def edit_run_dialogue(old_run):
     new_run = {}
@@ -219,6 +228,7 @@ def edit_run_dialogue(old_run):
         new_run[key] = input("Input value for {}. Current value = {}. ".format(
                              key, value))
     return new_run
+
 
 def dialogue():
     """
@@ -280,4 +290,3 @@ def dialogue():
         if user_input.lower() not in ['q', 'quit']:
             function_dict.get(user_input, error)(run_dict, runtype_dict)
     print('Exiting.')
-    

@@ -1,54 +1,54 @@
 {
-    "HBIR" : [
-        "Kit Version",
-        "Tag", 
-        "JDK",
-        "RTSTART",
-        "JVM Options",
-        "NUMA Nodes",
-        "Data Collection",
-        "T1",
-        "T2",
-        "T3"
-    ],
-    "HBIR_RT" : [
-        "Kit Version",
-        "Tag", 
-        "JDK",
-        "RTSTART",
-        "JVM Options",
-        "NUMA Nodes",
-        "Data Collection",
-        "T1",
-        "T2",
-        "T3"
-    ],
-    "PRESET" : [
-        "kitVersion",
-        "tag",
-        "JDK",
-        "TXrate",
-        "Duration",
-        "JVMoptions",
-        "NUMA_Node",
-        "Data Collection",
-        "T1",
-        "T2",
-        "T3"
-    ],
-    "LOADLEVEL" : [
-        "kitVersion",
-        "Tag",
-        "JDK",
-        "TXrate",
-        "Duration",
-        "JVMoptions",
-        "NUMA_Node",
-        "Data Collection",
-        "T1",
-        "T2",
-        "T3"
-    ]
+  "HBIR": [
+    "Kit Version",
+    "Tag",
+    "JDK",
+    "RTSTART",
+    "JVM Options",
+    "NUMA Nodes",
+    "Data Collection",
+    "T1",
+    "T2",
+    "T3"
+  ],
+  "HBIR_RT": [
+    "Kit Version",
+    "Tag",
+    "JDK",
+    "RTSTART",
+    "JVM Options",
+    "NUMA Nodes",
+    "Data Collection",
+    "T1",
+    "T2",
+    "T3"
+  ],
+  "PRESET": [
+    "kitVersion",
+    "tag",
+    "JDK",
+    "TXrate",
+    "Duration",
+    "JVMoptions",
+    "NUMA_Node",
+    "Data Collection",
+    "T1",
+    "T2",
+    "T3"
+  ],
+  "LOADLEVEL": [
+    "kitVersion",
+    "Tag",
+    "JDK",
+    "TXrate",
+    "Duration",
+    "JVMoptions",
+    "NUMA_Node",
+    "Data Collection",
+    "T1",
+    "T2",
+    "T3"
+  ]
 }
 
 
