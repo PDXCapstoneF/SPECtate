@@ -60,6 +60,8 @@ def create_run(run_dict, runtype_dict):
 
 def create_runtype(run_dict, runtype_dict):
     option_set = set()
+    # We need to preserve order for entry consistency's sake.
+    option_list = []
     user_input = input('Input a name for the runtype. ')
     while (user_input in runtype_dict and
            user_input.lower() not in EXIT_CONSTS):
@@ -72,9 +74,10 @@ def create_runtype(run_dict, runtype_dict):
         if user_input in option_set:
             print('{} has already been added!'.format(user_input))
         option_set.add(user_input)
+        option_list.append(user_input)
     
     if runtype_name.lower() not in EXIT_CONSTS: 
-        runtype_dict[runtype_name] = list(option_set)
+        runtype_dict[runtype_name] = option_list
 
 def delete_run(run_dict, runtype_dict):
     try:
