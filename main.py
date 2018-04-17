@@ -4,7 +4,7 @@ Usage:
     main.py run <config> [--props <props>]
     main.py (-h | --help)
     main.py --version
-
+    main.py dialogue
 """
 # library imports
 import json
@@ -15,6 +15,7 @@ from subprocess import call
 from docopt import docopt
 
 # source imports
+import dialogue
 
 def to_list(s):
     if s['run_type'].lower() in ["hbir", "hbir_rt"]:
@@ -59,11 +60,17 @@ def do_run(arguments):
         cwd=os.path.join(os.path.dirname(__file__), 'scripts')
         )
 
+def do_dialogue(arguments):
+    dialogue.dialogue()
+
+
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
+        'dialogue' : do_dialogue
         }
 
 if __name__ == "__main__":
