@@ -19,9 +19,9 @@ import dialogue
 
 
 def to_list(s):
-    if s['run_type'].lower() in ["hbir", "hbir_rt"]:
+    if s["run_type"].lower() in ["hbir", "hbir_rt"]:
         return [
-                s['run_type'], # RUNTYPE
+                s["run_type"], # RUNTYPE
                 s["kit_version"], # kitVersion
                 s["tag"], # tag
                 s["jdk"], # JDK
@@ -35,7 +35,7 @@ def to_list(s):
                 ]
     else:
         return [
-                s['run_type'], # runtype
+                s["run_type"], # runtype
                 s["kit_version"], # kitversion
                 s["tag"], # tag
                 s["jdk"], # jdk
@@ -75,8 +75,7 @@ do = {
         'dialogue' : do_dialogue
         }
 
-
-if __name__ == "__main__":
+def main():
     arguments = docopt(__doc__, version='SPECtate v0.1')
 
     for key, func in do.items():
@@ -85,3 +84,6 @@ if __name__ == "__main__":
 
             if r is None:
                 exit(1)
+
+if __name__ == "__main__":
+    main()
