@@ -11,6 +11,7 @@ Usage:
 import json
 import os
 from subprocess import call
+from shutil import copy, rmtree
 
 # external imports
 from docopt import docopt
@@ -21,9 +22,9 @@ from src import validate
 
 
 def to_list(s):
-    if s['run_type'].lower() in ["hbir", "hbir_rt"]:
+    if s["run_type"].lower() in ["hbir", "hbir_rt"]:
         return [
-                s['run_type'], # RUNTYPE
+                s["run_type"], # RUNTYPE
                 s["kit_version"], # kitVersion
                 s["tag"], # tag
                 s["jdk"], # JDK
@@ -37,7 +38,7 @@ def to_list(s):
                 ]
     else:
         return [
-                s['run_type'], # runtype
+                s["run_type"], # runtype
                 s["kit_version"], # kitversion
                 s["tag"], # tag
                 s["jdk"], # jdk
@@ -51,6 +52,15 @@ def to_list(s):
                 s["t"][2], # t3
                 ]
 
+def relative_to_main(relname):
+    return os.path.join(os.path.dirname(__file__), relname)
+
+blackbox_artifacts = [
+    '.run_number',
+    'controller.out',
+    'specjbb2015.props',
+    'sut.txt',
+        ]
 
 def do_run(arguments):
     """
@@ -59,10 +69,30 @@ def do_run(arguments):
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
     stringified = list(map(lambda arg: str(arg), to_list(args['specjbb'])))
-    call(
-        ['bash', 'run.sh'] + stringified,
-        cwd=os.path.join(os.path.dirname(__file__), 'scripts')
-        )
+    workdir = args['specjbb'].get('workdir', 'scripts')
+    scripts_abspath = relative_to_main(workdir)
+    workdir_abspath = relative_to_main('scripts')
+
+    # if we don't already have the scripts available to us
+    # copy them into the new location
+    if workdir != 'scripts':
+        copy(scripts_abspath, workdir_abspath)
+
+    def cleanup():
+        # we need to cleanup the cwd or worktree for some reason
+        if workdir != 'scripts':
+            rmtree(workdir_abspath)
+        else:
+            for name in map(lambda name: os.path.join(scripts_abspath, name), 
+                blackbox_artifacts):
+                os.remove(name)
+
+    try:
+        if not call(['bash', 'run.sh'] + stringified, cwd=workdir_abspath):
+            cleanup()
+    except:
+        cleanup()
+
 
 def do_validate(arguments):
     """
@@ -83,7 +113,6 @@ do = {
         'validate': do_validate,
         'dialogue' : do_dialogue
         }
-
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')
