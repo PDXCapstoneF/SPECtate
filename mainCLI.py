@@ -2,6 +2,7 @@
 
 Usage:
     mainCLI.py run <config> [--props <props>]
+    mainCLI.py validate <config>
     mainCLI.py (-h | --help)
     mainCLI.py --version
     mainCLI.py dialogue
@@ -17,6 +18,7 @@ from docopt import docopt
 
 # source imports
 import dialogue
+from src import validate
 
 
 def to_list(s):
@@ -92,28 +94,32 @@ def do_run(arguments):
         cleanup()
 
 
+def do_validate(arguments):
+    """
+    Validate a configuration based on the schema provided.
+    """
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    return validate.validate(args) is None
 
 def do_dialogue(arguments):
     dialogue.dialogue()
-
 
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
+        'validate': do_validate,
         'dialogue' : do_dialogue
         }
 
-def main():
+if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')
 
     for key, func in do.items():
         if arguments[key]:
             r = func(arguments)
 
-            if r is None:
-                exit(1)
-
-if __name__ == "__main__":
-    main()
+            if r is not None:
+                exit(r)
