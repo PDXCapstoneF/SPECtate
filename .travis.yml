@@ -13,12 +13,12 @@ install:
   - pipenv install --dev
 script:
   - python -m unittest discover
-  - python main.py -h
+  - python mainCLI.py -h
 before_deploy:
   - pipenv uninstall --all # clean out any dev dependencies
   - pipenv install # only add what we need
   - pip install pyinstaller # install pyinstaller
-  - pyinstaller --onefile main.py # make our one-file executable
+  - pyinstaller --onefile mainCLI.py # make our one-file executable
 deploy:
   provider: releases
   api_key: ${GITHUB_OAUTH_TOKEN}
