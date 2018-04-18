@@ -4,9 +4,10 @@
 # Invokes run.sh with configurations stored in the file
 # 'runtype_options.json'
 
-
 import json
 
+EXIT_CONSTS = set(['q', 'quit', 'exit'])
+YES_CONSTS = set(['y', 'yes'])
 
 def write_json(filename, python_dict):
     """
@@ -27,82 +28,20 @@ def read_json(filename):
         return json.load(f)
 
 
-def create_run_dict(runtype, *args):
-    """
-    Returns a dictionary of a run-type option object deserialized
-    from a human-readable configuration file (e.g., JSON, HJSON, YAML).
-    :param runtype: (HBIR || HBIR_RT || PRESET || LOADLEVEL)
-    """
-    runtype_option_dict = read_json('runtype_options.json')
-    if runtype not in runtype_option_dict:
-        return {}
-    parameter_list = runtype_option_dict[runtype]
-
-    if(len(parameter_list) == len(args)):
-        return_dict = {tup[0] : tup[1] for tup in zip(parameter_list, args)}
-        return_dict['Run Type'] = runtype
-        return return_dict
-    return {}
-
-
-def create_run_dict_list(runtype, args):
-    """
-    Returns a dictionary of run-type option objects.
-    :param runtype: (HBIR || HBIR_RT || PRESET || LOADLEVEL)
-    """
-    return create_run_dict(runtype, *args)
-
-
-def create_run_sh_invocation(run_dict):
-    """
-    Builds a string to be used to invoke the `run.sh` script in ~/workloads. The
-    command-line arguments of `run.sh` are initialized with the respective values in
-    run_dict.
-    :param run_dict: dict
-    """
-    try:
-        runtype_option_dict = read_json('runtype_options.json')
-        parameters = runtype_option_dict[run_dict['Run Type']]
-        return './run.sh {}'.format(
-            ' '.join(str(run_dict[p]) for p in parameters))
-    except: # Probably a dictionary failure.
-        return ''
-
-
-def execute_run(run_dict):
-    """
-    Invoke the `run.sh` script in ~/workloads with command-line arguments stored
-    in run_dict.
-    :param run_dict: dict
-    """
-    # We'll eventually invoke this for realsies. For now, we're just going to
-    # print it.
-    invocation = create_run_sh_invocation(run_dict)
-    if invocation:
-        print(invocation)
-        return True
-    return False
-
-
-def execute_runs(run_dict_list):
-    """
-    A wrapper for `execute_run(...)`, which is invoked repeatedly for each set
-    of run-type options found in run_dict_list.
-    :param run_dict_list: [dict]
-    """
-    return [execute_run(run_dict) for run_dict in run_dict_list]
-
-
 # Utility functions.
 def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x : x[0]):
         print("{}: {}".format(key, value))
+      
 
+# Level-one layer of dialogue.
+# All functions take run_dict, runtype_dict as arguments so that they can be
+# called homogenously from a dictionary in `dialogue`.
 
 # Level-one layer of dialogue.
 def print_all_runs(run_dict, runtype_dict):
     for k, v in sorted(run_dict.items(), key=lambda x : x[0]):
-        print('Run {}'.format(k))
+        print('\nTag {}\n'.format(k))
         print_dict(v)
 
 
@@ -117,7 +56,7 @@ def create_run(run_dict, runtype_dict):
     run_type = input('-> ')
     if run_type not in runtype_dict.keys():
         user_input = input('{} is not currently an option. Add it? ')
-        if user_input.lower() in ['y', 'yes']:
+        if user_input.lower() in YES_CONSTS:
             create_runtype(runtype_dict)
         return
     run_dict[run_name] = create_run_dialogue(runtype_dict[run_type])
@@ -125,21 +64,25 @@ def create_run(run_dict, runtype_dict):
 
 def create_runtype(run_dict, runtype_dict):
     option_set = set()
+    # We need to preserve order for entry consistency's sake.
+    option_list = []
     user_input = input('Input a name for the runtype. ')
     while (user_input in runtype_dict and
-           user_input.lower() not in ['q', 'quit']):
+           user_input.lower() not in EXIT_CONSTS):
         user_input = ('Name already exists. Input a different name. ')
 
     runtype_name = user_input
 
-    while user_input.lower() not in ['q', 'quit']:
+    while user_input.lower() not in EXIT_CONSTS:
         user_input = input('Input a new run attribute. ')
         if user_input in option_set:
             print('{} has already been added!'.format(user_input))
         option_set.add(user_input)
+        option_list.append(user_input)
     
-    if runtype_name.lower() not in ['q', 'quit']:
-        runtype_dict[runtype_name] = list(option_set)
+    if runtype_name.lower() not in EXIT_CONSTS: 
+        runtype_dict[runtype_name] = option_list
+
 
 
 def delete_run(run_dict, runtype_dict):
@@ -204,7 +147,7 @@ def load_runlist(run_dict, runtype_dict):
 
 def new_runlist(run_dict, runtype_dict):
     user_input = input('Are you sure? This will remove all runs from the RunDict!')
-    if user_input.lower() in ['y', 'yes']:
+    if user_input.lower() in YES_CONSTS:
         run_dict = {}
         print('RunDict has been cleared.')
     else:
@@ -232,8 +175,8 @@ def edit_run_dialogue(old_run):
 
 def dialogue():
     """
-    A dialogue function for creating a RunDict.
-    Note that this currently does not allow you to create a new category of Run.
+    A dialogue function for creating, editing, and saving RunSet objects
+    as JSON objects.
     """
 
     default_json = 'example_config.json'
@@ -283,10 +226,10 @@ def dialogue():
 
     user_input = ""
 
-    while user_input.lower() not in ['q', 'quit']:
-        print("What would you like to do?")
+    while user_input.lower() not in EXIT_CONSTS:
+        print("\nWhat would you like to do?\n")
         print_dict(option_description_dict)
         user_input = input("-> ")
-        if user_input.lower() not in ['q', 'quit']:
+        if user_input.lower() not in EXIT_CONSTS:
             function_dict.get(user_input, error)(run_dict, runtype_dict)
     print('Exiting.')
