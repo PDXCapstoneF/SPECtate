@@ -5,7 +5,7 @@ Usage:
     main.py validate <config>
     main.py (-h | --help)
     main.py --version
-
+    main.py dialogue
 """
 # library imports
 import json
@@ -16,6 +16,7 @@ from subprocess import call
 from docopt import docopt
 
 # source imports
+import dialogue
 from src import validate
 
 def to_list(s):
@@ -69,12 +70,16 @@ def do_validate(arguments):
         args = json.loads(f.read())
     return validate.validate(args) is None
 
+def do_dialogue(arguments):
+    dialogue.dialogue()
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
         'validate': do_validate,
+        'dialogue' : do_dialogue
         }
 
 if __name__ == "__main__":
