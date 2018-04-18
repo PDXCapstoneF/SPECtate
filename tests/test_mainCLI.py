@@ -1,7 +1,7 @@
 import unittest
 import json
 
-import main
+import mainCLI as main
 
 example_configuration = json.loads(open("example_config.json", "r").read())["specjbb"]
 
