@@ -1,11 +1,11 @@
 """SPECtate.
 
 Usage:
-    main.py run <config> [--props <props>]
-    main.py validate <config>
-    main.py (-h | --help)
-    main.py --version
-    main.py dialogue
+    mainCLI.py run <config> [--props <props>]
+    mainCLI.py validate <config>
+    mainCLI.py (-h | --help)
+    mainCLI.py --version
+    mainCLI.py dialogue
 """
 # library imports
 import json
@@ -18,6 +18,7 @@ from docopt import docopt
 # source imports
 import dialogue
 from src import validate
+
 
 def to_list(s):
     if s['run_type'].lower() in ["hbir", "hbir_rt"]:
@@ -50,6 +51,7 @@ def to_list(s):
                 s["t"][2], # t3
                 ]
 
+
 def do_run(arguments):
     """
     Does a run using scripts/run.sh from the provided property template and configuration.
@@ -81,6 +83,7 @@ do = {
         'validate': do_validate,
         'dialogue' : do_dialogue
         }
+
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')

@@ -102,3 +102,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# PyCharm project settings
+.idea
+
+# MacOS auto-generated
+.DS_Store
