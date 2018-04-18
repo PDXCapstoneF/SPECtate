@@ -37,13 +37,12 @@
     "T3"
   ],
   "LOADLEVEL": [
-    "kitVersion",
+    "Kit Version",
     "Tag",
     "JDK",
-    "TXrate",
-    "Duration",
-    "JVMoptions",
-    "NUMA_Node",
+    "RTSTART",
+    "JVM Options",
+    "NUMA Nodes",
     "Data Collection",
     "T1",
     "T2",
