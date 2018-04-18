@@ -1,9 +1,11 @@
+import sys
+sys.path.append('..')
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
-from multiListBox import *
 import json
-import mainCLI
+from gui.multiListBox import MultiColumnListbox
+import mainCLI as cli
 
 with open("properties.json") as properties_file:
     properties = json.load(properties_file)
