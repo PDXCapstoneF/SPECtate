@@ -6,6 +6,7 @@ from tkinter import messagebox
 import json
 from gui.multiListBox import MultiColumnListbox
 import mainCLI as cli
+from functools import partial
 
 with open("properties.json") as properties_file:
     properties = json.load(properties_file)
@@ -31,8 +32,52 @@ class MainWindow(Frame):
         list_group = MultiColumnListbox()
 
     def create_group(self):
-        # create stuff
-        pass
+        temp_options = ['option_a', 'option_b', 'option_c']
+        user_input = self.create_form(temp_options, vertical=True)
+        # print(user_input)
+        # call CLI function with user_input
+
+    def create_form(self, options, vertical=True):
+        """
+        Renders a basic form for user to fill in entries. Can be rendered
+        vertically or horizontally.
+        :param options: list
+        :param vertical: bool
+        """
+        # self.grid() // is this needed?
+
+        def display_user_input(entries=None):
+            for idx, i in enumerate(entries):
+                value = entries[idx].get()
+                print("value of entry %s is %s" % (i, value))
+
+        # Can obviously be done better, but it works for now
+        def render_vertical(options):
+            """
+            Populate vertical form for user input, (nX2 [rowXcolumn]) dimensions.
+            :param options: list
+            :return: [Entry]
+            """
+            main = Toplevel(self)
+            main.grid()
+            entries = []
+
+            # Generate tk.Label(s) & tk.Entry(s) for the form
+            for i in range(len(options)):
+                label = Label(main, text=options[i])
+                label.grid(row=i, column=0)
+                entry = Entry(main)  # textvariable=val (capture user input)
+                entry.grid(row=i, column=1)
+                entries.append(entry)
+
+            # Submit button with hook to display user input (doesn't work)
+            my_button = Button(main, text="Submit", command=partial(display_user_input, entries))
+            my_button.grid(row=len(options), column=1)
+
+            return entries
+
+        return render_vertical(options)
+        #display_user_input(entries)
 
     def save_group(self):
         # save stuff
@@ -51,7 +96,6 @@ class MainWindow(Frame):
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
             self.quit()
-
 
 if __name__ == '__main__':
     master = Tk()
