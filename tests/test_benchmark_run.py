@@ -1,6 +1,7 @@
 import unittest
 import json
 import testfixtures
+import logging
 
 from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException
 
@@ -38,7 +39,7 @@ class TestBenchmarkRun(unittest.TestCase):
         except Exception as e:
             self.fail(e)
         with testfixtures.LogCapture() as l:
-            r.debug(logger=l)
+            r.dump()
             # need to have some actual logging output
             self.assertTrue(l.actual())
 
