@@ -10,6 +10,7 @@ testfixtures = "*"
 docopt = "*"
 six = "*"
 schema = "*"
+uuid = "*"
 
 [requires]
 python_version = "3.6"
