@@ -4,6 +4,7 @@ Usage:
     mainCLI.py run <config> [--props <props>]
     mainCLI.py validate <config>
     mainCLI.py dialogue
+    mainCLI.py spectate <config>
     mainCLI.py (-h | --help)
     mainCLI.py --version
 """
@@ -19,6 +20,7 @@ from docopt import docopt
 # source imports
 import dialogue
 from src import validate
+from src import benchmark_run
 
 
 def to_list(s):
@@ -105,13 +107,20 @@ def do_validate(arguments):
 def do_dialogue(arguments):
     dialogue.dialogue()
 
+def do_spectate(arguments):
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    s = benchmark_run.SpecJBBRun(**args)
+    return s.run()
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
         'validate': do_validate,
-        'dialogue' : do_dialogue
+        'dialogue' : do_dialogue,
+        'spectate': do_spectate,
         }
 
 if __name__ == "__main__":
