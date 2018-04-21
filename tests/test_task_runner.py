@@ -26,7 +26,7 @@ class TestTaskRunner(unittest.TestCase):
             for invalid in self.invalid_options:
                 TaskRunner(*invalid)
 
-    def test_run_does_stuff(self):
+    def test_run_actually_runs(self):
         t = TaskRunner("echo", "hello", "world")
         t.run()
 
