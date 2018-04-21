@@ -17,11 +17,21 @@ class SpecJBBRun:
     Does a run!
     """
 
-    def __init__(self, types=None, props=None):
-        if not types or not props:
+    def __init__(self, 
+            args=None,
+            annotations=None,
+            types=None,
+            translations=None,
+            default_props=None,
+            props=None):
+        if not types or not props or not args:
             raise InvalidRunConfigurationException
+
+        self.args = args
         self.types = types
+        self.translations = translations
         self.props = props
+
         self.run_id = uuid4()
 
     def run(self):
@@ -34,7 +44,6 @@ class SpecJBBRun:
         def l(*a, **kw):
             log.log(level, *a, extra={'run_id': self.run_id}, *kw)
 
-        l('types: {}'.format(self.types))
-        l('props: {}'.format(self.props))
+        l(vars(self))
 
         pass
