@@ -37,11 +37,12 @@ class SpecJBBRun:
     def run(self):
         # setup jvms
         # we first need to setup the controller
+        controller_props = props['controller'] if isinstance(props['controller'], list) else props['controller']
+
         c = TaskRunner(self.props["jvm"],
-                *props['controller'] if isinstance(props['controller'], list) else props['controller'],
+                *controller_props,
                 '-jar {}'.format(self.props["specjbb"]["jar"]),
-                '-m MULTICONTROLLER',
-                )
+                '-m MULTICONTROLLER')
 
         # we need to setup the backends and transaction injectors
         def generate_backends_and_injectors():
