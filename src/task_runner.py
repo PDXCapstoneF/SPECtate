@@ -40,7 +40,7 @@ class TaskRunner:
         if not self.proc:
             return
 
-        self.proc.terminate()
+        return self.proc.terminate()
 
     def start(self):
         """
