@@ -8,7 +8,7 @@ import logging
 from src.task_runner import TaskRunner
 
 FORMAT = '%(asctime)-15s run_id=%(run_id)s: %(message)s'
-logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+logging.basicConfig(level=logging.INFO, format=FORMAT)
 log = logging.getLogger(__name__)
 
 class InvalidRunConfigurationException(Exception):
@@ -38,18 +38,28 @@ class SpecJBBRun:
         self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
 
     def _generate_tasks(self):
-        for group_id in range(self.props["backends"]):
+        self.log.info("generating {} groups, each with {} transaction injectors".format(self.props["backends"], self.props["injectors"]))
+
+        for _ in range(self.props["backends"]):
+            group_id = uuid4()
+            backend_jvm_id = uuid4()
+            self.log.debug("constructing group {}".format(group_id))
             yield TaskRunner(self.props["jvm"],
                 '-jar {}'.format(self.props["jar"]),
                 '-m BACKEND',
                 '-G={}'.format(group_id),
-                '-J={}'.format(uuid4()))
-            for ti_num in range(self.props["injectors"]):
+                '-J={}'.format(backend_jvm_id))
+
+            self.log.debug("constructing injectors for group {}".format(group_id))
+
+            for _ in range(self.props["injectors"]):
+                ti_jvm_id = uuid4()
+                self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
                 yield TaskRunner(self.props["jvm"],
                     '-jar {}'.format(self.props["jar"]),
                     '-m TXINJECTOR',
                     '-G={}'.format(group_id),
-                    '-J={}'.format(uuid4()))
+                    '-J={}'.format(ti_jvm_id))
 
     def run(self):
         # setup jvms
@@ -67,6 +77,7 @@ class SpecJBBRun:
         c.run()
 
         for task in self._generate_tasks():
+            self.log.debug("starting task {}".format(task))
             task.start()
 
         # TODO: collect results
