@@ -19,6 +19,9 @@ class TaskRunner:
 
         self.proc = None
 
+    def __str__(self):
+        return "TaskRunner(path={}, options={}, kw={}, proc={})".format(self.path, self.options, self.kw, self.proc)
+
 
     def argument_list(self):
         return [self.path] + self.options
