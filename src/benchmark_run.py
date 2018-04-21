@@ -59,11 +59,12 @@ class SpecJBBRun:
                         '-J={}'.format(uuid4()))
 
         # run benchmark
+        c.run()
+
         for task in generate_backends_and_injectors():
             task.run()
 
         # TODO: collect results
-        pass
 
     def dump(self, level=logging.DEBUG):
         """
