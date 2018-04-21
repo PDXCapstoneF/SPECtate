@@ -35,6 +35,34 @@ class SpecJBBRun:
         self.run_id = uuid4()
 
     def run(self):
+        # setup jvms
+        # we first need to setup the controller
+        c = TaskRunner(self.props["jvm"],
+                *props['controller'] if isinstance(props['controller'], list) else props['controller'],
+                '-jar {}'.format(self.props["specjbb"]["jar"]),
+                '-m MULTICONTROLLER',
+                )
+
+        # we need to setup the backends and transaction injectors
+        def generate_backends_and_injectors():
+            for group_id in range(props['backends']):
+                yield TaskRunner(self.props["jvm"],
+                    '-jar {}'.format(self.props["specjbb"]["jar"]),
+                    '-m BACKEND',
+                    '-G={}'.format(group_id),
+                    '-J={}'.format(uuid4()))
+                for ti_num in range(props['ti_props']):
+                    yield TaskRunner(self.props["jvm"],
+                        '-jar {}'.format(self.props["specjbb"]["jar"]),
+                        '-m TXINJECTOR',
+                        '-G={}'.format(group_id),
+                        '-J={}'.format(uuid4()))
+
+        # run benchmark
+        for task in generate_backends_and_injectors():
+            task.run()
+
+        # TODO: collect results
         pass
 
     def dump(self, level=logging.DEBUG):
@@ -45,5 +73,3 @@ class SpecJBBRun:
             log.log(level, *a, extra={'run_id': self.run_id}, *kw)
 
         l(vars(self))
-
-        pass
