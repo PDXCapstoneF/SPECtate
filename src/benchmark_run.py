@@ -54,7 +54,7 @@ class SpecJBBRun:
     def run(self):
         # setup jvms
         # we first need to setup the controller
-        controller_props = self.props['controller'] if isinstance(self.props['controller'], list) else self.props.get('controller', [])
+        controller_props = self.props['controller'] if 'controller' in self.props and isinstance(self.props['controller'], list) else self.props.get('controller', [])
 
         c = TaskRunner(self.props["jvm"],
                 '-jar {}'.format(self.props["jar"]),
