@@ -72,6 +72,6 @@ class SpecJBBRun:
         Dumps info about this currently configured run.
         """
         def l(*a, **kw):
-            log.log(level, *a, extra={'run_id': self.run_id}, *kw)
+            log.log(level, *a, extra={'run_id': self.run_id}, **kw)
 
         l(vars(self))
