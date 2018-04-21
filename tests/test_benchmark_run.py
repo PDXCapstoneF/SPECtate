@@ -6,12 +6,23 @@ import logging
 from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException
 
 class TestBenchmarkRun(unittest.TestCase):
-    valid_types = {
-        "args": [],
-        "annotations": {},
-        "types": {},
-        "translations": {},
-        "props": {}
+    valid_props = {
+        "args": [
+            "Arg1",
+            "Arg2",
+            ],
+        "annotations": {
+            "Arg1": "This is the first argument",
+            "Arg2": "This is the second argument",
+            },
+        "types": {
+            "Arg1": "string",
+            "Arg2": "int",
+            },
+        "translations": {
+            "Arg1": "com.spec.prop1",
+            },
+        "default_props": {},
         }
 
     valid_tate_props = {
@@ -28,16 +39,10 @@ class TestBenchmarkRun(unittest.TestCase):
             r = SpecJBBRun()
 
     def test_run_with_valid_configuration(self):
-        try:
-            r = SpecJBBRun(types=self.valid_types, props=self.valid_tate_props)
-        except Exception as e:
-            self.fail(e)
+        SpecJBBRun(props=self.valid_tate_props, **self.valid_props)
 
     def test_valid_run_can_dump_info(self):
-        try:
-            r = SpecJBBRun(types=self.valid_types, props=self.valid_tate_props)
-        except Exception as e:
-            self.fail(e)
+        r = SpecJBBRun(props=self.valid_tate_props, **self.valid_props)
         with testfixtures.LogCapture() as l:
             r.dump()
             # need to have some actual logging output
