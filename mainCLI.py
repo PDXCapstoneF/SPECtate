@@ -3,9 +3,9 @@
 Usage:
     mainCLI.py run <config> [--props <props>]
     mainCLI.py validate <config>
+    mainCLI.py dialogue
     mainCLI.py (-h | --help)
     mainCLI.py --version
-    mainCLI.py dialogue
 """
 # library imports
 import json
