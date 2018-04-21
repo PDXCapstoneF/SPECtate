@@ -40,16 +40,16 @@ class SpecJBBRun:
     def _generate_tasks(self):
         for group_id in range(self.props["backends"]):
             yield TaskRunner(self.props["jvm"],
-                '-jar {0}'.format(self.props["jar"]),
+                '-jar {}'.format(self.props["jar"]),
                 '-m BACKEND',
-                '-G={0}'.format(group_id),
-                '-J={0}'.format(uuid4()))
+                '-G={}'.format(group_id),
+                '-J={}'.format(uuid4()))
             for ti_num in range(self.props["injectors"]):
                 yield TaskRunner(self.props["jvm"],
-                    '-jar {0}'.format(self.props["jar"]),
+                    '-jar {}'.format(self.props["jar"]),
                     '-m TXINJECTOR',
-                    '-G={0}'.format(group_id),
-                    '-J={0}'.format(uuid4()))
+                    '-G={}'.format(group_id),
+                    '-J={}'.format(uuid4()))
 
     def run(self):
         # setup jvms
@@ -57,9 +57,9 @@ class SpecJBBRun:
         controller_props = self.props['controller'] if isinstance(self.props['controller'], list) else self.props.get('controller', [])
 
         c = TaskRunner(self.props["jvm"],
-                *controller_props,
-                '-jar {0}'.format(self.props["jar"]),
-                '-m MULTICONTROLLER')
+                '-jar {}'.format(self.props["jar"]),
+                '-m MULTICONTROLLER',
+                *controller_props)
 
         self.log.info("begin benchmark")
 
