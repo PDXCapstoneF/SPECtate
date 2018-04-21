@@ -5,6 +5,8 @@ This module replaces `run.sh`.
 from uuid import uuid4
 import logging
 
+from src.task_runner import TaskRunner
+
 FORMAT = '%(asctime)-15s run_id=%(run_id)s: %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 log = logging.getLogger(__name__)
@@ -24,7 +26,7 @@ class SpecJBBRun:
             translations=None,
             default_props=None,
             props=None):
-        if not types or not props or not args:
+        if types is None or props is None or args is None:
             raise InvalidRunConfigurationException
 
         self.args = args
@@ -38,13 +40,13 @@ class SpecJBBRun:
     def _generate_tasks(self):
         for group_id in range(self.props["backends"]):
             yield TaskRunner(self.props["jvm"],
-                '-jar {0}'.format(self.props["specjbb"]["jar"]),
+                '-jar {0}'.format(self.props["jar"]),
                 '-m BACKEND',
                 '-G={0}'.format(group_id),
                 '-J={0}'.format(uuid4()))
             for ti_num in range(self.props["injectors"]):
                 yield TaskRunner(self.props["jvm"],
-                    '-jar {0}'.format(self.props["specjbb"]["jar"]),
+                    '-jar {0}'.format(self.props["jar"]),
                     '-m TXINJECTOR',
                     '-G={0}'.format(group_id),
                     '-J={0}'.format(uuid4()))
@@ -52,11 +54,11 @@ class SpecJBBRun:
     def run(self):
         # setup jvms
         # we first need to setup the controller
-        controller_props = props['controller'] if isinstance(props['controller'], list) else props['controller']
+        controller_props = self.props['controller'] if isinstance(self.props['controller'], list) else self.props.get('controller', [])
 
         c = TaskRunner(self.props["jvm"],
                 *controller_props,
-                '-jar {0}'.format(self.props["specjbb"]["jar"]),
+                '-jar {0}'.format(self.props["jar"]),
                 '-m MULTICONTROLLER')
 
         self.log.info("begin benchmark")
@@ -65,7 +67,7 @@ class SpecJBBRun:
         c.run()
 
         for task in self._generate_tasks():
-            task.run()
+            task.start()
 
         # TODO: collect results
 
