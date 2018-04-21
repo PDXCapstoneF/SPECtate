@@ -45,8 +45,8 @@ class SpecJBBRun:
             backend_jvm_id = uuid4()
             self.log.debug("constructing group {}".format(group_id))
             yield TaskRunner(self.props["jvm"],
-                '-jar {}'.format(self.props["jar"]),
-                '-m BACKEND',
+                '-jar', self.props["jar"],
+                '-m', 'BACKEND',
                 '-G={}'.format(group_id),
                 '-J={}'.format(backend_jvm_id))
 
@@ -56,7 +56,7 @@ class SpecJBBRun:
                 ti_jvm_id = uuid4()
                 self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
                 yield TaskRunner(self.props["jvm"],
-                    '-jar {}'.format(self.props["jar"]),
+                    '-jar', self.props["jar"],
                     '-m TXINJECTOR',
                     '-G={}'.format(group_id),
                     '-J={}'.format(ti_jvm_id))
@@ -67,18 +67,20 @@ class SpecJBBRun:
         controller_props = self.props['controller'] if 'controller' in self.props and isinstance(self.props['controller'], list) else self.props.get('controller', [])
 
         c = TaskRunner(self.props["jvm"],
-                '-jar {}'.format(self.props["jar"]),
-                '-m MULTICONTROLLER',
+                '-jar', self.props["jar"],
+                '-m', 'MULTICONTROLLER',
                 *controller_props)
 
         self.log.info("begin benchmark")
 
         # run benchmark
         c.run()
-
-        for task in self._generate_tasks():
+        
+        tasks = [ task for task in self._generate_tasks() ]
+        for task in tasks:
             self.log.debug("starting task {}".format(task))
             task.start()
+            self.log.debug("started task {}".format(task))
 
         # TODO: collect results
 
