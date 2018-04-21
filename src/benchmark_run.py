@@ -33,6 +33,21 @@ class SpecJBBRun:
         self.props = props
 
         self.run_id = uuid4()
+        self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
+
+    def _generate_tasks(self):
+        for group_id in range(self.props["backends"]):
+            yield TaskRunner(self.props["jvm"],
+                '-jar {}'.format(self.props["specjbb"]["jar"]),
+                '-m BACKEND',
+                '-G={}'.format(group_id),
+                '-J={}'.format(uuid4()))
+            for ti_num in range(self.props["injectors"]):
+                yield TaskRunner(self.props["jvm"],
+                    '-jar {}'.format(self.props["specjbb"]["jar"]),
+                    '-m TXINJECTOR',
+                    '-G={}'.format(group_id),
+                    '-J={}'.format(uuid4()))
 
     def run(self):
         # setup jvms
@@ -44,25 +59,12 @@ class SpecJBBRun:
                 '-jar {}'.format(self.props["specjbb"]["jar"]),
                 '-m MULTICONTROLLER')
 
-        # we need to setup the backends and transaction injectors
-        def generate_backends_and_injectors():
-            for group_id in range(props['backends']):
-                yield TaskRunner(self.props["jvm"],
-                    '-jar {}'.format(self.props["specjbb"]["jar"]),
-                    '-m BACKEND',
-                    '-G={}'.format(group_id),
-                    '-J={}'.format(uuid4()))
-                for ti_num in range(props['ti_props']):
-                    yield TaskRunner(self.props["jvm"],
-                        '-jar {}'.format(self.props["specjbb"]["jar"]),
-                        '-m TXINJECTOR',
-                        '-G={}'.format(group_id),
-                        '-J={}'.format(uuid4()))
+        self.log.info("begin benchmark")
 
         # run benchmark
         c.run()
 
-        for task in generate_backends_and_injectors():
+        for task in self._generate_tasks():
             task.run()
 
         # TODO: collect results
@@ -71,7 +73,5 @@ class SpecJBBRun:
         """
         Dumps info about this currently configured run.
         """
-        def l(*a, **kw):
-            log.log(level, *a, extra={'run_id': self.run_id}, **kw)
 
-        l(vars(self))
+        self.log.log(level, vars(self))
