@@ -9,7 +9,7 @@ Usage:
     mainCLI.py --version
 
 Options:
-    --level=<log-level>       Set the logging level. [default: INFO]
+    --level=<log-level>       Set the logging level. Uses python.logging's names for the different leves. [default: INFO]
 """
 # library imports
 import json
