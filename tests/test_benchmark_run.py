@@ -110,7 +110,7 @@ class TestTopologyConfiguration(unittest.TestCase):
 
         self.assertTrue("env/Main.jar" in t.controller_run_args())
         self.assertTrue("env/Main.jar" in t.backend_run_args())
-        self.assertTrue("env/Main.jar" in t.ti_run_args())
+        self.assertTrue("env/Main.jar" in t.injector_run_args())
 
 
 
