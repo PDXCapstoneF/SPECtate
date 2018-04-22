@@ -15,14 +15,37 @@ class InvalidRunConfigurationException(Exception):
 
 class TopologyConfiguration:
     def _full_options(self, options_dict):
-        return [self.jvm, "-jar", self.jar] + options_dict["options"]
+        return [self.jvm["path"], "-jar", self.jar] + self.jvm["options"] + options_dict["options"]
 
-    def __init__(self, controller=None, backends=None, injectors=None, jvm=None, jar=None):
-        if None in [backends, injectors, jvm, jar] or not isinstance(jvm, str) or not isinstance(jar, str):
+    @staticmethod
+    def from_dict(props):
+        if isinstance(props, TopologyConfiguration):
+            return props
+        elif isinstance(props, dict):
+            return TopologyConfiguration(**props)
+        else:
             raise Exception
 
-        self.jvm = jvm
+    def __init__(self, controller=None, backends=None, injectors=None, jvm=None, jar=None):
+        if None in [backends, injectors, jvm, jar] or not isinstance(jar, str):
+            raise Exception
+
         self.jar = jar
+
+        if isinstance(jvm, str):
+            self.jvm = {
+                    "path": jvm,
+                    "options": []
+                    }
+        elif isinstance(jvm, list):
+            self.jvm = {
+                    "path": jvm[0],
+                    "options": jvm[1:],
+                    }
+        elif isinstance(jvm, dict):
+            self.jvm = jvm
+        else:
+            raise Exception
 
         if controller is None:
             self.controller = {
