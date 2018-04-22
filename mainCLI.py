@@ -1,16 +1,20 @@
 """SPECtate.
 
 Usage:
-    mainCLI.py run <config> [--props <props>]
-    mainCLI.py validate <config>
-    mainCLI.py dialogue
-    mainCLI.py spectate <config>
+    mainCLI.py run [options] <config> [--props <props>]
+    mainCLI.py validate [options] <config>
+    mainCLI.py dialogue [options]
+    mainCLI.py spectate [options] <config>
     mainCLI.py (-h | --help)
     mainCLI.py --version
+
+Options:
+    --level=<log-level>       Set the logging level. [default: INFO]
 """
 # library imports
 import json
 import os
+import logging
 from subprocess import call
 from shutil import copy, rmtree
 
@@ -125,6 +129,8 @@ do = {
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')
+    print(arguments)
+    logging.basicConfig(level=logging.getLevelName(arguments['--level']))
 
     for key, func in do.items():
         if arguments[key]:
