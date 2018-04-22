@@ -1,4 +1,5 @@
 import subprocess
+import itertools
 
 class TaskRunner:
     """
@@ -9,6 +10,7 @@ class TaskRunner:
             raise Exception
 
         self.path = path
+        options = itertools.chain(*options)
 
         for opt in options:
             if not isinstance(opt, str):
