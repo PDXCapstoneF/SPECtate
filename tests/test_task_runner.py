@@ -30,7 +30,3 @@ class TestTaskRunner(unittest.TestCase):
         t = TaskRunner("echo", "hello", "world")
         t.run()
 
-    def test_run_with_list_in_arg_is_unpacked(self):
-        t = TaskRunner("echo", ["hello", "world"], "this", "should", "be unpacked")
-        t.run()
-

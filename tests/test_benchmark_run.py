@@ -56,7 +56,7 @@ class TestTopologyConfiguration(unittest.TestCase):
 		    "injectors": 4,
 		    "controller": ["arg1", "arg2"],
 		    "jvm": "java",
-		    "jar": "env/Main.jar"
+		    "jar": "env/Main.jar",
                 },
             {
 		    "backends": {
@@ -66,7 +66,7 @@ class TestTopologyConfiguration(unittest.TestCase):
 		    "injectors": 4,
 		    "controller": ["arg1", "arg2"],
 		    "jvm": "java",
-		    "jar": "env/Main.jar"
+		    "jar": "env/Main.jar",
                 },
             {
 		    "backends": 2,
@@ -76,13 +76,13 @@ class TestTopologyConfiguration(unittest.TestCase):
                         },
 		    "controller": ["arg1", "arg2"],
 		    "jvm": "java",
-		    "jar": "env/Main.jar"
+		    "jar": "env/Main.jar",
                 },
             {
 		    "backends": 2,
 		    "injectors": 4,
 		    "jvm": "java",
-		    "jar": "env/Main.jar"
+		    "jar": "env/Main.jar",
                 },
             {
 		    "backends": 2,
