@@ -28,25 +28,25 @@ class MainWindow(Frame):
 
         # File Menu
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label=properties["commands"]["create"], command=self.create_group)
-        filemenu.add_command(label=properties["commands"]["save"], command=self.save_group)
-        filemenu.add_command(label=properties["commands"]["load"], command=self.load_group)
-        filemenu.add_command(label=properties["commands"]["run"], command=self.run_group)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["file"]["title"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][0], command=self.create_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
         filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["exit"], command=self.on_close)
-        menubar.add_cascade(label=properties["commands"]["file"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.on_close)
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
-        editmenu.add_command(label="Undo", command='')
-        editmenu.add_command(label="Redo", command='')
-        menubar.add_cascade(label="Edit", menu=editmenu)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["edit"]["title"], menu=editmenu)
+        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][0], command='')
+        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][1], command='')
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="About", command='')
-        helpmenu.add_command(label="Wiki", command='')
-        menubar.add_cascade(label="Help", menu=helpmenu)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["help"]["title"], menu=helpmenu)
+        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][0], command='')
+        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][1], command='')
 
         # Publish Menu
         self.master.config(menu=menubar)
