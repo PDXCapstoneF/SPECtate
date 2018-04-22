@@ -10,13 +10,13 @@ class TaskRunner:
             raise Exception
 
         self.path = path
-        options = itertools.chain(*options)
+        options = list(itertools.chain(options))
 
         for opt in options:
             if not isinstance(opt, str):
                 raise Exception
 
-        self.options = list(options)
+        self.options = options
         self.kw = popen_kw
 
         self.proc = None
