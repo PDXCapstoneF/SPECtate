@@ -13,6 +13,59 @@ log = logging.getLogger(__name__)
 class InvalidRunConfigurationException(Exception):
     pass
 
+class TopologyConfiguration:
+    def _full_options(self, options_dict):
+        return [self.jvm, "-jar", self.jar] + options_dict["options"]
+
+    def __init__(self, controller=None, backends=None, injectors=None, jvm=None, jar=None):
+        if None in [backends, injectors, jvm, jar] or not isinstance(jvm, str) or not isinstance(jar, str):
+            raise Exception
+
+        self.jvm = jvm
+        self.jar = jar
+
+        if controller is None:
+            self.controller = {
+                "count": 1,
+                "options": ["-m", "MULTICONTROLLER"],
+                }
+        elif isinstance(controller, dict):
+            self.controller = controller
+        elif isinstance(controller, list):
+            self.controller = {
+                    "count": 1,
+                    "options": controller,
+                }
+
+        if isinstance(backends, int):
+            self.backends = {
+                "count": backends,
+                "options": ["-m", "BACKEND"],
+                }
+        elif isinstance(backends, dict):
+            self.backends = backends
+        else:
+            raise Exception
+
+        if isinstance(injectors, int):
+            self.injectors = {
+                    "count": injectors,
+                    "options": ["-m", "TXINJECTOR"],
+            }
+        elif isinstance(injectors, dict):
+            self.injectors = injectors
+        else:
+            raise Exception
+
+    def controller_run_args(self):
+        return self._full_options(self.controller)
+
+    def backend_run_args(self):
+        return self._full_options(self.backends)
+
+    def injector_run_args(self):
+        return self._full_options(self.injectors)
+
 def do(task):
     """
     Runs a given task synchronously.
@@ -64,7 +117,7 @@ class SpecJBBRun:
                 self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
                 yield TaskRunner(self.props["jvm"],
                     '-jar', self.props["jar"],
-                    '-m TXINJECTOR',
+                    '-m', 'TXINJECTOR',
                     '-G={}'.format(group_id),
                     '-J={}'.format(ti_jvm_id))
 
