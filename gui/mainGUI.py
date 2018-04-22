@@ -101,10 +101,6 @@ class MainWindow(Frame):
         return render_vertical(options)
         #display_user_input(entries)
 
-    def edit(self):
-        pass
-
-
     def save_group(self):
         # save stuff
         pass
