@@ -2,17 +2,24 @@
 This module replaces `run.sh`.
 """
 
+from multiprocessing import Pool
 from uuid import uuid4
 import logging
 
 from src.task_runner import TaskRunner
 
-FORMAT = '%(asctime)-15s run_id=%(run_id)s: %(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
 log = logging.getLogger(__name__)
 
 class InvalidRunConfigurationException(Exception):
     pass
+
+def do(task):
+    """
+    Runs a given task synchronously.
+    """
+    log.debug("starting task {}".format(task))
+    task.run()
+    log.debug("finished task {}".format(task))
 
 class SpecJBBRun:
     """
@@ -71,16 +78,14 @@ class SpecJBBRun:
                 '-m', 'MULTICONTROLLER',
                 *controller_props)
 
-        self.log.info("begin benchmark")
+
+        tasks = [c] + [ task for task in self._generate_tasks() ]
+        pool = Pool(processes=len(tasks))
 
         # run benchmark
-        c.run()
-        
-        tasks = [ task for task in self._generate_tasks() ]
-        for task in tasks:
-            self.log.debug("starting task {}".format(task))
-            task.start()
-            self.log.debug("started task {}".format(task))
+        self.log.info("begin benchmark")
+
+        pool.map(do, tasks)
 
         # TODO: collect results
 
