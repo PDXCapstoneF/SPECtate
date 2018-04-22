@@ -3,7 +3,7 @@ import json
 import testfixtures
 import logging
 
-from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException
+from src.benchmark_run import SpecJBBRun, TopologyConfiguration, InvalidRunConfigurationException
 
 class TestBenchmarkRun(unittest.TestCase):
     valid_props = {
@@ -50,4 +50,68 @@ class TestBenchmarkRun(unittest.TestCase):
             r.dump()
             # need to have some actual logging output
             self.assertTrue(l.actual())
+
+class TestTopologyConfiguration(unittest.TestCase):
+    valid_props = [
+            {
+		    "backends": 2,
+		    "injectors": 4,
+		    "controller": ["arg1", "arg2"],
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
+            {
+		    "backends": {
+                        "count": 2,
+                        "options": ["arg1", "arg2"],
+                        },
+		    "injectors": 4,
+		    "controller": ["arg1", "arg2"],
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
+            {
+		    "backends": 2,
+		    "injectors": {
+                        "count": 4,
+                        "options": ["arg1", "arg2"],
+                        },
+		    "controller": ["arg1", "arg2"],
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
+            {
+		    "backends": 2,
+		    "injectors": 4,
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
+            ]
+
+    invalid_props = [
+
+            ]
+    def test_valid_props_work(self):
+        for valid in self.valid_props:
+            TopologyConfiguration(**valid)
+
+    def test_invalid_props_dont_work(self):
+        for invalid in self.invalid_props:
+            with self.assertRaises(Exception):
+                TopologyConfiguration(**invalid)
+
+    def test_valid_give_run_options(self):
+        t = TopologyConfiguration(**{
+            "backends": 2,
+            "injectors": 4,
+            "jvm": "java",
+            "jar": "env/Main.jar",
+                })
+
+        self.assertTrue("env/Main.jar" in t.controller_run_args())
+        self.assertTrue("env/Main.jar" in t.backend_run_args())
+        self.assertTrue("env/Main.jar" in t.ti_run_args())
+
+
+
 
