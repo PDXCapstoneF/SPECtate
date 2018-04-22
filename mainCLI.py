@@ -129,7 +129,6 @@ do = {
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')
-    print(arguments)
     logging.basicConfig(level=logging.getLevelName(arguments['--level']))
 
     for key, func in do.items():
