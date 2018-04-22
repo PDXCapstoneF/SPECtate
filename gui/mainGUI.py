@@ -1,12 +1,16 @@
+import os
 import sys
 sys.path.append('..')
+# sys.path.append('/SPECtate/')
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
-from gui.multiListBox import MultiColumnListbox
+from multiListBox import MultiColumnListbox
+
 import mainCLI as cli
 from functools import partial
+
 
 with open("properties.json") as properties_file:
     properties = json.load(properties_file)
@@ -18,7 +22,11 @@ class MainWindow(Frame):
         self.master.title(properties["program_name"])
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.master.minsize(width=properties["main_window"]["width"], height=properties["main_window"]["height"])
+
+
         menubar = Menu(self.master)
+
+        # File Menu
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label=properties["commands"]["create"], command=self.create_group)
         filemenu.add_command(label=properties["commands"]["save"], command=self.save_group)
@@ -27,6 +35,20 @@ class MainWindow(Frame):
         filemenu.add_separator()
         filemenu.add_command(label=properties["commands"]["exit"], command=self.on_close)
         menubar.add_cascade(label=properties["commands"]["file"], menu=filemenu)
+
+        # Edit Menu
+        editmenu = Menu(menubar, tearoff=0)
+        editmenu.add_command(label="Undo", command='')
+        editmenu.add_command(label="Redo", command='')
+        menubar.add_cascade(label="Edit", menu=editmenu)
+
+        # Help Menu
+        helpmenu = Menu(menubar, tearoff=0)
+        helpmenu.add_command(label="About", command='')
+        helpmenu.add_command(label="Wiki", command='')
+        menubar.add_cascade(label="Help", menu=helpmenu)
+
+        # Publish Menu
         self.master.config(menu=menubar)
 
         list_group = MultiColumnListbox()
@@ -78,6 +100,10 @@ class MainWindow(Frame):
 
         return render_vertical(options)
         #display_user_input(entries)
+
+    def edit(self):
+        pass
+
 
     def save_group(self):
         # save stuff
