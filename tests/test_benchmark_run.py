@@ -86,9 +86,28 @@ class TestTopologyConfiguration(unittest.TestCase):
 		    "jvm": "java",
 		    "jar": "env/Main.jar"
                 },
+            {
+		    "backends": 2,
+		    "injectors": 4,
+		    "jvm": {
+                        "path": "java",
+                        "options": ["any", "options"],
+                        },
+		    "jar": "env/Main.jar",
+                },
             ]
 
     invalid_props = [
+            {
+		    "injectors": 4,
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
+            {
+		    "backends": 4,
+		    "jvm": "java",
+		    "jar": "env/Main.jar"
+                },
 
             ]
     def test_valid_props_work(self):
