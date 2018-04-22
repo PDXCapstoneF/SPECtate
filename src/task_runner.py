@@ -10,7 +10,7 @@ class TaskRunner:
             raise Exception
 
         self.path = path
-        options = list(itertools.chain(options))
+        options = list(options)
 
         for opt in options:
             if not isinstance(opt, str):
