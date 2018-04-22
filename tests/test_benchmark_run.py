@@ -113,6 +113,3 @@ class TestTopologyConfiguration(unittest.TestCase):
             self.assertTrue("java" in f())
             self.assertEqual("java", f()[0])
 
-
-
-
