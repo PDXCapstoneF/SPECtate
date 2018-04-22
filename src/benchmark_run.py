@@ -115,45 +115,37 @@ class SpecJBBRun:
         self.args = args
         self.types = types
         self.translations = translations
-        self.props = props
+        self.props = TopologyConfiguration.from_dict(props)
 
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
 
     def _generate_tasks(self):
-        self.log.info("generating {} groups, each with {} transaction injectors".format(self.props["backends"], self.props["injectors"]))
+        self.log.info(
+                "generating {} groups, each with {} transaction injectors"
+                .format(self.props.backends["count"], self.props.injectors["count"]))
 
-        for _ in range(self.props["backends"]):
+        for _ in range(self.props.backends["count"]):
             group_id = uuid4()
             backend_jvm_id = uuid4()
             self.log.debug("constructing group {}".format(group_id))
-            yield TaskRunner(self.props["jvm"],
-                '-jar', self.props["jar"],
-                '-m', 'BACKEND',
+            yield TaskRunner(*self.props.backend_run_args(),
                 '-G={}'.format(group_id),
                 '-J={}'.format(backend_jvm_id))
 
             self.log.debug("constructing injectors for group {}".format(group_id))
 
-            for _ in range(self.props["injectors"]):
+            for _ in range(self.props.injectors["count"]):
                 ti_jvm_id = uuid4()
                 self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
-                yield TaskRunner(self.props["jvm"],
-                    '-jar', self.props["jar"],
-                    '-m', 'TXINJECTOR',
+                yield TaskRunner(*self.props.injector_run_args(),
                     '-G={}'.format(group_id),
                     '-J={}'.format(ti_jvm_id))
 
     def run(self):
         # setup jvms
         # we first need to setup the controller
-        controller_props = self.props['controller'] if 'controller' in self.props and isinstance(self.props['controller'], list) else self.props.get('controller', [])
-
-        c = TaskRunner(self.props["jvm"],
-                '-jar', self.props["jar"],
-                '-m', 'MULTICONTROLLER',
-                *controller_props)
-
+        c = TaskRunner(*self.props.controller_run_args())
 
         tasks = [c] + [ task for task in self._generate_tasks() ]
         pool = Pool(processes=len(tasks))
