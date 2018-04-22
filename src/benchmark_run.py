@@ -57,7 +57,7 @@ class TopologyConfiguration:
         elif isinstance(controller, list):
             self.controller = {
                     "count": 1,
-                    "options": controller,
+                    "options": ["-m", "MULTICONTROLLER"] + controller,
                 }
 
         if isinstance(backends, int):
@@ -146,14 +146,18 @@ class SpecJBBRun:
         # setup jvms
         # we first need to setup the controller
         c = TaskRunner(*self.props.controller_run_args())
+        c.start()
 
-        tasks = [c] + [ task for task in self._generate_tasks() ]
+        tasks = [ task for task in self._generate_tasks() ]
         pool = Pool(processes=len(tasks))
+
+        self.dump()
 
         # run benchmark
         self.log.info("begin benchmark")
 
         pool.map(do, tasks)
+        c.stop()
 
     def dump(self, level=logging.DEBUG):
         """
