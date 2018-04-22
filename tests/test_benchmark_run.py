@@ -32,9 +32,7 @@ class TestBenchmarkRun(unittest.TestCase):
                 "path": "/path/to/jvm",
                 "options": [], # to be condensed into a string later
             },
-            "specjbb": {
-                "jar": "/path/to/jar",
-            },
+            "jar": "/path/to/jar",
         }
 
     def test_run_with_empty_config_gives_exception(self):
