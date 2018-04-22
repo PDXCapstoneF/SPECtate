@@ -21,83 +21,7 @@ END = 360
 STARTY = 2
 xoffset = 5
 
-all_runtypes = [
-    'HBIR_RT',
-    'HBIR',
-    'PRESET',
-    'FIXED_RT',
-    'FIXED_RT_LOADLEVELS',
-    'FIXED_LOADLEVELS'
-]
-
-
-
-HBIR_config = {
-        "run_type" : 'HBIR',
-        "jdk": "jdk.8-u121",
-        "numa_node": 4,
-        "kit_version": "RC3",
-        "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-        "tag": "Run-Identifier",
-        "tier1": 154,
-        "tier2" : 45,
-        "tier3" : 23,
-        "rt_start": 30,
-        "data": "NONE"
-}
-
-HBIR_RT_config = {
-    "run_type" : 'HBIR_RT',
-"jdk": "jdk.8-u121",
-        "numa_node": 4,
-        "kit_version": "RC3",
-        "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-        "tag": "Run-Identifier",
-        "tier1": 154,
-        "tier2" : 45,
-        "tier3" : 23,
-        "rt_start": 30,
-        "data": "NONE"
-}
-
-PRESET_config = {
-"run_type" : 'PRESET',
-"jdk": "jdk.8-u121",
-        "numa_node": 4,
-        "kit_version": "RC3",
-        "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-        "tag": "Run-Identifier",
-        "tier1": 154,
-        "tier2" : 45,
-        "tier3" : 23,
-    "duration": 400,
-        "TXrate": 80000,
-        "rt_start": 30,
-        "data": "NONE"
-}
-
-LOADLEVEL_config = {
-"run_type" : 'LOADLEVEL',
-"jdk": "jdk.8-u121",
-        "numa_node": 4,
-        "kit_version": "RC3",
-        "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-        "tag": "Run-Identifier",
-        "tier1": 154,
-        "tier2" : 45,
-        "tier3" : 23,
-        "duration": 60,
-        "rt_start": 30,
-        "data": "NONE"
-}
-
-def get_default_config(runtype):
-    return {
-        'HBIR_RT': HBIR_config,
-        'HBIR': HBIR_config,
-        'PRESET': PRESET_config
-    }.get(runtype, LOADLEVEL_config)
-
+run_types = ['composite','distributed_ctrl_txl', 'distributed_sut','multi']
 #Displays a single run within a config file
 def display_run(stdscr, runinfo, y =STARTY + 2):
     mem = [attr for attr in dir(runinfo) if not callable(getattr(runinfo, attr)) and not attr.startswith("__")]
@@ -110,7 +34,7 @@ def display_run(stdscr, runinfo, y =STARTY + 2):
             stdscr.addstr(y, xoffset + valueoffset, str(getattr(runinfo, name)))
         y += 1
     return y, valueoffset
-# map(lambda x:"{} : {}".format(x[0], x[1]), config)
+
 #Allows user to select from a list of valid options
 def select_from(stdscr, x, y, value, list):
     k = 0
@@ -247,7 +171,7 @@ def draw_edit_run(stdscr, runinfo):
             cury = cury - 1
         elif k == ENTER:
             if(array[cury - y] == 'run_type'):
-                value = select_from(stdscr, xoffset + startx, cury,  getattr(runinfo, array[cury - y]), all_runtypes)
+                value = select_from(stdscr, xoffset + startx, cury,  getattr(runinfo, array[cury - y]), run_types)
                 setattr(runinfo, array[cury - y], value)
             elif(array[cury - y] == 'properties'):
                 draw_edit_props(stdscr, runinfo.properties.get_all())

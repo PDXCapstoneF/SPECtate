@@ -98,47 +98,65 @@ class spec_run:
             path = os.getcwd()
         if(not os.path.exists(os.path.join(path, "specjbb2015.jar"))):
             return 2
-        orig = os.getcwd()
-        os.chdir(path)
+ #       orig = os.getcwd()
+#        os.chdir(path)
         switch = {
             'composite': self.run_composite,
             'distributed_ctrl_txl' : self.run_distributed_ctrl_txl,
             'distributed_sut' : self.distributed_sut,
             'multi' : self.run_multi
         }
-        ret = switch[self.run_type]()
-        os.chdir(orig)
+        ret = switch[self.run_type](path)
+  #      os.chdir(orig)
         return ret
 
 
     def run_composite(self, path):
         for x in range(self.num_runs):
-            result_dir = self._prerun()
-            spec = os.subprocess.Popen(['/usr/bin/java' "{}/specjbb2015.jar".format(path)])
-            os.system('java {} -jar ./specjbb2015.jar -m COMPOSITE 2> {}/composite.log > {}/composite.out &'.format(self.jvm_options, result_dir, result_dir))
+            result_dir = self._prerun(path)
+ #           spec = os.subprocess.Popen(['/usr/bin/java' "{}/specjbb2015.jar".format(path)])
+            os.system('java {} -jar {}/specjbb2015.jar -m COMPOSITE 2> {}/composite.log > {}/composite.out &'.format(self.jvm_options, path, result_dir, result_dir))
         return 0
 
-    def run_distributed_ctrl_txl(self):
-        return 1
+    def run_distributed_ctrl_txl(self, path):
+        ctrl_ip = self.properties.root['specjbb.controller.host'].value
+        #Check if ip responds here
+        result_dir= self._prerun(path)
+        os.system('java {} -jar {}/specjbb2015.jar -m DISTCONTROLLER 2> {}/controller.log > {}/controller.out &'.format(self.jvm_options, path, result_dir, result_dir))
+        for g in range(self.properties.root['specjbb.group.count'].value):
+            for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
+                ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
+                os.system('java {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={} 2> {}.log > {}.out &'.format(self.jvm_options, path, g, ti_name, ti_name))
+        return 0
 
-    def distributed_sut(self):
-        return 1
+    def distributed_sut(self, path):
+        ctrl_ip = self.properties.root['specjbb.controller.host'].value
+        #Check if ip responds here
+        for g in range(self.properties.root['specjbb.group.count'].value):
+            os.system('java {} -jar {}/specjbb2015.jar -m BACKEND -G={} -J=beJVM Group{}.Backend.beJVM.log 2>&1 &'.format(self.jvm_options, path, g, g, g))
 
-    def run_multi(self):
+        return 0
+
+    def run_multi(self, path):
+
         for x in range(self.num_runs):
-            result_dir= self._prerun()
+            result_dir= self._prerun(path)
+            os.system('java {} -jar {}/specjbb2015.jar -m MULTICONTROLLER 2> {}/controller.log > {}/controller.out &'.format(self.jvm_options, path, x, result_dir, result_dir))
+            for g in range(self.properties.root['specjbb.group.count'].value):
+                for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
+                    ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
+                    os.system('java {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={} 2> {}.log > {}.out &'.format(self.jvm_options, path, g, ti_name, ti_name))
 
-            os.system('java {} -jar ./specjbb2015.jar -m MULTICONTROLLER 2> {}/controller.log > {}/controller.out &'.format(
-                self.jvm_options, result_dir, result_dir))
+        be_name = "{}{}.Backend.beJVM".format(result_dir, g)
+        os.system('java {} -jar {}/specjbb2015.jar -m BACKEND -G={} -J=beJVM 2> {}.log > {}.out &'.format(self.jvm_options, path, x, be_name, be_name))
+        return 0
 
-        return 1
-
-    def _prerun(self):
-        result_dir = datetime.datetime.fromtimestamp(time.time()).strftime('+%y-%m-%d_%H%M%S')
+    def _prerun(self, path):
+        result_dir = "{}/{}".format(path, datetime.datetime.fromtimestamp(time.time()).strftime('+%y-%m-%d_%H%M%S'))
         os.makedirs(result_dir)
-        if (not os.path.exists("config")):
-            os.makedirs("config")
-        self.properties.writeconfig("config/specjbb2015.props")
+        if (not os.path.exists("{}/config".format(path))):
+            os.makedirs("{}/config".format(path))
+        self.properties.writeconfig("{}/config/specjbb2015.props".format(path))
         return result_dir
 
 
