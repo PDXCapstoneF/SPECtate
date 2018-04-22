@@ -155,8 +155,6 @@ class SpecJBBRun:
 
         pool.map(do, tasks)
 
-        # TODO: collect results
-
     def dump(self, level=logging.DEBUG):
         """
         Dumps info about this currently configured run.
