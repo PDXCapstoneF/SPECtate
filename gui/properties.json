@@ -13,6 +13,11 @@
         "file": {
           "title": "File",
           "items": [
+            "Import Run List",
+            "Import Run Types",
+            "Save Run List As",
+            "Save Run Types As",
+            "Create New Run",
             "Create Group",
             "Save Group",
             "Run Group",

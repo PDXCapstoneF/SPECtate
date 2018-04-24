@@ -6,7 +6,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 import json
 from multiListBox import MultiColumnListbox
-
+import pprint
 import mainCLI as cli
 from functools import partial
 
@@ -32,8 +32,15 @@ class MainWindow(Frame):
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
+        self.run_window()
+        # filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.run_window)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][8], command='')
         filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.on_close)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][9], command='')
+
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
@@ -51,6 +58,24 @@ class MainWindow(Frame):
         self.master.config(menu=menubar)
 
         list_group = MultiColumnListbox()
+
+    def run_window(self):
+        run_types = return_run_types()[0]
+
+        print(run_types)
+        main = Toplevel(self)
+        main.grid()
+
+        v = StringVar()
+        v.set("L")  # initialize
+        for key in run_types:
+            b = Radiobutton(main, text=key,
+                            variable=v, value=key)
+            b.pack(anchor=W)
+        my_button = Button(main, text="Submit", command='')
+        my_button.pack()
+        # my_button.grid(5, column=1)
+
 
     def create_group(self):
         # create a group
@@ -74,7 +99,15 @@ class MainWindow(Frame):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
             self.quit()
 
+
+def return_run_types():
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtype_options.json')
+    with open(path_to_json, 'r') as json_file:
+        parsed = json.load(json_file)
+        return [parsed.keys()]
+
 if __name__ == '__main__':
+    #print(run_window())
     master = Tk()
     MainWindow()
     master.mainloop()
