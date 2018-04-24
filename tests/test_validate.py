@@ -57,50 +57,48 @@ class TestSpectateConfigValidator(TestCase):
                 }))
 
     def test_runs_with_extra_args_fail_to_validate(self):
-        with self.assertRaises(Exception):
-            self.assertFalse(validate({
-                "templates": {
-                    "example": {
-                        "args": [],
-                        "translations": { 
-                            "arg1": "someValue",
-                            },
-                        },
-                    },
-                "runs": [
-                    {
-                        "template_name": "example",
-                        "args": {
-                            "a": "b",
-                            "arg1": 5,
-                            },
-                        }
-                    ],
-                }))
-
-    def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
-        with self.assertRaises(Exception):
-            self.assertFalse(validate({
-                "templates": {
-                    "example": {
-                        "args": [
-                            "arg1",
-                            "noDefaults",
-                            ],
-                        "translations": { 
-                            "arg1": "someValue",
-                            },
-                    "default_props": {
-                        "arg1": "defaultvalue",
+        self.assertFalse(validate({
+            "templates": {
+                "example": {
+                    "args": [],
+                    "translations": { 
+                        "arg1": "someValue",
                         },
                     },
                 },
-                "runs": [
-                    {
-                        "template_name": "example",
-                        "args": {
-                            "arg1": 5,
-                            },
-                        }
-                    ],
-                }))
+            "runs": [
+                {
+                    "template_name": "example",
+                    "args": {
+                        "a": "b",
+                        "arg1": 5,
+                        },
+                    }
+                ],
+            }))
+
+    def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
+        self.assertFalse(validate({
+            "templates": {
+                "example": {
+                    "args": [
+                        "arg1",
+                        "noDefaults",
+                        ],
+                    "translations": { 
+                        "arg1": "someValue",
+                        },
+                "default_props": {
+                    "arg1": "defaultvalue",
+                    },
+                },
+            },
+            "runs": [
+                {
+                    "template_name": "example",
+                    "args": {
+                        "arg1": 5,
+                        },
+                    }
+                ],
+            }))
