@@ -18,7 +18,7 @@ from docopt import docopt
 
 # source imports
 import dialogue
-from src import validate_blackbox
+from src import validate
 
 
 def to_list(s):
