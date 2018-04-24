@@ -18,7 +18,7 @@ from docopt import docopt
 
 # source imports
 import dialogue
-from src import validate
+from src import validate_blackbox
 
 
 def to_list(s):
@@ -100,7 +100,7 @@ def do_validate(arguments):
     """
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
-    return validate.validate(args) is None
+    return validate.validate_blackbox(args) is None
 
 def do_dialogue(arguments):
     dialogue.dialogue()
