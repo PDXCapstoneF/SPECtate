@@ -24,9 +24,6 @@ class MultiColumnListbox(object):
 
     def _setup_widgets(self):
         s = "List of groups"
-
-    def _setup_widgets(self):
-        s = "List of groups"
         msg = ttk.Label(wraplength="4i", justify="left", anchor="n",
             padding=(10, 2, 10, 6), text=s)
         msg.pack(fill='x')
