@@ -1,5 +1,6 @@
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
+import tkinter as tk
 
 
 class MultiColumnListbox(object):
@@ -9,6 +10,20 @@ class MultiColumnListbox(object):
         self.tree = None
         self._setup_widgets()
         self._build_tree()
+        self.popup_menu = tk.Menu(self.tree, tearoff=0)
+        self.popup_menu.add_command(label="Delete")
+        self.popup_menu.add_command(label="Duplicate")
+        self.tree.bind("<Button-3>", self._popup)
+
+    def _popup(self, event):
+        try:
+            self.popup_menu.selection = self.tree.set(self.tree.identify_row(event.y))
+            self.popup_menu.post(event.x_root, event.y_root)
+        finally:
+            self.popup_menu.grab_release()
+
+    def _setup_widgets(self):
+        s = "List of groups"
 
     def _setup_widgets(self):
         s = "List of groups"
