@@ -102,3 +102,19 @@ class TestSpectateConfigValidator(TestCase):
                     }
                 ],
             }))
+
+    def test_runs_with_extra_annotations_fail_to_validate(self):
+        self.assertFalse(validate({
+            "templates": {
+                "example": {
+                    "args": [
+                        "arg1",
+                        ],
+                    "annotations": { 
+                        "arg1": "someValue",
+                        "extraAnnotation": "someValue",
+                        },
+                },
+            },
+            "runs": []
+            }))
