@@ -86,12 +86,16 @@ def validate(unvalidated):
     for template in d["templates"].values():
         # all of the translations need to refer to
         # arguments specified by the user
-        if "translations" not in template:
-            continue
-
-        for translation in template["translations"]:
-            if translation not in template["args"]:
-                return None
+        if "translations" in template:
+            for translation in template["translations"]:
+                if translation not in template["args"]:
+                    return None
+        # all of the annotations need to refer to
+        # arguments specified by the user
+        if "annotations" in template:
+            for annotation in template["annotations"]:
+                if annotation not in template["args"]:
+                    return None
 
     return d
 
