@@ -13,6 +13,7 @@ class TestRunGenerator(unittest.TestCase):
 
         rg = src.run_generator.RunGenerator(**c)
 
-        for run in rg.runs():
+        for run in rg.runs:
             self.assertTrue(run)
+            print(run)
 
