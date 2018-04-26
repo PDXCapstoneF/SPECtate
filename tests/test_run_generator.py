@@ -11,7 +11,7 @@ class TestRunGenerator(unittest.TestCase):
         with open("example_spectate_config.json", 'r') as f:
             c = json.loads(f.read())
 
-        rg = src.run_generator.RunGenerator(c)
+        rg = src.run_generator.RunGenerator(**c)
 
         for run in rg.runs():
             self.assertTrue(run)
