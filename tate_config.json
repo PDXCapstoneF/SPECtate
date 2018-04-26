@@ -114,16 +114,18 @@
 		{
 			"template_type": "HBIR_RT",
 			"args": {
-				"Tag": "TAG",
-				"Kit Version": "15",
-				"JDK": 7,
-				"RTSTART": "4",
-				"JVM Options": "options -x -y",
-				"NUMA Nodes": "2",
-				"Data Collection": "True",
-				"T1": 1,
-				"T2": 2,
-				"T3": 3
+				  "Tag" : "specjbb",
+				  "Kit Version": "RC3",
+				  "RTSTART" : 30,
+				  "JDK": "jdk.8-u121",
+				  "Duration Min" : 30,
+				  "Duration Max" : 70,
+				  "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+				  "NUMA Nodes": 4,
+				  "Data Collection": "NONE",
+				  "T1" : 154,
+				  "T2" :  45,
+				  "T3" :  23
 			}
 		}
 	]
