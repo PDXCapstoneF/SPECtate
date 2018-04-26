@@ -11,16 +11,10 @@ class MultiColumnListbox(object):
         self._setup_widgets()
         self._build_tree()
         self.popup_menu = tk.Menu(self.tree, tearoff=0)
-        self.popup_menu.add_command(label="Delete")
-        self.popup_menu.add_command(label="Duplicate")
+        self.popup_menu.add_command(label="Delete", command=self._delete_selected)
+        self.popup_menu.add_command(label="Duplicate", command=self._duplicate_selected)
         self.tree.bind("<Button-3>", self._popup)
-
-    def _popup(self, event):
-        try:
-            self.popup_menu.selection = self.tree.set(self.tree.identify_row(event.y))
-            self.popup_menu.post(event.x_root, event.y_root)
-        finally:
-            self.popup_menu.grab_release()
+        # self.tree.bind("<ButtonRelease-1>", self.popup_menu.unpost())
 
     def _setup_widgets(self):
         s = "List of groups"
@@ -57,6 +51,33 @@ class MultiColumnListbox(object):
                 col_w = tkfont.Font().measure(val)
                 if self.tree.column(test_header[ix],width=None)<col_w:
                     self.tree.column(test_header[ix], width=col_w)
+
+    def _popup(self, event):
+        """
+        create popup menu when right-click an object
+        :param event: position in the Frame
+        """
+        for existed_item in self.tree.selection():
+            self.tree.selection_remove(existed_item)
+        self.popup_menu.tk_popup(event.x_root, event.y_root)
+        item_id = self.tree.identify_row(event.y)
+        if item_id:
+            self.tree.selection_set(item_id)
+
+    def _delete_selected(self):
+        """
+        delete the selected items out of the ttk TreeView
+        """
+        for selected_item in self.tree.selection():
+            self.tree.delete(selected_item)
+
+    def _duplicate_selected(self):
+        """
+        duplicate the selected items and append into the end of the ttk TreeView
+        """
+        for selected_item in self.tree.selection():
+            print(selected_item)
+            self.tree.insert(parent='', index='end', iid=selected_item)
 
 
 def sort_by(tree, col, descending):
