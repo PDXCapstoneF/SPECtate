@@ -28,7 +28,6 @@ class MainWindow(Frame):
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
-        # Doesn't work yet.
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
@@ -73,6 +72,7 @@ class MainWindow(Frame):
 
     def create_group(self):
         # create a group
+        pass
 
     def save_group(self):
         # save stuff
@@ -92,13 +92,11 @@ class MainWindow(Frame):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
             self.quit()
 
-
 def return_run_types():
     path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtype_options.json')
     with open(path_to_json, 'r') as json_file:
         parsed = json.load(json_file)
         return [parsed.keys()]
-
 
 if __name__ == '__main__':
     master = Tk()
