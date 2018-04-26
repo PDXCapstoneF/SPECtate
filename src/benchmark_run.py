@@ -152,9 +152,9 @@ class SpecJBBRun:
     def run(self):
         # setup jvms
         # we first need to setup the controller
-        c = TaskRunner(*self.props.controller_run_args())
+        c = TaskRunner(*self.controller_run_args())
 
-        if self.composite["type"] is "composite":
+        if self.controller["type"] is "composite":
             self.log.info("begin benchmark")
             c.run()
             self.log.info("done")
@@ -182,7 +182,7 @@ class SpecJBBRun:
         self.log.log(level, vars(self))
 
     def _full_options(self, options_dict):
-        return [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict["options"]
+        return [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict.get("options", [])
 
     def controller_run_args(self):
         return self._full_options(self.controller)
