@@ -1,11 +1,12 @@
 import json
 import multiprocessing
 import os
+import shlex
 import time
 
 import datetime
 
-from subprocess import Popen
+from subprocess import Popen, PIPE, STDOUT
 
 
 class spec_config():
@@ -70,11 +71,11 @@ class spec_run:
             self.skip_report = False
             self.ignore_kit_validation = False
         else:
-            self.jdk = self._byteify(fromjson['jdk'])
-            self.jvm_options = self._byteify(fromjson['jvm_options'])
-            self.data_collection = self._byteify(fromjson['data_collection'])
+            self.jdk = fromjson['jdk']
+            self.jvm_options = fromjson['jvm_options']
+            self.data_collection =fromjson['data_collection']
             self.num_runs = fromjson['num_runs']
-            self.tag = self._byteify(fromjson['tag'])
+            self.tag = fromjson['tag']
             self.run_type = fromjson['run_type']
             self.properties = props(fromjson['props'])
             self.verbose = fromjson['verbose']
@@ -106,13 +107,19 @@ class spec_run:
             "props" :  self.properties.tojson()
         }
 
+    def _defHandle(msg):
+        print(msg)
 
-    def run(self, path = ""):
+    #handle = Any function that takes a single string argument.
+    #It can be used to intercept any output
+    #If set to None, then output will only be logged
+    def run(self, path = "", handle = _defHandle):
         if(not os.path.exists(self.jdk)):
             return 3
         if(path == ""):
             path = os.getcwd()
         if(not os.path.exists(os.path.join(path, "specjbb2015.jar"))):
+            handle('Failed to locate "specjbb2015.jar" in "{}"'.format(path))
             return 2
  #       orig = os.getcwd()
 #        os.chdir(path)
@@ -122,70 +129,203 @@ class spec_run:
             'distributed_sut' : self.distributed_sut,
             'multi' : self.run_multi
         }
-        ret = switch[self.run_type](path)
+        ret = switch[self.run_type](path, handle)
   #      os.chdir(orig)
         return ret
 
-    def _byteify(self, data):
-        # if this is a unicode string, return its string representation
-      #  #   return data.encode('utf-8')
-        # if this is a list of values, return list of byteified values
-        if isinstance(data, list) and len(data) == 1:
-            return self._byteify(data[0])
-        # if it's anything else, return it in its original form
-        return data
-
-    def run_composite(self, path):
-        opts = self._spec_opts()
+    def run_composite(self, path, handle):
+        cmd = '{} {} -jar {}/specjbb2015.jar -m COMPOSITE {}'.format(
+            self.jdk, self.jvm_options, path, self._spec_opts())
         for x in range(self.num_runs):
             result_dir = self._prerun(path)
-            #p = Popen([self.jdk, self.jvm_options, "-jar", "{}/specjbb2015.jar".format(path), "-m", "COMPOSITE", opts, "2>", "{}/composite.log".format(result_dir), "{}/composite.out".format(result_dir)])
-            #p.wait()
- #           spec = os.subprocess.Popen(['/usr/bin/java' "{}/specjbb2015.jar".format(path)])
-            os.system('{} {} -jar {}/specjbb2015.jar -m COMPOSITE {} 2> {}/composite.log > {}/composite.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
+            handle('Starting run number {}.'.format(x))
+            errout = open(os.path.join(result_dir, 'composite.out'), 'wb')
+            stdout = open(os.path.join(result_dir, 'composite.log'), 'wb')
+            p = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
+            while(p.poll() is None):
+                e = p.stderr.readline()
+                if(e != ''):
+                    errout.write(e)
+                    handle(e)
+                o = p.stdout.readline()
+                if(o != ''):
+                    stdout.write(o)
+                    handle(o)
+            errout.close()
+            stdout.close()
+            p.wait()
+
         return 0
 
-    def run_distributed_ctrl_txl(self, path):
+    def run_distributed_ctrl_txl(self, path, handle):
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
 
         #Check if ip responds here
+        pingcmd = 'ping -c 1 {}'.format(ctrl_ip)
+        FNULL = open(os.devnull, 'w')
+        ping = Popen(shlex.split(pingcmd), stderr=FNULL, stdout=FNULL)
+        exitcode = ping.wait()
+        FNULL.close()
+        if(exitcode != 0):
+            handle('ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
+            return 4
+
         opts = self._spec_opts()
         tx_opts = self._tx_opts()
         result_dir= self._prerun(path)
-        controller = Popen([self.jdk, self.jvm_options, "-m", "DISTCONTROLLER", opts, "2>", "{}/composite.log".format(result_dir), "{}/composite.log".format(result_dir)])
-        os.system('{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
+        cmd = '{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {}'.format(self.jdk, self.jvm_options, path, opts)
+        tx_procs = []
+        cont_std = open(os.path.join(result_dir, 'controller.log'), 'wb')
+        cont_err = open(os.path.join(result_dir, 'controller.out'), 'wb')
+        controller = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
+        #os.system('{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
         for g in range(self.properties.root['specjbb.group.count'].value):
             for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
                 ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
-                os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
+                cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={}'.format(self.jdk, self.jvm_options, path, tx_opts, g)
+                tx_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
+                                 open(os.path.join(result_dir, '{}.log'.format(ti_name)), 'wb'),
+                                 open(os.path.join(result_dir, '{}.out'.format(ti_name)), 'wb')])
+                #os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
+        while (controller.poll() is None):
+            e = controller.stderr.readline()
+            if (e != ''):
+                cont_err.write(e)
+                handle(e)
+            o = controller.stdout.readline()
+            if (o != ''):
+                cont_std.write(o)
+                handle(o)
+            for p in tx_procs:
+                if(p[0].poll() is None):
+                    e = p[0].stderr.readline()
+                    if (e != ''):
+                        p[2].write(e)
+                        handle(e)
+                    o = p[0].stdout.readline()
+                    if (o != ''):
+                        p[1].write(o)
+                        handle(o)
+        cont_err.close()
+        cont_std.close()
+        controller.wait()
+        for p in tx_procs:
+            p[0].kill()
+            p[1].close()
+            p[2].close()
         return 0
 
-    def distributed_sut(self, path):
+    def distributed_sut(self, path, handle):
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
-        #Check if ip responds here
+        # Check if ip responds here
+        pingcmd = 'ping -c 1 {}'.format(ctrl_ip)
+        FNULL = open(os.devnull, 'wb')
+        ping = Popen(shlex.split(pingcmd), stderr=FNULL, stdout=FNULL)
+        exitcode = ping.wait()
+        FNULL.close()
+        if (exitcode != 0):
+            handle('ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
+            return 4
         opts = self._tx_opts()
+        procs = []
         for g in range(self.properties.root['specjbb.group.count'].value):
-            os.system('java {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM Group{}.Backend.beJVM.log 2>&1 &'.format(self.jdk, self.jvm_options, path, opts, g, g, g))
+            be_name = 'beJVM Group{}.Backend.beJVM.log'.format(g)
+            cmd = '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(self.jdk, self.jvm_options, path, opts, g)
+            procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=STDOUT),
+                          open(os.path.join(path, be_name), 'wb')])
+            #os.system('java {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM Group{}.Backend.beJVM.log 2>&1 &'.format(self.jdk, self.jvm_options, path, opts, g, g, g))
 
+        dead = False
+        while not dead:
+            dead = True
+            for p in procs:
+                if(p[0].poll() is None):
+                    dead = False
+                    o = p[0].stdout.readline()
+                    if (o != ''):
+                        handle(o)
+                        p[1].write(o)
+        for p in procs:
+            p[0].wait()
+            p[1].close()
+
+        #Each process will continue until manually terminated.
         return 0
 
-    def run_multi(self, path):
+    def run_multi(self, path, handle):
         result_dir = self._prerun(path)
         opts = self._spec_opts()
         tx_opts = self._tx_opts()
         for x in range(self.num_runs):
-            os.system('{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, x, result_dir, result_dir))
+            cont_std = open(os.path.join(result_dir, 'controller.log'), 'wb')
+            cont_err = open(os.path.join(result_dir, 'controller.out'), 'wb')
+            cmd = '{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {}'.format(self.jdk, self.jvm_options, path, opts)
+            controller = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
+            tx_procs = []
+            be_procs = []
+            #os.system('{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, x, result_dir, result_dir))
             for g in range(self.properties.root['specjbb.group.count'].value):
                 for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
                     ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
-                    os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
+                    cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name)
+                    tx_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
+                                     open(os.path.join(path, '{}.log'.format(ti_name)), 'wb'),
+                                     open(os.path.join(path, '{}.out'.format(ti_name)), 'wb')])
+                    #os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
                 be_name = "{}{}.Backend.beJVM".format(result_dir, g)
-                os.system(
-                    '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM 2> {}.log > {}.out &'.format(self.jdk,
-                                                                                                             self.jvm_options,
+                cmd = '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(self.jdk,self.jvm_options,
                                                                                                              path, tx_opts,
-                                                                                                             g, be_name,
-                                                                                                             be_name))
+                                                                                                             g)
+                be_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
+                                     open(os.path.join(path, '{}.log'.format(be_name)), 'wb'),
+                                    open(os.path.join(path, '{}.out'.format(be_name)), 'wb')])
+
+            while (controller.poll() is None):
+                e = controller.stderr.readline()
+                if (e != ''):
+                    cont_err.write(e)
+                    handle(e)
+                o = controller.stdout.readline()
+                if (o != ''):
+                    cont_std.write(o)
+                    handle(o)
+                for p in tx_procs:
+                    if (p[0].poll() is None):
+                        e = p[0].stderr.readline()
+                        if (e != ''):
+                            p[2].write(e)
+                            handle(e)
+                        o = p[0].stdout.readline()
+                        if (o != ''):
+                            p[1].write(o)
+                            handle(o)
+                for p in be_procs:
+                    if (p[0].poll() is None):
+                        e = p[0].stderr.readline()
+                        if (e != ''):
+                            p[2].write(e)
+                            handle(e)
+                        o = p[0].stdout.readline()
+                        if (o != ''):
+                            p[1].write(o)
+                            handle(o)
+            cont_err.close()
+            cont_std.close()
+            controller.wait()
+            for p in tx_procs:
+                p[0].kill()
+                p[1].close()
+                p[2].close()
+            for p in be_procs:
+                p[0].kill()
+                p[1].close()
+                p[2].close()
+               # os.system(
+                #    '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM 2> {}.log > {}.out &'.format(self.jdk,
+               #                                                                                              self.jvm_options,
+                ##                                                                                             path, tx_opts,
+                #                                                                                             g, be_name,
+                #                                                                                             be_name))
 
 
         return 0
@@ -460,23 +600,24 @@ class props:
         #dict(zip(lambda x:{x.prop: x}, defaults))
         if(not fromjson is None):
             for p in fromjson['modified']:
-                self.root.update({p['prop'], p['value']})
+                self.root.update({p['prop'] : p['value']})
 
     def set(self, key, value):
         if(key in self.root and self.root[key].value_validator(value)):
             self.root[key].value = value
 
     def get_all(self):
-        return self.root.values()
+        return list(self.root.values())
 
     def get_modified(self):
-        return [x for x in self.root.values() if x.value != x.def_value]
+        return [x for x in list(self.root.values()) if isinstance(x, propitem) and x.value != x.def_value]
 
     def writeconfig(self, path):
         with open(path, 'w') as f:
             f.write("#SPECjbb config")
             for p in self.root.values():
-                p.write(f)
+                if( isinstance(p, propitem)):
+                    p.write(f)
             #f.writelines(map(lambda x:"{}={}".format(x.prop, x.value), filter(lambda x:x.value != x.def_value, self.dict.itervalues())))
 
     def tojson(self):

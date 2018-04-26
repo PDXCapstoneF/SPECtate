@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import curses
 import json
@@ -371,13 +373,37 @@ def run_config(stdscr):
     config, path = draw_get_config_path(stdscr)
     if (config is None):
         return
-    path = ""
+
+#    stdscr.clear()
+#    stdscr.refresh()
+#    height, width = stdscr.getmaxyx()
+#    cury = draw_title(stdscr)
+#    index = 0
+#    def _handle(msg):
+       # c = index % maxindex
+#        pad.addstr(0, 0, msg)
+       # if cury < maxy:
+       #     cury += 1
+#        pad.refresh(0, 0, 20, xoffset, 20, width - xoffset)
+        #log[index % maxindex] = msg
+
+        #index += 1
+
+    #starty = y
+    #maxy = height - 3
+    #log = [height - y - 3]
+    #maxindex = len(log)
+
+#    pad = curses.newpad(height, width - 1 - xoffset)
+
     stdscr.keypad(0)
     curses.echo()
     curses.nocbreak()
     curses.endwin()
     for r in config.runs:
-        result =r.run(path)
+        #draw_status_bar(stdscr, "Starting run '{}'".format(r.tag))
+
+        result = r.run(path)
         if(result == 2):
             curses.noecho()
             curses.cbreak()
