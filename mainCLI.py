@@ -132,8 +132,8 @@ def do_spectate(arguments):
     rs = run_generator.RunGenerator(**args)
     for r in rs.runs:
         s = benchmark_run.SpecJBBRun(**r)
-        if not s.run():
-            return False
+        
+        s.run()
 
 # dictionary of runnables
 # these are functions that take arguments from the
