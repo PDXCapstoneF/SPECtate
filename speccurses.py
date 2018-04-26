@@ -2,6 +2,9 @@ import os
 import curses
 import json
 import os.path
+from simplejson import JSONDecodeError
+
+import objects
 from objects import spec_decoder, spec_encoder, spec_config, spec_run
 
 TAB = 9
@@ -49,8 +52,8 @@ def select_from(stdscr, x, y, value, list):
         elif(k == curses.KEY_DOWN and idx < len(list) - 1):
             idx += 1
         value = list[idx]
-        pad.addstr(0,0, value)
-        stdscr.move(y, x + len(value))
+        pad.addstr(0,0, str(value))
+        stdscr.move(y, x + len(str(value)))
         pad.refresh(0, 0, y, x, y, width - x)
         k = stdscr.getch()
     return value
@@ -93,7 +96,7 @@ def input_text(stdscr, x, y, value, validator):
         stdscr.move(y, x + idx)
         pad.refresh(0,0, y,x, y, width - x)
         k = stdscr.getch()
-    return "".join(value)
+    return str("".join(value))
 
 #Saves a config file and displays whether or not it was successful
 def draw_save_config(stdscr, config, path):
@@ -138,10 +141,13 @@ def draw_edit_props(stdscr, p):
         elif k == ENTER:
             if(p[index].valid_opts != []):
                 value = select_from(stdscr, xoffset + startx, cury, str(p[index].value), p[index].valid_opts)
-                p[index].value = p[index].convert(value)
+                p[index].value = value
             else:
-                value = input_text(stdscr, xoffset + startx, cury, p[index].value, lambda x:p[index].validator(p[index].convert(x)))
-                p[index].value = p[index].convert(value)
+                value = input_text(stdscr, xoffset + startx, cury, p[index].value, p[index].input_validator)
+                if(not p[index].value_validator(value)):
+                    draw_show_message(stdscr, p[index].help_text)
+                else:
+                    p[index].value = value
             pad, startx = pad_props(stdscr, p)
 
         _draw()
@@ -170,14 +176,31 @@ def draw_edit_run(stdscr, runinfo):
         elif k == curses.KEY_UP and cury > y:
             cury = cury - 1
         elif k == ENTER:
-            if(array[cury - y] == 'run_type'):
-                value = select_from(stdscr, xoffset + startx, cury,  getattr(runinfo, array[cury - y]), run_types)
-                setattr(runinfo, array[cury - y], value)
-            elif(array[cury - y] == 'properties'):
+            name = array[cury - y]
+            if (name == 'verbose' or name == 'skip_report' or name == 'ignore_kit_validation'):
+                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [True, False])
+                setattr(runinfo, name, value)
+            elif (name == 'report_level'):
+                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [0,1,2])
+                setattr(runinfo, name, value)
+            elif(name == 'run_type'):
+                value = select_from(stdscr, xoffset + startx, cury,  getattr(runinfo, name), run_types)
+                setattr(runinfo, name, value)
+            elif(name == 'properties'):
                 draw_edit_props(stdscr, runinfo.properties.get_all())
+            elif (name == 'jdk'):
+                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name),
+                                   lambda x: True)  # start editing at end of value
+                if(not os.path.exists(value)):
+                    draw_show_message(stdscr, "Warning: jdk path not found")
+                setattr(runinfo, name, value)
+            elif(name == 'num_runs' or name == 'numa_nodes'):
+                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name),
+                                   objects.number_validator)  # start editing at end of value
+                setattr(runinfo, name, value)
             else:
-                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, array[cury - y]), lambda x:True) #start editing at end of value
-                setattr(runinfo, array[cury - y], value)
+                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name), lambda x:True) #start editing at end of value
+                setattr(runinfo, name, value)
 
         _draw()
         k = stdscr.getch()
@@ -318,8 +341,12 @@ def draw_get_config_path(stdscr):
         if(True): #do_validate(({'<config>' : path}))):
             config =load_config(path)
             if(config is None):
+                import pdb
+                pdb.set_trace()
                 draw_show_message(stdscr, "Error loading config file")
             elif(not isinstance(config, spec_config)):
+                import pdb
+                pdb.set_trace()
                 draw_show_message(stdscr, "Invalid config file format")
             else:
                 return config, path
@@ -563,7 +590,9 @@ def load_config(path):
     try:
         with open(path, 'r') as f:
             return  json.load(f, cls=spec_decoder)
-    except:
+    except JSONDecodeError:
+        import pdb
+        pdb.set_trace()
         return None
 
 
