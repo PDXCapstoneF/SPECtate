@@ -5,11 +5,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
-from multiListBox import MultiColumnListbox
-import pprint
+from gui.multiListBox import MultiColumnListbox
 import mainCLI as cli
-from functools import partial
-
 
 with open("properties.json") as properties_file:
     properties = json.load(properties_file)
@@ -21,7 +18,6 @@ class MainWindow(Frame):
         self.master.title(properties["program_name"])
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.master.minsize(width=properties["main_window"]["width"], height=properties["main_window"]["height"])
-
 
         menubar = Menu(self.master)
 
@@ -77,7 +73,6 @@ class MainWindow(Frame):
 
     def create_group(self):
         # create a group
-        pass
 
     def save_group(self):
         # save stuff
@@ -104,8 +99,8 @@ def return_run_types():
         parsed = json.load(json_file)
         return [parsed.keys()]
 
+
 if __name__ == '__main__':
-    #print(run_window())
     master = Tk()
     MainWindow()
     master.mainloop()
