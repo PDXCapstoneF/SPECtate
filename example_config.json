@@ -271,7 +271,7 @@
 
   "RunList" : [
     {
-      "Tag" : "Example Run",
+      "Tag" : "specjbb",
       "RunType": "LOADLEVEL",
       "Kit Version": "RC3",
       "RTSTART" : 30,
