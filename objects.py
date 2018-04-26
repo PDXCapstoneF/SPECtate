@@ -140,9 +140,9 @@ class spec_run:
         for x in range(self.num_runs):
             result_dir = self._prerun(path)
             #p = Popen([self.jdk, self.jvm_options, "-jar", "{}/specjbb2015.jar".format(path), "-m", "COMPOSITE", opts, "2>", "{}/composite.log".format(result_dir), "{}/composite.out".format(result_dir)])
-            p.wait()
+            #p.wait()
  #           spec = os.subprocess.Popen(['/usr/bin/java' "{}/specjbb2015.jar".format(path)])
-            #os.system('{} {} -jar {}/specjbb2015.jar -m COMPOSITE {} 2> {}/composite.log > {}/composite.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
+            os.system('{} {} -jar {}/specjbb2015.jar -m COMPOSITE {} 2> {}/composite.log > {}/composite.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
         return 0
 
     def run_distributed_ctrl_txl(self, path):
