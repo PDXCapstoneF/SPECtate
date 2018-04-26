@@ -15,5 +15,4 @@ class TestRunGenerator(unittest.TestCase):
 
         for run in rg.runs:
             self.assertTrue(run)
-            print(run)
 
