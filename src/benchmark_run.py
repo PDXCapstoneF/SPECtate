@@ -130,22 +130,22 @@ class SpecJBBRun:
 
         self.log.info(
                 "generating {} groups, each with {} transaction injectors"
-                .format(self.props.backends["count"], self.props.injectors["count"]))
+                .format(self.backends["count"], self.injectors["count"]))
 
-        for _ in range(self.props.backends["count"]):
+        for _ in range(self.backends["count"]):
             group_id = uuid4()
             backend_jvm_id = uuid4()
             self.log.debug("constructing group {}".format(group_id))
-            yield TaskRunner(*self.props.backend_run_args(),
+            yield TaskRunner(*self.backend_run_args(),
                 '-G={}'.format(group_id),
                 '-J={}'.format(backend_jvm_id))
 
             self.log.debug("constructing injectors for group {}".format(group_id))
 
-            for _ in range(self.props.injectors["count"]):
+            for _ in range(self.injectors["count"]):
                 ti_jvm_id = uuid4()
                 self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
-                yield TaskRunner(*self.props.injector_run_args(),
+                yield TaskRunner(*self.injector_run_args(),
                     '-G={}'.format(group_id),
                     '-J={}'.format(ti_jvm_id))
 
@@ -153,6 +153,7 @@ class SpecJBBRun:
         # setup jvms
         # we first need to setup the controller
         c = TaskRunner(*self.controller_run_args())
+        self.dump()
 
         if self.controller["type"] is "composite":
             self.log.info("begin benchmark")
