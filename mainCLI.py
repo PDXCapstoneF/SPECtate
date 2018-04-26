@@ -15,6 +15,7 @@ Options:
 import json
 import os
 import logging
+import sys
 from subprocess import call
 from shutil import copy, rmtree
 
@@ -106,7 +107,20 @@ def do_validate(arguments):
     """
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
-    return validate.validate(args) is None
+
+    try:
+        if validate.validate_blackbox(args) is not None:
+            return
+    except Exception as e:
+        print(e)
+
+    print("attempting to validate SPECtate configuration...")
+
+    try:
+        return validate.validate(args) is None
+    except Exception as e:
+        return e
+    return True
 
 def do_dialogue(arguments):
     dialogue.dialogue()
@@ -135,5 +149,5 @@ if __name__ == "__main__":
         if arguments[key]:
             r = func(arguments)
 
-            if r is not None:
-                exit(r)
+            if not r or r is not None:
+                sys.exit(r)
