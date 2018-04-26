@@ -32,7 +32,17 @@ class MainWindow(Frame):
 
     def create_group(self):
         # create stuff
-        pass
+        new_run_window = Tk()
+        new_run_window.title("Choose Runtype")
+        new_run_window.minsize(width=25, height=20)
+        choice = []
+        runtypes = ["HBIR", "HBIR_RT", "PRESET", "LOADLEVEL"]
+        for pick in runtypes:
+            var = IntVar()
+            chk = Checkbutton(new_run_window, text=pick, variable=var)
+            chk.pack(anchor='w', expand=NO, padx=60)
+            choice.append(var)
+        Button(new_run_window, text='Confirm').pack(anchor='s')
 
     def save_group(self):
         # save stuff
