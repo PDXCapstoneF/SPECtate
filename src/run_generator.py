@@ -16,6 +16,6 @@ class RunGenerator:
                 'java': None, # TODO: this needs to come from somewhere
                 'jar': None, # TODO: this needs to come from somewhere
                 'invocations': "{java} {spec}" # TODO: where should this come from?
-            }):
+            })
 
         pass
