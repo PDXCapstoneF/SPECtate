@@ -27,5 +27,5 @@ class RunGenerator:
                 'injectors': injectors,
                 'java': template["java"],
                 'jar': template["jar"],
-                'invocations': "{java} {spec}" # TODO: where should this come from?
+                'invocations': template["invocations"],
             })
