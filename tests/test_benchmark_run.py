@@ -11,28 +11,8 @@ class TestBenchmarkRun(unittest.TestCase):
                 "Arg1",
                 "Arg2",
                 ],
-            "annotations": {
-                "Arg1": "This is the first argument",
-                "Arg2": "This is the second argument",
-                },
-            "types": {
-                "Arg1": "string",
-                "Arg2": "int",
-                },
-            "translations": {
-                "Arg1": "com.spec.prop1",
-                },
             "default_props": {},
-            }
-
-    valid_tate_props = {
-            "backends": 2,
-            "injectors": 14,
-            "jvm": {
-                "path": "/path/to/jvm",
-                "options": [], # to be condensed into a string later
-                },
-            "jar": "/path/to/jar",
+            "invocations": "{java} -XX:-AllowUserSignalHandlers {spec}",
             }
 
     def test_run_with_empty_config_gives_exception(self):
@@ -40,10 +20,10 @@ class TestBenchmarkRun(unittest.TestCase):
             r = SpecJBBRun()
 
     def test_run_with_valid_configuration(self):
-        SpecJBBRun(props=self.valid_tate_props, **self.valid_props)
+        SpecJBBRun(**self.valid_props)
 
     def test_valid_run_can_dump_info(self):
-        r = SpecJBBRun(props=self.valid_tate_props, **self.valid_props)
+        r = SpecJBBRun(**self.valid_props)
         with testfixtures.LogCapture() as l:
             r.dump()
             # need to have some actual logging output
@@ -51,40 +31,37 @@ class TestBenchmarkRun(unittest.TestCase):
 
 class TestTopologyConfiguration(unittest.TestCase):
     valid_props = [
-            {
+            { # multijvm run with counts for each
                 "backends": 2,
                 "injectors": 4,
-                "controller": ["arg1", "arg2"],
-                "jvm": "java",
-                "jar": "env/Main.jar",
-                },
-            {
-                "backends": {
-                    "count": 2,
+                "controller": {
+                    "type": "multi",
                     "options": ["arg1", "arg2"],
                     },
-                "injectors": 4,
-                "controller": ["arg1", "arg2"],
-                "jvm": "java",
+                "java": "java",
                 "jar": "env/Main.jar",
                 },
-            {
+            { # composite run with arguments
+                "controller": {
+                    "type": "composite",
+                    "options": ["arg1", "arg2"],
+                    },
+                "java": "java",
+                "jar": "env/Main.jar",
+                },
+            { # assumed multijvm
                 "backends": 2,
                 "injectors": {
                     "count": 4,
                     "options": ["arg1", "arg2"],
                     },
-                "controller": ["arg1", "arg2"],
-                "jvm": "java",
+                "controller": {
+                    "options": ["arg1", "arg2"],
+                    },
+                "java": "java",
                 "jar": "env/Main.jar",
                 },
-            {
-                "backends": 2,
-                "injectors": 4,
-                "jvm": "java",
-                "jar": "env/Main.jar",
-                },
-            {
+            { # assumed multijvm
                 "backends": 2,
                 "injectors": 4,
                 "jvm": {
@@ -98,16 +75,16 @@ class TestTopologyConfiguration(unittest.TestCase):
     invalid_props = [
             {
                 "injectors": 4,
-                "jvm": "java",
+                "java": "java",
                 "jar": "env/Main.jar"
                 },
             {
                 "backends": 4,
-                "jvm": "java",
+                "java": "java",
                 "jar": "env/Main.jar"
                 },
-
             ]
+
     def test_valid_props_work(self):
         for valid in self.valid_props:
             TopologyConfiguration(**valid)
@@ -121,7 +98,10 @@ class TestTopologyConfiguration(unittest.TestCase):
         t = TopologyConfiguration(**{
             "backends": 2,
             "injectors": 4,
-            "jvm": "java",
+            "controller": {
+                "options": ["arg1", "arg2"],
+                },
+            "java": "java",
             "jar": "env/Main.jar",
             })
 
