@@ -271,19 +271,21 @@
 
   "RunList" : [
     {
-      "Tag" : "specjbb",
-      "RunType": "LOADLEVEL",
-      "Kit Version": "RC3",
-      "RTSTART" : 30,
-      "JDK": "jdk.8-u121",
-      "Duration Min" : 30,
-      "Duration Max" : 70,
-      "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-      "NUMA Nodes": 4,
-      "Data Collection": "NONE",
-      "T1" : 154,
-      "T2" :  45,
-      "T3" :  23
+      "template_type" : "LOADLEVEL",
+      "args" : {
+        "Tag" : "specjbb",
+        "Kit Version": "RC3",
+        "RTSTART" : 30,
+        "JDK": "jdk.8-u121",
+        "Duration Min" : 30,
+        "Duration Max" : 70,
+        "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+        "NUMA Nodes": 4,
+        "Data Collection": "NONE",
+        "T1" : 154,
+        "T2" :  45,
+        "T3" :  23
+      }
     }
   ]
 }
