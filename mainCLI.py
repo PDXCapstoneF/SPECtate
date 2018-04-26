@@ -25,6 +25,7 @@ from docopt import docopt
 # source imports
 import dialogue
 from src import validate
+from src import run_generator
 from src import benchmark_run
 
 
@@ -128,8 +129,11 @@ def do_dialogue(arguments):
 def do_spectate(arguments):
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
-    s = benchmark_run.SpecJBBRun(**args)
-    return s.run()
+    rs = run_generator.RunGenerator(**args)
+    for r in rs.runs:
+        s = benchmark_run.SpecJBBRun(**r)
+        if not s.run():
+            return False
 
 # dictionary of runnables
 # these are functions that take arguments from the
