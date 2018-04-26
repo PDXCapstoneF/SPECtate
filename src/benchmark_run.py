@@ -30,6 +30,22 @@ class SpecJBBRun:
     """
     Does a run!
     """
+    def __init__(self, 
+            controller=None, 
+            backends=None, 
+            injectors=None,
+            java=None, 
+            jar=None, 
+            invocations="{java} {spec}"):
+        if None in [java, jar, invocations] or not isinstance(jar, str):
+            raise InvalidRunConfigurationException
+
+        self.jar = jar
+        self.run_id = uuid4()
+        self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
+
+        self.__set_java__(java)
+        self.__set_topology__(controller, backends, injectors)
 
     def __set_java__(self, java):
         """
@@ -65,10 +81,13 @@ class SpecJBBRun:
         if controller is None:
             self.controller = {
                 "type": "composite",
-                "options": []
+                "options": ["-m", "COMPOSITE"]
                 }
         else:
             self.controller = controller
+
+            # TODO: ensure the right SPECjbb run arguments are added to "options"
+
 
         if isinstance(backends, int):
             self.backends = {
@@ -77,10 +96,12 @@ class SpecJBBRun:
                 }
         elif isinstance(backends, dict):
             self.backends = backends
+
+            # TODO: ensure the right SPECjbb run arguments are added to "options"
         elif backends is None:
             self.backends = {
                     "count": 1,
-                    "options": []
+                    "options": ["-m", "BACKEND"]
                 }
         else:
             raise InvalidRunConfigurationException("'backends' was not an integer or dict")
@@ -92,6 +113,8 @@ class SpecJBBRun:
             }
         elif isinstance(injectors, dict):
             self.injectors = injectors
+
+            # TODO: ensure the right SPECjbb run arguments are added to "options"
         elif injectors is None:
             self.injectors = {
                     "count": 1,
@@ -100,25 +123,11 @@ class SpecJBBRun:
         else:
             raise InvalidRunConfigurationException("'injectors' was not an integer or dict")
 
-    def __init__(self, 
-            controller=None, 
-            backends=None, 
-            injectors=None,
-            java=None, 
-            jar=None, 
-            invocations="{java} {spec}"):
-        if None in [java, jar, invocations] or not isinstance(jar, str):
-            raise InvalidRunConfigurationException
-
-        self.jar = jar
-        self.run_id = uuid4()
-        self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
-
-        self.__set_java__(java)
-        self.__set_topology__(controller, backends, injectors)
-
 
     def _generate_tasks(self):
+        if self.controller["type"] is "composite":
+            return
+
         self.log.info(
                 "generating {} groups, each with {} transaction injectors"
                 .format(self.props.backends["count"], self.props.injectors["count"]))
@@ -144,6 +153,13 @@ class SpecJBBRun:
         # setup jvms
         # we first need to setup the controller
         c = TaskRunner(*self.props.controller_run_args())
+
+        if self.composite["type"] is "composite":
+            self.log.info("begin benchmark")
+            c.run()
+            self.log.info("done")
+            return
+
         c.start()
 
         tasks = [ task for task in self._generate_tasks() ]
@@ -152,11 +168,11 @@ class SpecJBBRun:
         self.dump()
 
         # run benchmark
-        # TODO: handle case for composite run, w/ 1 jvm
         self.log.info("begin benchmark")
 
         pool.map(do, tasks)
         c.stop()
+        self.log.info("done")
 
     def dump(self, level=logging.DEBUG):
         """
