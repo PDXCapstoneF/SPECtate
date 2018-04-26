@@ -32,15 +32,14 @@ class MainWindow(Frame):
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
-        self.run_window()
-        # filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.run_window)
+        # Doesn't work yet.
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][8], command='')
         filemenu.add_separator()
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][9], command='')
-
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
@@ -56,25 +55,24 @@ class MainWindow(Frame):
 
         # Publish Menu
         self.master.config(menu=menubar)
-
         list_group = MultiColumnListbox()
 
-    def run_window(self):
-        run_types = return_run_types()[0]
-
-        print(run_types)
-        main = Toplevel(self)
-        main.grid()
-
-        v = StringVar()
-        v.set("L")  # initialize
-        for key in run_types:
-            b = Radiobutton(main, text=key,
-                            variable=v, value=key)
-            b.pack(anchor=W)
-        my_button = Button(main, text="Submit", command='')
-        my_button.pack()
-        # my_button.grid(5, column=1)
+    # def run_window(self):
+    #     run_types = return_run_types()[0]
+    #
+    #     print(run_types)
+    #     main = Toplevel(self)
+    #     main.grid()
+    #
+    #     v = StringVar()
+    #     v.set("L")  # initialize
+    #     for key in run_types:
+    #         b = Radiobutton(main, text=key,
+    #                         variable=v, value=key)
+    #         b.pack(anchor=W)
+    #     my_button = Button(main, text="Submit", command='')
+    #     my_button.pack()
+    #     # my_button.grid(5, column=1)
 
 
     def create_group(self):
