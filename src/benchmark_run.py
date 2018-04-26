@@ -11,87 +11,16 @@ from src.task_runner import TaskRunner
 log = logging.getLogger(__name__)
 
 class InvalidRunConfigurationException(Exception):
-    pass
+    def __init__(self, msg="Run was invalid"):
+        self.msg = msg
 
-class TopologyConfiguration:
-    def _full_options(self, options_dict):
-        return [self.jvm["path"], "-jar", self.jar] + self.jvm["options"] + options_dict["options"]
-
-    @staticmethod
-    def from_dict(props):
-        if isinstance(props, TopologyConfiguration):
-            return props
-        elif isinstance(props, dict):
-            return TopologyConfiguration(**props)
-        else:
-            raise Exception
-
-    def __init__(self, controller=None, backends=None, injectors=None, jvm=None, jar=None):
-        if None in [backends, injectors, jvm, jar] or not isinstance(jar, str):
-            raise Exception
-
-        self.jar = jar
-
-        if isinstance(jvm, str):
-            self.jvm = {
-                    "path": jvm,
-                    "options": []
-                    }
-        elif isinstance(jvm, list):
-            self.jvm = {
-                    "path": jvm[0],
-                    "options": jvm[1:],
-                    }
-        elif isinstance(jvm, dict):
-            self.jvm = jvm
-        else:
-            raise Exception
-
-        if controller is None:
-            self.controller = {
-                "count": 1,
-                "options": ["-m", "MULTICONTROLLER"],
-                }
-        elif isinstance(controller, dict):
-            self.controller = controller
-        elif isinstance(controller, list):
-            self.controller = {
-                    "count": 1,
-                    "options": ["-m", "MULTICONTROLLER"] + controller,
-                }
-
-        if isinstance(backends, int):
-            self.backends = {
-                "count": backends,
-                "options": ["-m", "BACKEND"],
-                }
-        elif isinstance(backends, dict):
-            self.backends = backends
-        else:
-            raise Exception
-
-        if isinstance(injectors, int):
-            self.injectors = {
-                    "count": injectors,
-                    "options": ["-m", "TXINJECTOR"],
-            }
-        elif isinstance(injectors, dict):
-            self.injectors = injectors
-        else:
-            raise Exception
-
-    def controller_run_args(self):
-        return self._full_options(self.controller)
-
-    def backend_run_args(self):
-        return self._full_options(self.backends)
-
-    def injector_run_args(self):
-        return self._full_options(self.injectors)
+    def __str__(self):
+        return self.msg
 
 def do(task):
     """
     Runs a given task synchronously.
+    This needs to be pickled for Pool.map, which is why it's hanging out here.
     """
     log.debug("starting task {}".format(task))
     task.run()
@@ -102,23 +31,92 @@ class SpecJBBRun:
     Does a run!
     """
 
+    def __set_java__(self, java):
+        """
+        Sets the internal java dictionary based on what's passed into __init__.
+        """
+        if isinstance(java, str):
+            self.java = {
+                    "path": java,
+                    "options": []
+                    }
+        elif isinstance(java, list):
+            self.java = {
+                    "path": java[0],
+                    "options": java[1:],
+                    }
+        elif isinstance(java, dict):
+            self.java = java
+        else:
+            raise InvalidRunConfigurationException("'java' was not a string, list, or dictionary")
+
+    def __set_topology__(self, controller, backends, injectors):
+        """
+        Sets the topology dictionaries based on what's passed into __init__.
+        Will also raise exceptions if we don't get what we're expecting.
+        """
+        if controller is None and backends is None and injectors is None:
+            raise InvalidRunConfigurationException("no topology specified")
+        if not isinstance(controller, dict):
+            raise InvalidRunConfigurationException("'controller' was not a dict")
+        if "type" not in controller:
+            raise InvalidRunConfigurationException("'type' wasn't specified in 'controller'")
+
+        if controller is None:
+            self.controller = {
+                "type": "composite",
+                "options": []
+                }
+        else:
+            self.controller = controller
+
+        if isinstance(backends, int):
+            self.backends = {
+                "count": backends,
+                "options": ["-m", "BACKEND"],
+                }
+        elif isinstance(backends, dict):
+            self.backends = backends
+        elif backends is None:
+            self.backends = {
+                    "count": 1,
+                    "options": []
+                }
+        else:
+            raise InvalidRunConfigurationException("'backends' was not an integer or dict")
+
+        if isinstance(injectors, int):
+            self.injectors = {
+                    "count": injectors,
+                    "options": ["-m", "TXINJECTOR"],
+            }
+        elif isinstance(injectors, dict):
+            self.injectors = injectors
+        elif injectors is None:
+            self.injectors = {
+                    "count": 1,
+                    "options": []
+                }
+        else:
+            raise InvalidRunConfigurationException("'injectors' was not an integer or dict")
+
     def __init__(self, 
-            args=None,
-            annotations=None,
-            types=None,
-            translations=None,
-            default_props=None,
-            props=None):
-        if types is None or props is None or args is None:
+            controller=None, 
+            backends=None, 
+            injectors=None,
+            java=None, 
+            jar=None, 
+            invocations="{java} {spec}"):
+        if None in [java, jar, invocations] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
-        self.args = args
-        self.types = types
-        self.translations = translations
-        self.props = TopologyConfiguration.from_dict(props)
-
+        self.jar = jar
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
+
+        self.__set_java__(java)
+        self.__set_topology__(controller, backends, injectors)
+
 
     def _generate_tasks(self):
         self.log.info(
@@ -154,6 +152,7 @@ class SpecJBBRun:
         self.dump()
 
         # run benchmark
+        # TODO: handle case for composite run, w/ 1 jvm
         self.log.info("begin benchmark")
 
         pool.map(do, tasks)
@@ -165,3 +164,15 @@ class SpecJBBRun:
         """
 
         self.log.log(level, vars(self))
+
+    def _full_options(self, options_dict):
+        return [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict["options"]
+
+    def controller_run_args(self):
+        return self._full_options(self.controller)
+
+    def backend_run_args(self):
+        return self._full_options(self.backends)
+
+    def injector_run_args(self):
+        return self._full_options(self.injectors)
