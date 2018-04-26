@@ -12,9 +12,9 @@ class RunGenerator:
 
             if "default_props" in template:
                 # and let's peek for injector count (specjbb.txi.pergroup.count)
-                injectors = props.get("specjbb.txi.pergroups.count", 1)
+                injectors = template["default_props"].get("specjbb.txi.pergroups.count", 1)
                 # and let's peek for backend count (specjbb.group.count)
-                backends = props.get("specjbb.group.count", 1)
+                backends = template["default_props"].get("specjbb.group.count", 1)
             else:
                 injectors = 1
                 backends = 1
