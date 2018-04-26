@@ -44,7 +44,7 @@ TemplateSchema = Schema({
     Optional("types"): {
         is_stringy: is_stringy,
         },
-    Optional("invocations"): {
+    Optional("invocations", default={}): {
         is_stringy: is_stringy,
         },
     })
