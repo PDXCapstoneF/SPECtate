@@ -39,13 +39,11 @@ class SpecJBBRun:
                  backends=None,
                  injectors=None,
                  java=None,
-                 jar=None,
-                 invocations="{java} {spec}"):
-        if None in [java, jar, invocations] or not isinstance(jar, str):
+                 jar=None):
+        if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
         self.jar = jar
-        self.invocations = invocations
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
@@ -89,7 +87,7 @@ class SpecJBBRun:
         if controller is None:
             self.controller = {
                 "type": "composite",
-                "options": ["-m", "COMPOSITE"],
+                "options": [],
                 "jvm_opts": [],
             }
         else:
@@ -100,7 +98,8 @@ class SpecJBBRun:
         if isinstance(backends, int):
             self.backends = {
                 "count": backends,
-                "options": ["-m", "BACKEND"],
+                "type": "backend",
+                "options": [],
                 "jvm_opts": [],
             }
         elif isinstance(backends, dict):
@@ -110,7 +109,8 @@ class SpecJBBRun:
         elif backends is None:
             self.backends = {
                 "count": 1,
-                "options": ["-m", "BACKEND"]
+                "type": "backend",
+                "options": [],
                 "jvm_opts": [],
             }
         else:
@@ -120,7 +120,8 @@ class SpecJBBRun:
         if isinstance(injectors, int):
             self.injectors = {
                 "count": injectors,
-                "options": ["-m", "TXINJECTOR"],
+                "type": "txinjector",
+                "options": [],
                 "jvm_opts": [],
             }
         elif isinstance(injectors, dict):
@@ -130,7 +131,8 @@ class SpecJBBRun:
         elif injectors is None:
             self.injectors = {
                 "count": 1,
-                "options": []
+                "type": "txinjector",
+                "options": [],
                 "jvm_opts": [],
             }
         else:
@@ -198,7 +200,17 @@ class SpecJBBRun:
         self.log.log(level, vars(self))
 
     def _full_options(self, options_dict):
-        return [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict.get("options", [])
+        """
+        Returns a list of arguments, formatted for the specific JVM invocation.
+        """
+        self.log.debug("full options being generated from: {}".format(options_dict))
+
+        java = [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict.get("jvm_opts", [])
+        spec = ["-m", options_dict["type"].upper()] + options_dict.get("options", [])
+
+        self.log.debug("java: {}, spec: {}".format(java, spec))
+
+        return java + spec
 
     def controller_run_args(self):
         return self._full_options(self.controller)

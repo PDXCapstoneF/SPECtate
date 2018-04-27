@@ -27,5 +27,4 @@ class RunGenerator:
                 'injectors': injectors,
                 'java': template["java"],
                 'jar': template["jar"],
-                'invocations': template["invocations"],
             })
