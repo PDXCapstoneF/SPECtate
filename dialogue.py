@@ -26,6 +26,12 @@ def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x : x[0]):
         print("{}: {}".format(key, value))
 
+def tag_in_runlist(tag, run_list):
+    """
+    Returns True if a Run with tag `tag` is in the list.
+    """
+    return any(map(lambda run : run['args']['Tag'] == tag, run_list))
+
 # Level-one layer of dialogue. All functions take run_dict, runtype_dict as
 # arguments so that they can be called homogeneously from a dictionary in
 # `dialogue`. All functions must, in turn, *return* a tuple (run_dict,
