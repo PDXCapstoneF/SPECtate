@@ -43,6 +43,12 @@ def print_all_runs(run_list, runtype_dict):
         print()
     return (run_list, runtype_dict)
 
+def create_run(run_list, runtype_dict):
+    """
+    Creates a new run and adds it to the RunList. Checks for unique tag.
+    """
+    return (run_list, runtype_dict)
+
 def error(run_dict, runtype_dict):
 
     print('Invalid input.')
@@ -63,11 +69,13 @@ def dialogue():
         json_filename = default_json
 
     function_dict = {
-        'print' : print_all_runs,
+        'print all' : print_all_runs,
+        'create run' : create_run,
     }
 
     option_description_dict = {
-        'print' : 'Print all runs',
+        'print all' : 'Print all runs',
+        'create run' : 'Create a run'
     }
 
     try:
