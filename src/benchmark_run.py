@@ -45,6 +45,7 @@ class SpecJBBRun:
             raise InvalidRunConfigurationException
 
         self.jar = jar
+        self.invocations = invocations
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
@@ -88,7 +89,8 @@ class SpecJBBRun:
         if controller is None:
             self.controller = {
                 "type": "composite",
-                "options": ["-m", "COMPOSITE"]
+                "options": ["-m", "COMPOSITE"],
+                "jvm_opts": [],
             }
         else:
             self.controller = controller
@@ -99,6 +101,7 @@ class SpecJBBRun:
             self.backends = {
                 "count": backends,
                 "options": ["-m", "BACKEND"],
+                "jvm_opts": [],
             }
         elif isinstance(backends, dict):
             self.backends = backends
@@ -108,6 +111,7 @@ class SpecJBBRun:
             self.backends = {
                 "count": 1,
                 "options": ["-m", "BACKEND"]
+                "jvm_opts": [],
             }
         else:
             raise InvalidRunConfigurationException(
@@ -117,6 +121,7 @@ class SpecJBBRun:
             self.injectors = {
                 "count": injectors,
                 "options": ["-m", "TXINJECTOR"],
+                "jvm_opts": [],
             }
         elif isinstance(injectors, dict):
             self.injectors = injectors
@@ -126,6 +131,7 @@ class SpecJBBRun:
             self.injectors = {
                 "count": 1,
                 "options": []
+                "jvm_opts": [],
             }
         else:
             raise InvalidRunConfigurationException(
