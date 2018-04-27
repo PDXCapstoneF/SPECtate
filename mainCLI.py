@@ -4,7 +4,6 @@ Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
-    mainCLI.py spectate [options] <config>
     mainCLI.py (-h | --help)
     mainCLI.py --version
 
@@ -126,7 +125,7 @@ def do_validate(arguments):
 def do_dialogue(arguments):
     dialogue.dialogue()
 
-def do_spectate(arguments):
+def do_run(arguments):
     with open(arguments['<config>'], 'r') as f:
         args = json.loads(f.read())
     rs = run_generator.RunGenerator(**args)
@@ -142,7 +141,6 @@ do = {
         'run': do_run,
         'validate': do_validate,
         'dialogue' : do_dialogue,
-        'spectate': do_spectate,
         }
 
 if __name__ == "__main__":
