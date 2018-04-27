@@ -10,12 +10,14 @@ from src.task_runner import TaskRunner
 
 log = logging.getLogger(__name__)
 
+
 class InvalidRunConfigurationException(Exception):
     def __init__(self, msg="Run was invalid"):
         self.msg = msg
 
     def __str__(self):
         return self.msg
+
 
 def do(task):
     """
@@ -26,23 +28,25 @@ def do(task):
     task.run()
     log.debug("finished task {}".format(task))
 
+
 class SpecJBBRun:
     """
     Does a run!
     """
-    def __init__(self, 
-            controller=None, 
-            backends=None, 
-            injectors=None,
-            java=None, 
-            jar=None, 
-            invocations="{java} {spec}"):
+
+    def __init__(self,
+                 controller=None,
+                 backends=None,
+                 injectors=None,
+                 java=None,
+                 jar=None,
+                 invocations="{java} {spec}"):
         if None in [java, jar, invocations] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
         self.jar = jar
         self.run_id = uuid4()
-        self.log = logging.LoggerAdapter(log, { 'run_id': self.run_id })
+        self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
         self.__set_java__(java)
         self.__set_topology__(controller, backends, injectors)
@@ -53,18 +57,19 @@ class SpecJBBRun:
         """
         if isinstance(java, str):
             self.java = {
-                    "path": java,
-                    "options": []
-                    }
+                "path": java,
+                "options": []
+            }
         elif isinstance(java, list):
             self.java = {
-                    "path": java[0],
-                    "options": java[1:],
-                    }
+                "path": java[0],
+                "options": java[1:],
+            }
         elif isinstance(java, dict):
             self.java = java
         else:
-            raise InvalidRunConfigurationException("'java' was not a string, list, or dictionary")
+            raise InvalidRunConfigurationException(
+                "'java' was not a string, list, or dictionary")
 
     def __set_topology__(self, controller, backends, injectors):
         """
@@ -74,42 +79,44 @@ class SpecJBBRun:
         if controller is None and backends is None and injectors is None:
             raise InvalidRunConfigurationException("no topology specified")
         if not isinstance(controller, dict):
-            raise InvalidRunConfigurationException("'controller' was not a dict")
+            raise InvalidRunConfigurationException(
+                "'controller' was not a dict")
         if "type" not in controller:
-            raise InvalidRunConfigurationException("'type' wasn't specified in 'controller'")
+            raise InvalidRunConfigurationException(
+                "'type' wasn't specified in 'controller'")
 
         if controller is None:
             self.controller = {
                 "type": "composite",
                 "options": ["-m", "COMPOSITE"]
-                }
+            }
         else:
             self.controller = controller
 
             # TODO: ensure the right SPECjbb run arguments are added to "options"
 
-
         if isinstance(backends, int):
             self.backends = {
                 "count": backends,
                 "options": ["-m", "BACKEND"],
-                }
+            }
         elif isinstance(backends, dict):
             self.backends = backends
 
             # TODO: ensure the right SPECjbb run arguments are added to "options"
         elif backends is None:
             self.backends = {
-                    "count": 1,
-                    "options": ["-m", "BACKEND"]
-                }
+                "count": 1,
+                "options": ["-m", "BACKEND"]
+            }
         else:
-            raise InvalidRunConfigurationException("'backends' was not an integer or dict")
+            raise InvalidRunConfigurationException(
+                "'backends' was not an integer or dict")
 
         if isinstance(injectors, int):
             self.injectors = {
-                    "count": injectors,
-                    "options": ["-m", "TXINJECTOR"],
+                "count": injectors,
+                "options": ["-m", "TXINJECTOR"],
             }
         elif isinstance(injectors, dict):
             self.injectors = injectors
@@ -117,19 +124,19 @@ class SpecJBBRun:
             # TODO: ensure the right SPECjbb run arguments are added to "options"
         elif injectors is None:
             self.injectors = {
-                    "count": 1,
-                    "options": []
-                }
+                "count": 1,
+                "options": []
+            }
         else:
-            raise InvalidRunConfigurationException("'injectors' was not an integer or dict")
-
+            raise InvalidRunConfigurationException(
+                "'injectors' was not an integer or dict")
 
     def _generate_tasks(self):
         if self.controller["type"] is "composite":
             return
 
         self.log.info(
-                "generating {} groups, each with {} transaction injectors"
+            "generating {} groups, each with {} transaction injectors"
                 .format(self.backends["count"], self.injectors["count"]))
 
         for _ in range(self.backends["count"]):
@@ -137,17 +144,19 @@ class SpecJBBRun:
             backend_jvm_id = uuid4()
             self.log.debug("constructing group {}".format(group_id))
             yield TaskRunner(*self.backend_run_args(),
-                '-G={}'.format(group_id),
-                '-J={}'.format(backend_jvm_id))
+                             '-G={}'.format(group_id),
+                             '-J={}'.format(backend_jvm_id))
 
-            self.log.debug("constructing injectors for group {}".format(group_id))
+            self.log.debug(
+                "constructing injectors for group {}".format(group_id))
 
             for _ in range(self.injectors["count"]):
                 ti_jvm_id = uuid4()
-                self.log.debug("preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
+                self.log.debug(
+                    "preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
                 yield TaskRunner(*self.injector_run_args(),
-                    '-G={}'.format(group_id),
-                    '-J={}'.format(ti_jvm_id))
+                                 '-G={}'.format(group_id),
+                                 '-J={}'.format(ti_jvm_id))
 
     def run(self):
         # setup jvms
@@ -163,7 +172,7 @@ class SpecJBBRun:
 
         c.start()
 
-        tasks = [ task for task in self._generate_tasks() ]
+        tasks = [task for task in self._generate_tasks()]
         pool = Pool(processes=len(tasks))
 
         self.dump()
