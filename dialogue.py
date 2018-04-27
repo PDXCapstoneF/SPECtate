@@ -89,7 +89,6 @@ def create_run(run_list, template_dict):
     return (run_list, template_dict)
 
 def error(run_dict, template_dict):
-
     print('Invalid input.')
     return run_dict, template_dict
 
