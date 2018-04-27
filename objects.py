@@ -272,6 +272,8 @@ class spec_run:
         result_dir = self._prerun(path)
         opts = self._spec_opts()
         tx_opts = self._tx_opts()
+        has_numa = self._check_numa() and self.numa_nodes > 1
+        numa_cmd = 'numactl --cpunodebind={} --localalloc'
         for x in range(self.num_runs):
             cont_std = open(os.path.join(result_dir, 'controller.log'), 'wb')
             cont_err = open(os.path.join(result_dir, 'controller.out'), 'wb')
@@ -281,9 +283,15 @@ class spec_run:
             be_procs = []
             # os.system('{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, x, result_dir, result_dir))
             for g in range(self.properties.root['specjbb.group.count'].value):
+                numa = numa_cmd.format((g - 1) % 4)
                 for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
                     ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
-                    cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(self.jdk, self.jvm_options,
+                    if(has_numa):
+                        cmd = '{} {} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(numa, self.jdk, self.jvm_options,
+                                                                                            path, tx_opts, g, ti_name,
+                                                                                            ti_name)
+                    else:
+                        cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(self.jdk, self.jvm_options,
                                                                                         path, tx_opts, g, ti_name,
                                                                                         ti_name)
                     tx_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
@@ -291,7 +299,13 @@ class spec_run:
                                      open(os.path.join(path, '{}.out'.format(ti_name)), 'wb')])
                     # os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
                 be_name = "{}{}.Backend.beJVM".format(result_dir, g)
-                cmd = '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(self.jdk, self.jvm_options,
+                if(has_numa):
+                    cmd = '{} {} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(numa, self.jdk,
+                                                                                              self.jvm_options,
+                                                                                              path, tx_opts,
+                                                                                              g)
+                else:
+                    cmd = '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(self.jdk, self.jvm_options,
                                                                                           path, tx_opts,
                                                                                           g)
                 be_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
@@ -378,6 +392,14 @@ class spec_run:
         if (self.ignore_kit_validation):
             opts += " -ikv"
         return opts
+
+    def _check_numa(self):
+        p = Popen(shlex.split('which numactl'), stdout=PIPE)
+        o, e = p.communicate()
+        result = len(o) > 0
+        p.wait()
+        return result
+
 
 class propitem:
     def __init__(self, prop, def_value, desc, input_validator, value_validator, valid_opts=None, help_text=""):
