@@ -16,7 +16,6 @@ class TestBenchmarkRun(unittest.TestCase):
                     },
                 "java": "java",
                 "jar": "env/Main.jar",
-                "invocations": "{java} -XX:-AllowUserSignalHandlers {spec}",
                 },
             { # composite run with arguments
                 "controller": {
@@ -24,19 +23,6 @@ class TestBenchmarkRun(unittest.TestCase):
                     "options": ["arg1", "arg2"],
                     },
                 "java": "java",
-                "jar": "env/Main.jar",
-                "invocations": "{java} -XX:-AllowUserSignalHandlers {spec}",
-                },
-            { # assumed invocations
-                "backends": 2,
-                "injectors": 4,
-                "controller": {
-                    "type": "multi",
-                    },
-                "java": {
-                    "path": "java",
-                    "options": ["any", "options"],
-                    },
                 "jar": "env/Main.jar",
                 },
             ]
