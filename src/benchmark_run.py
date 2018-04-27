@@ -5,6 +5,7 @@ This module replaces `run.sh`.
 from multiprocessing import Pool
 from uuid import uuid4
 import logging
+import configparser
 
 from src.task_runner import TaskRunner
 
@@ -39,11 +40,15 @@ class SpecJBBRun:
                  backends=None,
                  injectors=None,
                  java=None,
-                 jar=None):
+                 jar=None,
+                 props={},
+                 props_file='specjbb2015.props'):
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
         self.jar = jar
+        self.props = props
+        self.props_file = props_file
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
@@ -167,6 +172,11 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
+        # write props file (or ensure it exists)
+        with open(self.props_file, 'w+') as props_file:
+            c = configparser.ConfigParser()
+            c.read_dict({ 'SPECtate': self.props })
+            c.write(props_file)
         # setup jvms
         # we first need to setup the controller
         c = TaskRunner(*self.controller_run_args())
@@ -206,7 +216,7 @@ class SpecJBBRun:
         self.log.debug("full options being generated from: {}".format(options_dict))
 
         java = [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict.get("jvm_opts", [])
-        spec = ["-m", options_dict["type"].upper()] + options_dict.get("options", [])
+        spec = ["-m", options_dict["type"].upper()] + options_dict.get("options", []) + ["-p", self.props_file]
 
         self.log.debug("java: {}, spec: {}".format(java, spec))
 
