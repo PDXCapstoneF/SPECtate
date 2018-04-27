@@ -73,6 +73,7 @@ class MainWindow(Frame):
 
     def create_group(self):
         # create a group
+        pass
 
     def save_group(self):
         # save stuff
