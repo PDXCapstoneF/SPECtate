@@ -32,33 +32,66 @@ def tag_in_runlist(tag, run_list):
     """
     return any(map(lambda run : run['args']['Tag'] == tag, run_list))
 
-# Level-one layer of dialogue. All functions take run_dict, runtype_dict as
+# Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
 # `dialogue`. All functions must, in turn, *return* a tuple (run_dict,
-# runtype_dict) as arguments.
+# template_dict) as arguments.
 
-def print_all_runs(run_list, runtype_dict):
+def print_all_runs(run_list, template_dict):
     """
     Prints all runs in the RunList. Note that it gets the argument order from
-    `runtype_dict`.
+    `template_dict`.
     """
     for run in run_list:
         print('\nTemplate Type: {}'.format(run['template_type']))
-        for arg in runtype_dict[run['template_type']]['args']:
+        for arg in template_dict[run['template_type']]['args']:
             print('{}: {}'.format(arg, run['args'][arg]))
         print()
-    return (run_list, runtype_dict)
+    return (run_list, template_dict)
 
-def create_run(run_list, runtype_dict):
-    """
-    Creates a new run and adds it to the RunList. Checks for unique tag.
-    """
-    return (run_list, runtype_dict)
+def create_run(run_list, template_dict):
+    new_run = {}
+    # Inputting run type.
+    print('Input the run type. Current options: {}'.format(
+            ' '.join(sorted(template_dict.keys()))))
+    run_type = input('-> ')
+    if run_type not in template_dict.keys():
+        user_input = input('{} is not currently an option. Add it? ')
+        if user_input.lower() in YES_CONSTS:
+            pass
+        return
+    new_run['template_type'] = run_type
+    new_run['args'] = {}
 
-def error(run_dict, runtype_dict):
+    # Input values.
+    for arg in template_dict[run_type]['args']:
+        while True:
+            try:
+                user_input = input('{}: '.format(arg))
+                if user_input in EXIT_CONSTS:
+                    print('Aborting. New run not added.')
+                    return (run_list, template_dict)
+                elif user_input in HELP_CONSTS:
+                    print('Annotation:\n{}\nType:\n{}\n'.format(
+                          template_dict[run_type]['annotations'][arg],
+                          template_dict[run_type]['types'][arg]))
+                else: 
+                    new_run['args'][arg] = user_input
+                    break
+            except:
+                print('Invalid input.')
+    
+    # Validate tag uniqueness.
+    while tag_in_runlist(new_run['args']['Tag'], run_list):
+        new_run['args']['Tag'] = input('Duplicate tag! Input a new tag. ')
+    run_list.append(new_run)
+    print('Run {} added to list.'.format(new_run['args']['Tag']))
+    return (run_list, template_dict)
+
+def error(run_dict, template_dict):
 
     print('Invalid input.')
-    return run_dict, runtype_dict
+    return run_dict, template_dict
 
 
 def dialogue():
