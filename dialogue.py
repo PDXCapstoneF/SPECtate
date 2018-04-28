@@ -53,6 +53,8 @@ def find(f, seq):
     for item in seq:
         if f(item): 
             return item
+def find_run_tag(tag, run_list):
+    return find(lambda run : run[RUNLIST_ARGS]['Tag'] == tag, run_list)
 
 # Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
@@ -213,7 +215,7 @@ def copy_run(run_list, template_dict):
     if old_run_tag in EXIT_CONSTS:
         return run_list, template_dict
     
-    old_run = find(lambda run : run[RUNLIST_ARGS]['Tag'] == old_run_tag, run_list)
+    old_run = find_run_tag(old_run_tag, run_list)
     if not old_run:
         print('Tag {} not found.'.format(old_run_tag))
         return run_list, template_dict
