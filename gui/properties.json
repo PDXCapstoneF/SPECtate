@@ -7,13 +7,38 @@
   "group_window": {
     "width": 600,
     "height": 400
-  },
-  "commands": {
-    "file": "File",
-    "exit": "Exit",
-    "create": "Create Group",
-    "save": "Save Group",
-    "load": "Load Group",
-    "run": "Run Group"
-  }
+   },
+    "commands": {
+      "cascades": {
+        "file": {
+          "title": "File",
+          "items": [
+            "Import Run List",
+            "Import Run Types",
+            "Save Run List As",
+            "Save Run Types As",
+            "Create New Run",
+            "Create Group",
+            "Save Group",
+            "Run Group",
+            "Load Group",
+            "Exit"
+          ]
+        },
+        "edit": {
+          "title": "Edit",
+          "items": [
+            "Undo",
+            "Redo"
+          ]
+        },
+        "help": {
+          "title": "Help",
+          "items": [
+            "Wiki",
+            "Exit"
+          ]
+        }
+      }
+    }
 }

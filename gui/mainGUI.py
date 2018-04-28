@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('..')
 from tkinter import *
@@ -12,7 +13,6 @@ with open("properties.json") as properties_file:
 
 run_list = ['Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3']
 
-
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
         Frame.__init__(self, *args, **kwargs)
@@ -23,14 +23,35 @@ class MainWindow(Frame):
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
         menubar = Menu(self.master)
+        # File Menu
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label=properties["commands"]["create"], command=self.create_group)
-        filemenu.add_command(label=properties["commands"]["save"], command=self.save_group)
-        filemenu.add_command(label=properties["commands"]["load"], command=self.load_group)
-        filemenu.add_command(label=properties["commands"]["run"], command=self.run_group)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["file"]["title"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][0], command=self.create_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
+        # Doesn't work yet.
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][8], command='')
         filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["exit"], command=self.on_close)
-        menubar.add_cascade(label=properties["commands"]["file"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][9], command='')
+
+        # Edit Menu
+        editmenu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["edit"]["title"], menu=editmenu)
+        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][0], command='')
+        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][1], command='')
+
+        # Help Menu
+        helpmenu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=properties["commands"]["cascades"]["help"]["title"], menu=helpmenu)
+        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][0], command='')
+        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][1], command='')
+
+        # Publish Menu
         self.master.config(menu=menubar)
 
         self.counter = 1
@@ -94,6 +115,12 @@ class MainWindow(Frame):
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
             self.quit()
+
+def return_run_types():
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtype_options.json')
+    with open(path_to_json, 'r') as json_file:
+        parsed = json.load(json_file)
+        return [parsed.keys()]
 
 
 if __name__ == '__main__':
