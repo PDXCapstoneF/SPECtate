@@ -177,6 +177,22 @@ def create_runtype(run_list, template_dict):
     return run_list, template_dict
 
 def delete_run(run_list, template_dict):
+    print('Input the tag of the Run that you want to delete. Available tags')
+    print('are {}'.format(
+                   ' '.join(run[RUNLIST_ARGS]['Tag'] for run in run_list)))
+    delete_tag = input('-> ')
+
+    new_run_list = [run for run in run_list 
+                    if run[RUNLIST_ARGS]['Tag'] != delete_tag]
+    if len(run_list) == len(new_run_list):
+        print('Tag {} does not exist.'.format(delete_tag))
+    else:
+        if input('Found tag {}. Do you want to delete? '.format(delete_tag)) \
+           in YES_CONSTS:
+            print('Tag {} deleted.'.format(delete_tag))
+            run_list = new_run_list
+        else:
+            print('Deletion of tag {} cancelled.'.format(delete_tag))
     return run_list, template_dict
 
 
