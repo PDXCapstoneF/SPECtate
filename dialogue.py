@@ -95,6 +95,9 @@ def create_run(run_list, template_dict):
     print('Run {} added to list.'.format(new_run[RUNLIST_ARGS][TAG_ARG]))
     return (run_list, template_dict)
 
+def create_runtype(run_list, template_dict):
+    return run_list, template_dict
+
 def error(run_dict, template_dict):
     print('Invalid input.')
     return run_dict, template_dict
@@ -116,11 +119,13 @@ def dialogue():
     function_dict = {
         'print all' : print_all_runs,
         'create run' : create_run,
+        'create runtype' : create_runtype,
     }
 
     option_description_dict = {
         'print all' : 'Print all runs',
-        'create run' : 'Create a run'
+        'create run' : 'Create a run',
+        'create runtype' : 'Create a runtype',
     }
 
     try:
