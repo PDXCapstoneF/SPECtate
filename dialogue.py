@@ -11,6 +11,12 @@ RUNLIST_ARGS = 'args'
 TAG_ARG = 'Tag'
 TEMPLATE_TYPE = 'template_type'
 
+TEMPLATE_ARGS = 'args'
+TEMPLATE_ANNO = 'annotations'
+TEMPLATE_TYPES = 'types'
+TEMPLATE_TRANS = 'translations'
+TEMPLATE_DEFAULT = 'default_props' 
+
 def write_json(filename, python_dict):
     """ 
     Serialize python_dict (dictionary) to filename (text file).
