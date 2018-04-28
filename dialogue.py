@@ -1,4 +1,5 @@
 import json
+import copy
 
 EXIT_CONSTS = set(['q', 'quit', 'exit'])
 YES_CONSTS = set(['y', 'yes'])
@@ -44,6 +45,14 @@ def tag_in_runlist(tag, run_list):
     Returns True if a Run with tag `tag` is in the list.
     """
     return any(map(lambda run : run[RUNLIST_ARGS][TAG_ARG] == tag, run_list))
+
+def find(f, seq):
+    """
+    Return first item in sequence where f(item) == True.
+    """
+    for item in seq:
+        if f(item): 
+            return item
 
 # Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
@@ -195,6 +204,40 @@ def delete_run(run_list, template_dict):
             print('Deletion of tag {} cancelled.'.format(delete_tag))
     return run_list, template_dict
 
+def copy_run(run_list, template_dict):
+    print('Input the tag of the Run that you want to copy. Available tags')
+    print('are {}'.format(
+                   ' '.join(run[RUNLIST_ARGS]['Tag'] for run in run_list)))
+    old_run_tag = input('-> ')
+
+    if old_run_tag in EXIT_CONSTS:
+        return run_list, template_dict
+    
+    old_run = find(lambda run : run[RUNLIST_ARGS]['Tag'] == old_run_tag, run_list)
+    if not old_run:
+        print('Tag {} not found.'.format(old_run_tag))
+        return run_list, template_dict
+    print('Tag {} found.'.format(old_run_tag))
+
+    new_run = copy.deepcopy(old_run)
+    while True:
+        new_run_tag = input('Input the tag of the new run. ')
+        if new_run_tag in EXIT_CONSTS:
+            return run_list, template_dict
+        if not new_run_tag or new_run_tag in HELP_CONSTS:
+            continue
+        if tag_in_runlist(new_run_tag, run_list):
+            print('Tag {} already exists!'.format(new_run_tag))
+        else:
+            new_run[RUNLIST_ARGS]['Tag'] = new_run_tag
+            break
+    
+    if input('Add run {} to RunList? '.format(new_run_tag)) in YES_CONSTS:
+        print('Added run {} to RunList.'.format(new_run_tag))
+        run_list.append(new_run)
+    else:
+        print('Run {} not copied.'.format(old_run_tag))
+    return run_list, template_dict
 
 def error(run_dict, template_dict):
     print('Invalid input.')
@@ -219,6 +262,7 @@ def dialogue():
         'create run' : create_run,
         'create runtype' : create_runtype,
         'delete run' : delete_run,
+        'copy run' : copy_run,
     }
 
     option_description_dict = {
@@ -226,6 +270,7 @@ def dialogue():
         'create run' : 'Create a run',
         'create runtype' : 'Create a runtype',
         'delete run' : 'Delete a run',
+        'copy run' : 'Copy a run',
     }
 
     try:
