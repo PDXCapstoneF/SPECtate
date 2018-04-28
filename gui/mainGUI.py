@@ -98,23 +98,6 @@ class MainWindow(Frame):
         # create stuff
         pass
 
-    # def run_window(self):
-    #     run_types = return_run_types()[0]
-    #
-    #     print(run_types)
-    #     main = Toplevel(self)
-    #     main.grid()
-    #
-    #     v = StringVar()
-    #     v.set("L")  # initialize
-    #     for key in run_types:
-    #         b = Radiobutton(main, text=key,
-    #                         variable=v, value=key)
-    #         b.pack(anchor=W)
-    #     my_button = Button(main, text="Submit", command='')
-    #     my_button.pack()
-    #     # my_button.grid(5, column=1)
-
     def save_group(self):
         # save stuff
         pass
