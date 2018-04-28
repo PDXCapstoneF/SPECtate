@@ -9,7 +9,7 @@ TEMPLATE_DATA = 'TemplateData'
 RUN_LIST = 'RunList'
 RUNLIST_ARGS = 'args'
 TAG_ARG = 'Tag'
-TEMPLATE_TYPE = 'template_type'
+RUN_TEMPLATE_TYPE = 'template_type'
 
 TEMPLATE_ARGS = 'args'
 TEMPLATE_ANNO = 'annotations'
@@ -56,8 +56,8 @@ def print_all_runs(run_list, template_dict):
     `template_dict`.
     """
     for run in run_list:
-        print('\nTemplate Type: {}'.format(run[TEMPLATE_TYPE]))
-        for arg in template_dict[run[TEMPLATE_TYPE]][RUNLIST_ARGS]:
+        print('\nTemplate Type: {}'.format(run[RUN_TEMPLATE_TYPE]))
+        for arg in template_dict[run[RUN_TEMPLATE_TYPE]][RUNLIST_ARGS]:
             print('{}: {}'.format(arg, run[RUNLIST_ARGS][arg]))
         print()
     return (run_list, template_dict)
@@ -73,7 +73,7 @@ def create_run(run_list, template_dict):
         if user_input.lower() in YES_CONSTS:
             pass
         return
-    new_run[TEMPLATE_TYPE] = run_type
+    new_run[RUN_TEMPLATE_TYPE] = run_type
     new_run[RUNLIST_ARGS] = {}
 
     # Input values.
