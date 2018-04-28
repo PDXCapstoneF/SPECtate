@@ -102,6 +102,78 @@ def create_run(run_list, template_dict):
     return (run_list, template_dict)
 
 def create_runtype(run_list, template_dict):
+    new_template = {}
+    new_template[TEMPLATE_ARGS] = []
+    new_template[TEMPLATE_ANNO] = {}
+    new_template[TEMPLATE_TYPES] = {}
+    new_template[TEMPLATE_TRANS] = {}
+    new_template[TEMPLATE_DEFAULT] = {}
+
+    # Template name must be unique.
+    while True:
+        new_template_name = input('Input the name of the new Template. ')
+        if new_template_name not in template_dict.keys():
+            break
+        if input('Template name already exists! Do you want to delete it? ')\
+           in YES_CONSTS:
+            break
+
+    # Args.
+    while True:
+        new_arg = input('Input an arg. ')
+        if not new_arg:
+            continue
+        if new_arg in EXIT_CONSTS:
+            break
+        if new_arg in new_template[TEMPLATE_ARGS]:
+            if input('Argument already exists! Overwrite? ') not in YES_CONSTS:
+                continue
+        new_arg_type = input('Input a type for the arg. Default is string. ')
+        if new_arg_type in EXIT_CONSTS:
+            break
+        # TODO: Needs validation!!
+        new_arg_annotation = input('Input an annotation for the arg. ')
+        if new_arg_annotation in EXIT_CONSTS:
+            break
+        new_arg_trans = input('Input the property that will be modified. '\
+                              'Blank input skips this step. ')
+        if new_arg_trans in EXIT_CONSTS:
+            break
+        
+        print('Current argument:\n',
+              'Arg: {}\n'.format(new_arg),
+              'Type: {}\n'.format(new_arg_type),
+              'Annotation: {}\n'.format(new_arg_annotation),
+              'Translation: {}'.format(new_arg_trans))
+        if input('Add to the argument? ') in YES_CONSTS:
+            if new_arg not in new_template[TEMPLATE_ARGS]:
+                new_template[TEMPLATE_ARGS].append(new_arg)
+            new_template[TEMPLATE_ANNO][new_arg] = new_arg_annotation
+            new_template[TEMPLATE_TYPES][new_arg] = new_arg_type
+            if new_arg_trans:
+                new_template[TEMPLATE_TRANS][new_arg] = new_arg_trans
+    
+    # Default props.
+    while True:
+        default_property = input('Input a default property. Blank or \'exit\' '\
+                                 'exits. ')
+        if not default_property or default_property in EXIT_CONSTS:
+            break
+        if default_property in new_template[TEMPLATE_DEFAULT].keys():
+            if input('Property is already in template! Overwrite? ')\
+                in YES_CONSTS:
+                continue
+        value = input('Input a value for the property. ')
+        new_template[TEMPLATE_DEFAULT][default_property] = value
+
+    if input('Add template to the TateConfig? ') in YES_CONSTS:
+        template_dict[new_template_name] = new_template
+        print('Template {} added.'.format(new_template_name))
+    else:
+        if input('Are you sure? ') not in YES_CONSTS:
+            template_dict[new_template_name] = new_template
+            print('Template {} added.'.format(new_template_name))
+
     return run_list, template_dict
 
 def error(run_dict, template_dict):
