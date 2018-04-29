@@ -1,11 +1,11 @@
 from src.validate import TemplateSchema, RunConfigSchema
 
 class RunGenerator:
-    def __init__(self, TemplateData=None, runs=None):
+    def __init__(self, TemplateData=None, RunList=None):
         self.runs = []
 
         # let's go ahead and populate everything
-        for run in runs:
+        for run in RunList:
             run = RunConfigSchema.validate(run)
             template = TemplateData.get(run["template_name"])
             template = TemplateSchema.validate(template)

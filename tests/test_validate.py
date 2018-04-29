@@ -41,14 +41,14 @@ class TestSpectateConfigValidator(TestCase):
                         },
                     },
                 },
-            "runs": [],
+            "RunList": [],
             }))
 
-    def test_there_should_be_TemplateData_if_there_are_runs(self):
+    def test_there_should_be_TemplateData_if_there_are_RunList(self):
         with self.assertRaises(Exception):
             self.assertFalse(validate({
                 "TemplateData": {},
-                "runs": [
+                "RunList": [
                     {
                         "template_name": "NONE",
                         "args": { "a": "b" },
@@ -56,7 +56,7 @@ class TestSpectateConfigValidator(TestCase):
                     ],
                 }))
 
-    def test_runs_with_extra_args_fail_to_validate(self):
+    def test_RunList_with_extra_args_fail_to_validate(self):
         self.assertFalse(validate({
             "TemplateData": {
                 "example": {
@@ -66,7 +66,7 @@ class TestSpectateConfigValidator(TestCase):
                         },
                     },
                 },
-            "runs": [
+            "RunList": [
                 {
                     "template_name": "example",
                     "args": {
@@ -77,7 +77,7 @@ class TestSpectateConfigValidator(TestCase):
                 ],
             }))
 
-    def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
+    def test_RunList_with_ommitted_with_no_defaults_fail_to_validate(self):
         self.assertFalse(validate({
             "TemplateData": {
                 "example": {
@@ -93,7 +93,7 @@ class TestSpectateConfigValidator(TestCase):
                     },
                 },
             },
-            "runs": [
+            "RunList": [
                 {
                     "template_name": "example",
                     "args": {
@@ -103,7 +103,7 @@ class TestSpectateConfigValidator(TestCase):
                 ],
             }))
 
-    def test_runs_with_extra_annotations_fail_to_validate(self):
+    def test_RunList_with_extra_annotations_fail_to_validate(self):
         self.assertFalse(validate({
             "TemplateData": {
                 "example": {
@@ -116,5 +116,5 @@ class TestSpectateConfigValidator(TestCase):
                         },
                 },
             },
-            "runs": []
+            "RunList": []
             }))

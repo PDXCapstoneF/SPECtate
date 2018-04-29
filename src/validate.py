@@ -60,14 +60,14 @@ SpectateConfig = Schema({
     "TemplateData": { 
         is_stringy: TemplateSchema,
     },
-    "runs": [RunConfigSchema],
+    "RunList": [RunConfigSchema],
     })
 
 def validate(unvalidated):
     d = SpectateConfig.validate(unvalidated)
 
-    # each of the args that appear in the runs,
-    for run in d["runs"]:
+    # each of the args that appear in the RunList,
+    for run in d["RunList"]:
         # for the TemplateData they pull from,
         t = d["TemplateData"][run["template_name"]]
 
