@@ -36,7 +36,7 @@ class MainWindow(Frame):
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
         # Doesn't work yet.
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.run_window)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
@@ -102,7 +102,7 @@ class MainWindow(Frame):
     def run_window(self):
         run_types = return_run_types()[0]
 
-        print(run_types)
+        #print(run_types)
         main = Toplevel(self)
         main.grid()
 
