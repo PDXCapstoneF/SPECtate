@@ -80,7 +80,8 @@ def create_run(run_list, template_dict):
             ' '.join(sorted(template_dict.keys()))))
     run_type = input('-> ')
     if run_type not in template_dict.keys():
-        user_input = input('{} is not currently an option. Add it? ')
+        user_input = input('{} is not currently an option. Add it? '\
+                     .format(run_type))
         if user_input.lower() in YES_CONSTS:
             pass
         return
@@ -241,6 +242,74 @@ def copy_run(run_list, template_dict):
         print('Run {} not copied.'.format(old_run_tag))
     return run_list, template_dict
 
+def edit_run(run_list, template_dict):
+    edit_tag = input('Input the tag of the Run you want to edit. ')
+
+    if not edit_tag or edit_tag in EXIT_CONSTS:
+        return run_list, template_dict
+
+    old_run = find_run_tag(edit_tag, run_list)
+    if not old_run:
+        print('Tag {} not found.'.format(edit_tag))
+        return run_list, template_dict
+    new_run = copy.deepcopy(old_run)
+
+    for arg in template_dict[new_run[RUN_TEMPLATE_TYPE]][TEMPLATE_ARGS]:
+        while True:
+            try:
+                user_input = input('Input new value for {}. Current value = {} '\
+                               .format(arg, new_run[RUNLIST_ARGS][arg]))
+                if user_input in HELP_CONSTS:
+                    continue
+                if user_input in EXIT_CONSTS:
+                    return run_list, template_dict
+                if not user_input:
+                    # Blank input = no change.
+                    break
+                # TODO: Validation!
+                new_run[RUNLIST_ARGS][arg] = user_input
+                break
+            except:
+                print('Invalid input.')
+
+    # Tag uniqueness validation.
+    while new_run[RUNLIST_ARGS]['Tag'] != old_run[RUNLIST_ARGS]['Tag'] and \
+          tag_in_runlist(new_run[RUNLIST_ARGS]['Tag'], run_list):
+        user_input = input('Tag already exists! Input a new tag! ')
+        if not user_input or user_input in HELP_CONSTS:
+            continue
+        if user_input in EXIT_CONSTS:
+            return run_list, template_dict
+        new_run[RUNLIST_ARGS]['Tag'] = user_input
+    
+    if input('Are you sure you want to change run {}? '\
+             .format(old_run[RUNLIST_ARGS]['Tag'])) in YES_CONSTS:
+        # Find the index of old_run and create a new list with new_run in its
+        # place.
+        for index, run in enumerate(run_list):
+            if run == old_run:
+                print('Run {} changed.'.format(old_run[RUNLIST_ARGS]['Tag']))
+                return (run_list[:index] + [new_run] + run_list[index+1:], 
+                        template_dict)
+        print('Something terribly wrong has happened. Cancelled.')
+    else:
+        print('Edit of Run {} cancelled.'.format(old_run[RUNLIST_ARGS]['Tag']))
+    return run_list, template_dict
+
+def delete_runtype(run_list, template_dict):
+    delete_tag = input('Enter the tag of the template you want to delete. ')
+    if delete_tag not in template_dict.keys():
+        print('Tag not found!')
+        return run_list, template_dict
+    if input('Are you sure you want to delete template {}? '\
+             .format(delete_tag)) in YES_CONSTS:
+        del template_dict[delete_tag]
+        print('Template {} deleted.'.format(delete_tag))
+    else:
+        print('Deletion of Template {} cancelled.'.format(delete_tag))
+    return run_list, template_dict
+
+
 def error(run_dict, template_dict):
     print('Invalid input.')
     return run_dict, template_dict
@@ -264,7 +333,9 @@ def dialogue():
         'create run' : create_run,
         'create runtype' : create_runtype,
         'delete run' : delete_run,
+        'delete runtype' : delete_runtype,
         'copy run' : copy_run,
+        'edit run' : edit_run,
     }
 
     option_description_dict = {
@@ -272,7 +343,9 @@ def dialogue():
         'create run' : 'Create a run',
         'create runtype' : 'Create a runtype',
         'delete run' : 'Delete a run',
+        'delete runtype' : 'Delete a runtype',
         'copy run' : 'Copy a run',
+        'edit run' : 'Edit a run',
     }
 
     try:
