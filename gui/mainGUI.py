@@ -1,13 +1,10 @@
 import os
 import sys
-sys.path.append('..')
-sys.path.append('gui/')
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
-import mainCLI as cli
+
 
 try:
     with open("gui/properties.json") as properties_file:
