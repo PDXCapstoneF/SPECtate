@@ -1,13 +1,13 @@
 from src.validate import TemplateSchema, RunConfigSchema
 
 class RunGenerator:
-    def __init__(self, templates=None, runs=None):
+    def __init__(self, TemplateData=None, runs=None):
         self.runs = []
 
         # let's go ahead and populate everything
         for run in runs:
             run = RunConfigSchema.validate(run)
-            template = templates.get(run["template_name"])
+            template = TemplateData.get(run["template_name"])
             template = TemplateSchema.validate(template)
 
             # populate default_props

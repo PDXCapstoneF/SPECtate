@@ -31,9 +31,9 @@ class TestSpectateConfigValidator(TestCase):
                 j = json.loads(f.read())
                 self.assertFalse(validate(j))
 
-    def test_templates_with_extra_translations_dont_validate(self):
+    def test_TemplateData_with_extra_translations_dont_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [],
                     "translations": { 
@@ -44,10 +44,10 @@ class TestSpectateConfigValidator(TestCase):
             "runs": [],
             }))
 
-    def test_there_should_be_templates_if_there_are_runs(self):
+    def test_there_should_be_TemplateData_if_there_are_runs(self):
         with self.assertRaises(Exception):
             self.assertFalse(validate({
-                "templates": {},
+                "TemplateData": {},
                 "runs": [
                     {
                         "template_name": "NONE",
@@ -58,7 +58,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_extra_args_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [],
                     "translations": { 
@@ -79,7 +79,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [
                         "arg1",
@@ -105,7 +105,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_extra_annotations_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [
                         "arg1",
