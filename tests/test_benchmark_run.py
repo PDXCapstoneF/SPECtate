@@ -169,8 +169,7 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
         options = ["a", "b"]
         jvm_opts = ["c", "d"]
 
-        component_options = list(map(lambda c: SpecJBBComponentOptions({ 
-            "type": c, 
+        component_options = list(map(lambda c: SpecJBBComponentOptions(c, { 
             "options": options,
             "jvm_opts": jvm_opts,
             }), SpecJBBComponentTypes))
