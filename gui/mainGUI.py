@@ -33,7 +33,7 @@ class MainWindow(Frame):
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
         # Doesn't work yet.
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
+        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command=self.run_window)
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
         filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
@@ -95,6 +95,23 @@ class MainWindow(Frame):
                 self.form.delete(1.0, "end")
                 self.form.insert("end", content)
                 self.counter = 1 # RESET THE COUNTER SO THAT NEXT SELECTED ITEM DISPLAYS PROPERLY
+
+    def run_window(self):
+        run_types = return_run_types()[0]
+
+        #print(run_types)
+        main = Toplevel(self)
+        main.grid()
+
+        v = StringVar()
+        v.set("L")  # initialize
+        for key in run_types:
+            b = Radiobutton(main, text=key,
+                            variable=v, value=key)
+            b.pack(anchor=W)
+        my_button = Button(main, text="Submit", command='')
+        my_button.pack()
+        # my_button.grid(5, column=1)
 
     def create_group(self):
         # create stuff
