@@ -309,6 +309,20 @@ def delete_runtype(run_list, template_dict):
         print('Deletion of Template {} cancelled.'.format(delete_tag))
     return run_list, template_dict
 
+def save_tate(run_list, template_dict):
+    filename = input('Input a filename to save the TateConfig to. ')
+    if not filename or filename in EXIT_CONSTS:
+        print('Save cancelled.')
+        return run_list, template_dict
+    if input('Are you sure you want to save to {}? '.format(filename))\
+        in YES_CONSTS:
+        try:
+            write_json(filename, {RUN_LIST : run_list, TEMPLATE_DATA : template_dict})
+            print('Saved TateConfig to {}'.format(filename))
+        except:
+            print('Unable to save to {}.'.format(filename))
+    return run_list, template_dict
+        
 
 def error(run_dict, template_dict):
     print('Invalid input.')
@@ -336,6 +350,7 @@ def dialogue():
         'delete runtype' : delete_runtype,
         'copy run' : copy_run,
         'edit run' : edit_run,
+        'save tate' : save_tate,
     }
 
     option_description_dict = {
@@ -346,6 +361,7 @@ def dialogue():
         'delete runtype' : 'Delete a runtype',
         'copy run' : 'Copy a run',
         'edit run' : 'Edit a run',
+        'save tate' : 'Save TateConfig',
     }
 
     try:
