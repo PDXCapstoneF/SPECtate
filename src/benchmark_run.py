@@ -30,6 +30,90 @@ def do(task):
     log.debug("finished task {}".format(task))
 
 
+class JvmRunOptions:
+    def __init__(self, val=None):
+        if isinstance(val, str):
+            self.__dict__ = {
+                "path": val,
+                "options": [],
+            }
+        elif isinstance(val, list):
+            self.__dict__ = {
+                "path": val[0],
+                "options": val[1:],
+            }
+        elif isinstance(val, dict):
+            if "path" not in val:
+                raise Exception("'path' not specified for JvmRunOptions")
+            if not isinstance(val["path"], str):
+                raise Exception("'path' must be a string")
+            if "options" not in val:
+                val["options"] = []
+            elif not isinstance(val["options"], list):
+                raise Exception("'path' must be a string")
+
+            self.__dict__ = val
+        elif val is None:
+            self.__dict__ = {
+                "path": "java",
+                "options": []
+            }
+        else:
+            raise Exception(
+                "unrecognized type given to JvmRunOptions: {}".format(type(val)))
+
+    def __getitem__(self, name):
+        return self.__dict__.__getitem__(name)
+
+    def __getattr__(self, name):
+        return self.__dict__.__getitem__(name)
+
+
+SpecJBBComponentTypes = [
+    "backend",
+    "txinjector",
+    "composite",
+    "multi",
+    "distributed",
+]
+
+
+class SpecJBBComponentOptions:
+    def __init__(self, init, count=1):
+        if isinstance(init, str):
+            if init not in SpecJBBComponentTypes:
+                raise Exception(
+                    "Type '{}' is not a valid SpecJBB component type".format(init))
+        elif not isinstance(init, dict):
+            raise Exception(
+                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(init)))
+
+        if isinstance(init, dict):
+            if "type" not in init:
+                raise Exception(
+                    "'type' not specified in SpecJBBComponentOptions")
+            if "count" not in init:
+                init["count"] = count
+            if "options" not in init:
+                init["options"] = []
+            if "jvm_opts" not in init:
+                init["jvm_opts"] = []
+
+            self.__dict__ = init
+        else:
+            self.__dict__ = {
+                "type": init,
+                "count": count,
+                "options": [],
+                "jvm_opts": []
+            }
+
+    def __getitem__(self, name):
+        return self.__dict__.__getitem__(name)
+
+    def __getattr__(self, name):
+        return self.__dict__.__getitem__(name)
+
 class SpecJBBRun:
     """
     Does a run!
@@ -175,7 +259,7 @@ class SpecJBBRun:
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
             c = configparser.ConfigParser()
-            c.read_dict({ 'SPECtate': self.props })
+            c.read_dict({'SPECtate': self.props})
             c.write(props_file)
         # setup jvms
         # we first need to setup the controller
@@ -213,10 +297,13 @@ class SpecJBBRun:
         """
         Returns a list of arguments, formatted for the specific JVM invocation.
         """
-        self.log.debug("full options being generated from: {}".format(options_dict))
+        self.log.debug(
+            "full options being generated from: {}".format(options_dict))
 
-        java = [self.java["path"], "-jar", self.jar] + self.java["options"] + options_dict.get("jvm_opts", [])
-        spec = ["-m", options_dict["type"].upper()] + options_dict.get("options", []) + ["-p", self.props_file]
+        java = [self.java["path"], "-jar", self.jar] + \
+            self.java["options"] + options_dict.get("jvm_opts", [])
+        spec = ["-m", options_dict["type"].upper()] + \
+            options_dict.get("options", []) + ["-p", self.props_file]
 
         self.log.debug("java: {}, spec: {}".format(java, spec))
 
