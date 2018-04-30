@@ -7,14 +7,14 @@ class TaskRunner:
     """
     def __init__(self, path, *options, **popen_kw):
         if not path:
-            raise Exception
+            raise Exception("Path not specified for executable")
 
         self.path = path
         options = list(options)
 
         for opt in options:
             if not isinstance(opt, str):
-                raise Exception
+                raise Exception("Option key was '{}':{}, not str".format(opt, type(opt)))
 
         self.options = options
         self.kw = popen_kw
@@ -22,7 +22,7 @@ class TaskRunner:
         self.proc = None
 
     def __str__(self):
-        return "TaskRunner(path={}, options={}, kw={}, proc={})".format(self.path, self.options, self.kw, self.proc)
+        return "TaskRunner(path={}, options={}, kw={})".format(self.path, self.options, self.kw)
 
 
     def argument_list(self):
