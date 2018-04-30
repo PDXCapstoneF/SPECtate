@@ -78,35 +78,42 @@ SpecJBBComponentTypes = [
 ]
 
 
-class SpecJBBComponentOptions:
-    def __init__(self, init, count=1):
-        if isinstance(init, str):
-            if init not in SpecJBBComponentTypes:
-                raise Exception(
-                    "Type '{}' is not a valid SpecJBB component type".format(init))
-        elif not isinstance(init, dict):
-            raise Exception(
-                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(init)))
-
-        if isinstance(init, dict):
-            if "type" not in init:
-                raise Exception(
-                    "'type' not specified in SpecJBBComponentOptions")
-            if "count" not in init:
-                init["count"] = count
-            if "options" not in init:
-                init["options"] = []
-            if "jvm_opts" not in init:
-                init["jvm_opts"] = []
-
-            self.__dict__ = init
+class SpecJBBComponentOptions(dict):
+    def __init__(self, component_type, rest=None):
+        if isinstance(component_type, str):
+            if component_type not in SpecJBBComponentTypes:
+                raise Exception("invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
         else:
+            raise Exception(
+                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(component_type)))
+
+        if isinstance(rest, dict):
+            if "count" not in rest:
+                rest["count"] = 1
+            if "options" not in rest:
+                rest["options"] = []
+            if "jvm_opts" not in rest:
+                rest["jvm_opts"] = []
+
+            rest["type"] = component_type
+
+            self.__dict__ = rest
+        elif isinstance(rest, int):
             self.__dict__ = {
-                "type": init,
-                "count": count,
+                "type": component_type,
+                "count": rest,
                 "options": [],
                 "jvm_opts": []
             }
+        elif rest is None:
+            self.__dict__ = {
+                "type": component_type,
+                "count": 1,
+                "options": [],
+                "jvm_opts": []
+            }
+        else:
+            raise Exception("Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
 
     def __getitem__(self, name):
         return self.__dict__.__getitem__(name)
@@ -136,7 +143,7 @@ class SpecJBBRun:
         self.run_id = uuid4()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
-        self.__set_java__(java)
+        self.java = JvmRunOptions(java)
         self.__set_topology__(controller, backends, injectors)
 
     def __set_java__(self, java):
@@ -173,60 +180,14 @@ class SpecJBBRun:
             raise InvalidRunConfigurationException(
                 "'type' wasn't specified in 'controller'")
 
+
         if controller is None:
-            self.controller = {
-                "type": "composite",
-                "options": [],
-                "jvm_opts": [],
-            }
+            self.controller = SpecJBBComponentOptions("composite")
         else:
-            self.controller = controller
+            self.controller = SpecJBBComponentOptions(controller["type"], controller)
 
-            # TODO: ensure the right SPECjbb run arguments are added to "options"
-
-        if isinstance(backends, int):
-            self.backends = {
-                "count": backends,
-                "type": "backend",
-                "options": [],
-                "jvm_opts": [],
-            }
-        elif isinstance(backends, dict):
-            self.backends = backends
-
-            # TODO: ensure the right SPECjbb run arguments are added to "options"
-        elif backends is None:
-            self.backends = {
-                "count": 1,
-                "type": "backend",
-                "options": [],
-                "jvm_opts": [],
-            }
-        else:
-            raise InvalidRunConfigurationException(
-                "'backends' was not an integer or dict")
-
-        if isinstance(injectors, int):
-            self.injectors = {
-                "count": injectors,
-                "type": "txinjector",
-                "options": [],
-                "jvm_opts": [],
-            }
-        elif isinstance(injectors, dict):
-            self.injectors = injectors
-
-            # TODO: ensure the right SPECjbb run arguments are added to "options"
-        elif injectors is None:
-            self.injectors = {
-                "count": 1,
-                "type": "txinjector",
-                "options": [],
-                "jvm_opts": [],
-            }
-        else:
-            raise InvalidRunConfigurationException(
-                "'injectors' was not an integer or dict")
+        self.backends = SpecJBBComponentOptions("backend", backends)
+        self.injectors = SpecJBBComponentOptions("txinjector", injectors)
 
     def _generate_tasks(self):
         if self.controller["type"] is "composite":
