@@ -74,7 +74,9 @@ class MainWindow(Frame):
                 self.counter = 1 # RESET THE COUNTER SO THAT NEXT SELECTED ITEM DISPLAYS PROPERLY
 
     def create_group(self):
-        # create stuff
+        """
+        create a new window for choosing a runtype
+        """
         new_run_window = Tk()
         new_run_window.title("Choose Runtype")
         new_run_window.minsize(width=25, height=20)
