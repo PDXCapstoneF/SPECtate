@@ -4,7 +4,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
-import objects
+from objects import spec_run
 
 
 try:
@@ -98,22 +98,23 @@ class MainWindow(Frame):
         """
         create a new window for choosing a runtype
         """
-        new_run_window = Toplevel(self)
-        new_run_window.title("Choose Runtype")
-        new_run_window.minsize(width=25, height=20)
+        self.new_run_window = Toplevel(self)
+        self.new_run_window.title("Choose Runtype")
+        self.new_run_window.minsize(width=25, height=20)
         runtypes = return_run_types()[0]
-        choice = StringVar()
+        var = StringVar()
         for type in runtypes:
-            chk = Radiobutton(new_run_window, text=type, variable=choice, value=type)
+            chk = Radiobutton(self.new_run_window, text=type, value=type, variable=var)
             chk.pack(anchor='w', expand=NO, padx=60)
-        Button(new_run_window, text='Confirm', command=self.add_new_run(choice)).pack(anchor='s')
+        Button(self.new_run_window, text='Confirm', command=lambda: self.add_new_run(var.get())).pack(anchor='s')
 
     def add_new_run(self, runtype):
         """
         add a new run into the end of runlist
         :param runtype: string
         """
-        pass
+        self.new_run_window.destroy()
+        self.listbox.insert(END, runtype)
 
     def save_group(self):
         # save stuff
