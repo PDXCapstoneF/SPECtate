@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
+import objects
 
 
 try:
@@ -27,31 +28,27 @@ class MainWindow(Frame):
         menubar = Menu(self.master)
         # File Menu
         filemenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["cascades"]["file"]["title"], menu=filemenu)
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][0], command=self.create_group)
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][1], command=self.save_group)
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][2], command=self.run_group)
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][3], command=self.load_group)
-        # Doesn't work yet.
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][4], command='')
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][5], command='')
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][6], command='')
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][7], command='')
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][8], command='')
+        menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runlist"], command=self.import_runlist)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runtypes"], command=self.import_runtypes)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["load_group"], command=self.load_group)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_run"], command=self.create_new_run)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["run_group"], command=self.run_group)
         filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["cascades"]["file"]["items"][9], command='')
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["cascades"]["edit"]["title"], menu=editmenu)
-        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][0], command='')
-        editmenu.add_command(label=properties["commands"]["cascades"]["edit"]["items"][1], command='')
+        menubar.add_cascade(label=properties["commands"]["edit"]["title"], menu=editmenu)
+        editmenu.add_command(label=properties["commands"]["edit"]["items"][0], command='')
+        editmenu.add_command(label=properties["commands"]["edit"]["items"][1], command='')
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["cascades"]["help"]["title"], menu=helpmenu)
-        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][0], command='')
-        helpmenu.add_command(label=properties["commands"]["cascades"]["help"]["items"][1], command='')
+        menubar.add_cascade(label=properties["commands"]["help"]["title"], menu=helpmenu)
+        helpmenu.add_command(label=properties["commands"]["help"]["items"][0], command='')
+        helpmenu.add_command(label=properties["commands"]["help"]["items"][1], command='')
 
         # Publish Menu
         self.master.config(menu=menubar)
@@ -66,6 +63,7 @@ class MainWindow(Frame):
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
+        self.listbox.bind("<Button-3>", self.popup_window)
 
         # Create canvas
         self.canvas = Canvas(self, width=80, height=self.height, bg="white", relief="sunken")
@@ -96,21 +94,26 @@ class MainWindow(Frame):
                 self.form.insert("end", content)
                 self.counter = 1 # RESET THE COUNTER SO THAT NEXT SELECTED ITEM DISPLAYS PROPERLY
 
-    def create_group(self):
+    def create_new_run(self):
         """
         create a new window for choosing a runtype
         """
-        new_run_window = Tk()
+        new_run_window = Toplevel(self)
         new_run_window.title("Choose Runtype")
         new_run_window.minsize(width=25, height=20)
-        choice = []
-        runtypes = ["HBIR", "HBIR_RT", "PRESET", "LOADLEVEL"]
-        for pick in runtypes:
-            var = IntVar()
-            chk = Checkbutton(new_run_window, text=pick, variable=var)
+        runtypes = return_run_types()[0]
+        choice = StringVar()
+        for type in runtypes:
+            chk = Radiobutton(new_run_window, text=type, variable=choice, value=type)
             chk.pack(anchor='w', expand=NO, padx=60)
-            choice.append(var)
-        Button(new_run_window, text='Confirm').pack(anchor='s')
+        Button(new_run_window, text='Confirm', command=self.add_new_run(choice)).pack(anchor='s')
+
+    def add_new_run(self, runtype):
+        """
+        add a new run into the end of runlist
+        :param runtype: string
+        """
+        pass
 
     def save_group(self):
         # save stuff
@@ -122,6 +125,15 @@ class MainWindow(Frame):
         # json file loaded
         pass
 
+    def save_as(self):
+        pass
+
+    def import_runlist(self):
+        pass
+
+    def import_runtypes(self):
+        pass
+
     def run_group(self):
         # call CLI function
         pass
@@ -129,6 +141,18 @@ class MainWindow(Frame):
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
             self.quit()
+
+    def popup_window(self, event):
+        """
+        create a popup window for right clicking on an item in listbox
+        allow to delete or duplicate the selected item
+        """
+        popup_menu = Menu(self.listbox, tearoff=0)
+        # item = self.listbox.get(self.listbox.curselection())
+        popup_menu.add_command(label='Delete', command=lambda: self.listbox.delete(self.listbox.curselection()))
+        popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
+        popup_menu.tk_popup(event.x_root, event.y_root)
+
 
 def return_run_types():
     path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtype_options.json')
