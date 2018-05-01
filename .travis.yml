@@ -1,0 +1,28 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+os:
+  - linux
+install:
+  - python -m pip install --upgrade pip setuptools wheel
+  - pip install pipenv
+  - pipenv install --dev
+script:
+  - python -m unittest discover
+  - python mainCLI.py -h
+before_deploy:
+  - pipenv uninstall --all # clean out any dev dependencies
+  - pipenv install # only add what we need
+  - pip install pyinstaller # install pyinstaller
+  - pyinstaller --onefile mainCLI.py # make our one-file executable
+deploy:
+  provider: releases
+  api_key: ${GITHUB_OAUTH_TOKEN}
+  file:
+    - dist/main
+  skip_cleanup: true
+  on:
+    branch: 
+    - master
+    - dev

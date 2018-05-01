@@ -1,3 +1,6 @@
+# developer workspace, for example configs and stuff not to be committed
+hide
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -99,3 +102,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# PyCharm project settings
+.idea
+
+# MacOS auto-generated
+.DS_Store
