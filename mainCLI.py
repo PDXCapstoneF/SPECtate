@@ -21,7 +21,7 @@ from docopt import docopt
 # source imports
 import dialogue
 from src import validate
-import src.curses.speccurses
+from src.curses import speccurses
 
 
 def to_list(s):
