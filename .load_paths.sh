@@ -14,8 +14,6 @@
 # and asks it where its importing its modules.
 # It's fair to say that if `python mainCLI.py` doesn't work, then this
 # script will fail to grab the correct paths, and everything will fall apart.
-cmd='import sys;
-print(":".join([p for p in sys.paths if "site" in p]))'
+paths=`python -c 'import sys; print(":".join([p for p in sys.path if "site" in p]))'`
 
-pyi-makespec --onefile --paths "$(cmd)" mainCLI.py
-pyinstaller mainCLI.spec
+pyi-makespec --onefile --paths "$paths" mainCLI.py
