@@ -15,7 +15,8 @@ before_deploy:
   - pipenv uninstall --all # clean out any dev dependencies
   - pipenv install # only add what we need
   - pip install pyinstaller # install pyinstaller
-  - pyinstaller --onefile mainCLI.py # make our one-file executable
+  - ./load_paths.sh
+  - pyinstaller mainCLI.spec # make our one-file executable
 deploy:
   provider: releases
   api_key: ${GITHUB_OAUTH_TOKEN}
