@@ -29,7 +29,6 @@ def read_json(filename):
 
 
 # Utility functions.
-
 def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x : x[0]):
         print("{}: {}".format(key, value))
@@ -39,6 +38,7 @@ def print_dict(d):
 # All functions take run_dict, runtype_dict as arguments so that they can be
 # called homogenously from a dictionary in `dialogue`.
 
+# Level-one layer of dialogue.
 def print_all_runs(run_dict, runtype_dict):
     for k, v in sorted(run_dict.items(), key=lambda x : x[0]):
         print('\nTag {}\n'.format(k))
@@ -84,6 +84,7 @@ def create_runtype(run_dict, runtype_dict):
         runtype_dict[runtype_name] = option_list
 
 
+
 def delete_run(run_dict, runtype_dict):
     try:
         print('Input the tag of the run you want to delete.')
@@ -91,7 +92,6 @@ def delete_run(run_dict, runtype_dict):
             ' '.join(sorted(run_dict.keys()))))
         user_input = input('-> ')
         del run_dict[user_input]
-
     except:
         print('Unable to remove tag {}.'.format(user_input))
         return

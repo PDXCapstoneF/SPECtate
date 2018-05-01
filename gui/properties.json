@@ -1,0 +1,39 @@
+{
+  "program_name": "SPECtate",
+  "main_window": {
+    "width": 900,
+    "height": 600
+  },
+  "group_window": {
+    "width": 600,
+    "height": 400
+   },
+  "commands": {
+    "file": {
+      "title": "File",
+      "items": {
+        "import_runlist": "Import Run List",
+        "import_runtypes": "Import Runtypes",
+        "save_as": "Save As...",
+        "new_run": "Create New Run",
+        "run_group": "Run Group",
+        "load_group": "Load Group",
+        "exit": "Exit"
+      }
+    },
+    "edit": {
+      "title": "Edit",
+      "items": [
+        "Undo",
+        "Redo"
+      ]
+    },
+    "help": {
+      "title": "Help",
+      "items": [
+        "Wiki",
+        "Exit"
+      ]
+    }
+  }
+}
