@@ -322,6 +322,21 @@ def save_tate(run_list, template_dict):
         except:
             print('Unable to save to {}.'.format(filename))
     return run_list, template_dict
+
+def load_tate(run_list, template_dict):
+    filename = input('Input a filename to load the TateConfig from. ')
+    if not filename or filename in EXIT_CONSTS:
+        print('Load cancelled.')
+    elif input('Are you sure you want to load from {}? '.format(filename))\
+        in YES_CONSTS:
+        try:
+            new_json = read_json(filename)
+            run_list = new_json[RUN_LIST]
+            template_dict = new_json[TEMPLATE_DATA]
+            print('Filename {} loaded.'.format(filename))
+        except:
+            print('Unable to load filename {}'.format(filename))
+    return run_list, template_dict
         
 
 def error(run_dict, template_dict):
@@ -351,6 +366,7 @@ def dialogue():
         'copy run' : copy_run,
         'edit run' : edit_run,
         'save tate' : save_tate,
+        'load tate' : load_tate,
     }
 
     option_description_dict = {
@@ -362,6 +378,7 @@ def dialogue():
         'copy run' : 'Copy a run',
         'edit run' : 'Edit a run',
         'save tate' : 'Save TateConfig',
+        'load tate' : 'Load TateConfig',
     }
 
     try:
