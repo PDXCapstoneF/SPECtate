@@ -13,6 +13,10 @@ log = logging.getLogger(__name__)
 
 
 class InvalidRunConfigurationException(Exception):
+    """
+    Exception thrown by SpecJBBRun when given a run configuration
+    that it can't figure out. Optionally has an error message.
+    """
     def __init__(self, msg="Run was invalid"):
         self.msg = msg
 
@@ -22,8 +26,9 @@ class InvalidRunConfigurationException(Exception):
 
 def do(task):
     """
-    Runs a given task synchronously.
-    This needs to be pickled for Pool.map, which is why it's hanging out here.
+    Runs a given task synchronously, with some debugging.
+    The reason this is defined outside of the context of `SpecJBBRun.run()` is because
+    this function needs to be pickle-able for `Pool.map` to be able to use it.
     """
     log.debug("starting task {}".format(task))
     task.run()
@@ -31,7 +36,17 @@ def do(task):
 
 
 class JvmRunOptions:
+    """
+    A helper class for SpecJBBRun, to provide defaults and a way
+    for lists, dict etc to be coerced into something that SpecJBBRun can work with.
+    """
     def __init__(self, val=None):
+        """
+        Initialize JvmRunOptions based on the type of val.
+        If str: set path to val.
+        If list: set path to val[0], and val[1:] as the options.
+        If dict: validate that the dict has the required keys, and set the internal dict to val.
+        """
         if isinstance(val, str):
             self.__dict__ = {
                 "path": val,
@@ -63,12 +78,21 @@ class JvmRunOptions:
                 "unrecognized type given to JvmRunOptions: {}".format(type(val)))
 
     def __getitem__(self, name):
+        """
+        Defined so that JvmRunOptions is subscriptable.
+        """
         return self.__dict__.__getitem__(name)
 
     def __getattr__(self, name):
+        """
+        Defined so that JvmRunOptions can be accessed via attr names.
+        """
         return self.__dict__.__getitem__(name)
 
 
+"""
+These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
+"""
 SpecJBBComponentTypes = [
     "backend",
     "txinjector",
@@ -79,8 +103,17 @@ SpecJBBComponentTypes = [
 
 
 class SpecJBBComponentOptions(dict):
+    """
+    A helper class for SpecJBBRun that provides a way to set defaults,
+    and a way to coerce additional options into something that SpecJBBRun can work with.
+
+    If rest is a dict, it will be validated, and the internal dict will be set to rest.
+    If rest is an int, it will be interpreted as the count for this particular component.
+    If rest is not provided, the internal dict will be set to the default.
+    """
     def __init__(self, component_type, rest=None):
         if isinstance(component_type, str):
+            component_type = component_type.lower()
             if component_type not in SpecJBBComponentTypes:
                 raise Exception("invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
         else:
@@ -116,14 +149,22 @@ class SpecJBBComponentOptions(dict):
             raise Exception("Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
 
     def __getitem__(self, name):
+        """
+        Defined so that SpecJBBComponentOptions is subscriptable.
+        """
         return self.__dict__.__getitem__(name)
 
     def __getattr__(self, name):
+        """
+        Defined so that SpecJBBComponentOptions can be accessed via attr names.
+        """
         return self.__dict__.__getitem__(name)
 
 class SpecJBBRun:
     """
     Does a run!
+    Handles .props file generation, jvm invocations (based on properties passed to __init__)
+    and cleanup afterwards.
     """
 
     def __init__(self,
@@ -134,6 +175,18 @@ class SpecJBBRun:
                  jar=None,
                  props={},
                  props_file='specjbb2015.props'):
+        """
+        Initialize a SpecJBBRun.
+
+        Args:
+            controller: The dictionary used to configure the controller. Must have a controller type, if it is a dictionary, and if not, the default controller type is "composite".
+            backends: The dictionary, list, or int used to configure the number of backends for this particular run.
+            injectors: The dictionary, list, or int used to configure the number of injectors for this particular run.
+            java: Either the string used to invoke "java" on this machine, or a list of args to pass to Popen, or a dictionary with a "path" and "option" defined.
+            jar: The relative or absolute path to the specjbb2015.jar file.
+            props: The props that will be passed to the props file generated for this run. Keys look like ("com.spec.prop": "value").
+            props_file: The relative or absolute path to the specjbb2015.props file that will be generated for this particular run.
+        """
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
@@ -146,29 +199,11 @@ class SpecJBBRun:
         self.java = JvmRunOptions(java)
         self.__set_topology__(controller, backends, injectors)
 
-    def __set_java__(self, java):
-        """
-        Sets the internal java dictionary based on what's passed into __init__.
-        """
-        if isinstance(java, str):
-            self.java = {
-                "path": java,
-                "options": []
-            }
-        elif isinstance(java, list):
-            self.java = {
-                "path": java[0],
-                "options": java[1:],
-            }
-        elif isinstance(java, dict):
-            self.java = java
-        else:
-            raise InvalidRunConfigurationException(
-                "'java' was not a string, list, or dictionary")
-
     def __set_topology__(self, controller, backends, injectors):
         """
-        Sets the topology dictionaries based on what's passed into __init__.
+        Sets the topology dictionaries (what controller type, 
+        how many backends, how many injectors per backend, etc)
+        based on what's passed into __init__.
         Will also raise exceptions if we don't get what we're expecting.
         """
         if controller is None and backends is None and injectors is None:
@@ -190,6 +225,10 @@ class SpecJBBRun:
         self.injectors = SpecJBBComponentOptions("txinjector", injectors)
 
     def _generate_tasks(self):
+        """
+        Generator that yields TaskRunners for the backends and injectors
+        with the correct JVM and SPECjbb2015 arguments for this particular run.
+        """
         if self.controller["type"] is "composite":
             return
 
@@ -217,6 +256,13 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
+        """
+        Executes this particular SpecJBBRun by:
+        - writing the props file for this run at self.props_file
+        - setting up the controller and running its task
+        - setting up the transaction injectors and backends and running their tasks
+        - emmitting "done" messages when finished
+        """
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
             c = configparser.ConfigParser()
