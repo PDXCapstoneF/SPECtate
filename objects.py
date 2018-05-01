@@ -106,7 +106,6 @@ class spec_run:
             "props" :  self.properties.tojson()
         }
 
-
     def run(self, path = ""):
         if(not os.path.exists(self.jdk)):
             return 3
@@ -186,8 +185,6 @@ class spec_run:
                                                                                                              path, tx_opts,
                                                                                                              g, be_name,
                                                                                                              be_name))
-
-
         return 0
 
     def _prerun(self, path):
@@ -217,7 +214,6 @@ class spec_run:
         return opts
 
 
-
 class propitem:
     def __init__(self, prop, def_value, desc, input_validator, value_validator, valid_opts = None, help_text = ""):
         self.prop = prop
@@ -243,15 +239,12 @@ class propitem:
     def reset(self):
         self.value = self.def_value
 
-
     def tojson(self):
         return {
    #         "_type" : "propitem",
             "prop" : self.prop,
             "value" : self.value
         }
-
-
 
 
 loglevels = [
@@ -290,7 +283,7 @@ default_validator = lambda x:True
 
 defaults = [
 propitem('specjbb.controller.type', 'HBIR_RT', 'Controls phases being controlled by Controller.', default_validator,  lambda x:x in con_types, con_types),
-  propitem('specjbb.comm.connect.client.pool.size', 256, 'Network connection pool size, i.e. number of sockets for I/O communication for each Agent.',
+propitem('specjbb.comm.connect.client.pool.size', 256, 'Network connection pool size, i.e. number of sockets for I/O communication for each Agent.',
            number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 propitem('specjbb.comm.connect.worker.pool.min', 1,'Minimum number of worker threads in the network connection pool.',
          number_validator, lambda x:int(x)>0,help_text=must_be_positive),
@@ -298,22 +291,22 @@ propitem('specjbb.comm.connect.worker.pool.max', 256, 'Maximum number of worker 
          number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 propitem('specjbb.comm.connect.selector.runner.count', 0,'Number of acceptor threads for handling new connections and scheduling existing ones.',
          number_validator, lambda x:int(x)>=0,help_text="Value must an integer. Special '0' value  will force to using the default connectivity provider setting"),
-    propitem('specjbb.comm.connect.timeouts.connect', 60000,'Timeout (in milliseconds) for I/O connection operation.',
+propitem('specjbb.comm.connect.timeouts.connect', 60000,'Timeout (in milliseconds) for I/O connection operation.',
              number_validator, lambda x:int(x)>0,help_text=must_be_positive),
-    propitem('specjbb.comm.connect.timeouts.read' ,60000, 'Timeout (in milliseconds) for I/O read operation.',
+propitem('specjbb.comm.connect.timeouts.read' ,60000, 'Timeout (in milliseconds) for I/O read operation.',
              number_validator, lambda x:int(x)>0,help_text=must_be_positive),
-   propitem('specjbb.comm.connect.timeouts.write' ,  60000, 'Timeout (in milliseconds) for I/O write operation.',
+propitem('specjbb.comm.connect.timeouts.write' ,  60000, 'Timeout (in milliseconds) for I/O write operation.',
             number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 
 propitem('specjbb.controller.host', "localhost", 'IP address / host name of the machine where Controller program will be launched.',
          default_validator, default_validator,help_text=must_be_positive),
 propitem('specjbb.controller.port', 24000, 'The network port to which Controller listener will bind.', number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 
-    propitem('specjbb.controller.handshake.period',5000, 'Time period (in milliseconds) for logging status of the initial Controller <-> Agent handshaking.',
+propitem('specjbb.controller.handshake.period',5000, 'Time period (in milliseconds) for logging status of the initial Controller <-> Agent handshaking.',
              number_validator, lambda x:int(x)>0,help_text=must_be_positive),
-    propitem('specjbb.controller.handshake.timeout' ,600000, 'Timeout (in milliseconds) for initial Controller <-> Agent handshaking.',
+propitem('specjbb.controller.handshake.timeout' ,600000, 'Timeout (in milliseconds) for initial Controller <-> Agent handshaking.',
              number_validator, lambda x:int(x)>0,help_text=must_be_positive),
-    propitem('specjbb.controller.maxir.maxFailedPoints',3, ' Number of points to try after max-jOPS was found to ensure there are no more passes and max-jOPS value is correct.',
+propitem('specjbb.controller.maxir.maxFailedPoints',3, ' Number of points to try after max-jOPS was found to ensure there are no more passes and max-jOPS value is correct.',
              number_validator, lambda x:int(x)>=0,help_text="Value must be greater than or equal to 0"),
 
 propitem('specjbb.controller.preset.ir', 1000, 'Sets IR for preset for controller type ',
@@ -346,20 +339,20 @@ propitem('specjbb.customerDriver.threads.probe', 64,  'Maximum number of threads
 propitem('specjbb.customerDriver.threads.service', 64,  'Maximum number of threads in ThreadPoolExecutor for service requests on the TxInjector side.', number_validator,
          lambda x: int(x)>= 64,help_text="Value must be greater than or equal to 64"),
 #propitem('specjbb.forkjoin.workers', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in each tier on the Backend side.', lambda x:isinstance(x, int),help_text=must_be_positive)
-    propitem('specjbb.forkjoin.workers.Tier1', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 1 on the Backend side.',
+propitem('specjbb.forkjoin.workers.Tier1', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 1 on the Backend side.',
              number_validator, lambda x: int(x) > 0,help_text=must_be_positive),
-    propitem('specjbb.forkjoin.workers.Tier2', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 2 on the Backend side.', number_validator,
+propitem('specjbb.forkjoin.workers.Tier2', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 2 on the Backend side.', number_validator,
              lambda x:int(x)>0,help_text=must_be_positive),
-    propitem('specjbb.forkjoin.workers.Tier3', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 3 on the Backend side.', number_validator,
+propitem('specjbb.forkjoin.workers.Tier3', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in tier 3 on the Backend side.', number_validator,
              lambda x:int(x)>0,help_text=must_be_positive),
 propitem('specjbb.group.count', 1, 'Number of Groups for the run, where Group is TxInjector(s) mapped to Backend.', number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 
-  propitem('specjbb.heartbeat.period', 10000, 'How often (in milliseconds) Controller sends heartbeat message to an Agent checking it is alive',number_validator,
+propitem('specjbb.heartbeat.period', 10000, 'How often (in milliseconds) Controller sends heartbeat message to an Agent checking it is alive',number_validator,
            lambda x:int(x)>0,help_text=must_be_positive),
 propitem('specjbb.heartbeat.threshold', 100000,  'How much time (in milliseconds) await for heartbeat response from an Agent.',number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 
 propitem('specjbb.time.server', False, 'Enables Controller communication with Time Server.', default_validator, lambda x:x is bool,[False, True]),
-   propitem('specjbb.txi.pergroup.count', 1, 'Number of TxInjectors per Backend in one Group.', number_validator, lambda x:int(x)>0,help_text=must_be_positive),
+propitem('specjbb.txi.pergroup.count', 1, 'Number of TxInjectors per Backend in one Group.', number_validator, lambda x:int(x)>0,help_text=must_be_positive),
 
 propitem('specjbb.run.datafile.dir', '.', 'Directory for storing binary log file of the run.', default_validator, default_validator,help_text="Enter a directory"),
 propitem('specjbb.mapreducer.pool.size', 2, 'Controller ForkJoinPool size supporting parallel work of TxInjector/Backend agents.', number_validator, lambda x:int(x)>0,help_text=must_be_positive),
