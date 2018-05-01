@@ -6,6 +6,7 @@ Usage:
     mainCLI.py (-h | --help)
     mainCLI.py --version
     mainCLI.py dialogue
+    mainCLI.py curses
 """
 # library imports
 import json
@@ -18,8 +19,9 @@ from shutil import copy, rmtree
 from docopt import docopt
 
 # source imports
-import dialogue
+from src import dialogue
 from src import validate
+from src.curses import speccurses
 
 
 def to_list(s):
@@ -119,13 +121,18 @@ def do_validate(arguments):
 def do_dialogue(arguments):
     dialogue.dialogue()
 
+def do_curses(arguments):
+    speccurses.main()
+
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
         'validate': do_validate,
-        'dialogue' : do_dialogue
+        'dialogue' : do_dialogue,
+        'curses': do_curses,
         }
 
 if __name__ == "__main__":
