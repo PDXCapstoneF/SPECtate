@@ -2,10 +2,13 @@ import os
 import curses
 import json
 import os.path
-from simplejson import JSONDecodeError
+try:
+    from simplejson import JSONDecodeError
+except ImportError:
+    from json import JSONDecodeError
 
-import objects
-from objects import spec_decoder, spec_encoder, spec_config, spec_run
+import src.curses.objects
+from src.curses.objects import spec_decoder, spec_encoder, spec_config, spec_run
 
 TAB = 9
 ENTER = 10
