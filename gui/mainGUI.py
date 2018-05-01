@@ -1,5 +1,9 @@
 import os
 import sys
+
+# import modules defined at ../
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
