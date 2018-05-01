@@ -63,7 +63,7 @@ class MainWindow(Frame):
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
-        self.listbox.bind("<Button-3>", self.popup_window)
+        self.listbox.bind("<ButtonRelease-3>", self.popup_window)
 
         # Create canvas
         self.canvas = Canvas(self, width=80, height=self.height, bg="white", relief="sunken")
@@ -130,7 +130,9 @@ class MainWindow(Frame):
         pass
 
     def import_runlist(self):
-        pass
+        filetuples = filedialog.askopenfilenames(title="Select file",
+                                               filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
+        self.listbox.insert(END, spec_run(filetuples))
 
     def import_runtypes(self):
         pass
