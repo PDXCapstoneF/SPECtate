@@ -19,7 +19,7 @@ from shutil import copy, rmtree
 from docopt import docopt
 
 # source imports
-import dialogue
+from src import dialogue
 from src import validate
 from src.curses import speccurses
 
