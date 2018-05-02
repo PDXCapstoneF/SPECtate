@@ -3,6 +3,7 @@ This module replaces `run.sh`.
 """
 
 import os
+import shutil
 from multiprocessing import Pool
 from uuid import uuid4
 import logging
@@ -263,6 +264,26 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
+        pwd = os.getcwd()
+        results_directory = os.path.abspath(str(self.run_id))
+
+        self.log.debug("set logging directory to {}".format(results_directory))
+
+        try:
+            self.log.debug("attempting to create results directory {}".format(results_directory))
+            try:
+                os.mkdir(results_directory)
+            except os.FileExistsError:
+                self.log.debug("run results directory already existed, continuing")
+
+            self._run()
+        except Exception as e:
+            self.log.error("exception: {}, removing results directory".format(e))
+            shutil.rmtree(results_directory)
+        finally:
+            os.chdir(pwd)
+
+    def _run(self):
         """
         Executes this particular SpecJBBRun by:
         - writing the props file for this run at self.props_file
@@ -270,17 +291,6 @@ class SpecJBBRun:
         - setting up the transaction injectors and backends and running their tasks
         - emmitting "done" messages when finished
         """
-        results_directory = os.path.abspath(str(self.run_id))
-        self.log.debug("set logging directory to {}".format(results_directory))
-
-        self.log.debug("attempting to create results directory {}".format(results_directory))
-        try:
-            os.mkdir(results_directory)
-        except os.FileExistsError:
-            self.log.debug("run results directory already existed, continuing")
-
-        os.chdir(results_directory)
-
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
             c = configparser.ConfigParser()
