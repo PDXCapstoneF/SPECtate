@@ -8,37 +8,32 @@
     "width": 600,
     "height": 400
    },
-    "commands": {
-      "cascades": {
-        "file": {
-          "title": "File",
-          "items": [
-            "Import Run List",
-            "Import Run Types",
-            "Save Run List As",
-            "Save Run Types As",
-            "Create New Run",
-            "Create Group",
-            "Save Group",
-            "Run Group",
-            "Load Group",
-            "Exit"
-          ]
-        },
-        "edit": {
-          "title": "Edit",
-          "items": [
-            "Undo",
-            "Redo"
-          ]
-        },
-        "help": {
-          "title": "Help",
-          "items": [
-            "Wiki",
-            "Exit"
-          ]
-        }
+  "commands": {
+    "file": {
+      "title": "File",
+      "items": {
+        "import_runlist": "Import Run List",
+        "import_runtypes": "Import Runtypes",
+        "save_as": "Save As...",
+        "new_run": "Create New Run",
+        "run_group": "Run Group",
+        "load_group": "Load Group",
+        "exit": "Exit"
       }
+    },
+    "edit": {
+      "title": "Edit",
+      "items": [
+        "Undo",
+        "Redo"
+      ]
+    },
+    "help": {
+      "title": "Help",
+      "items": [
+        "Wiki",
+        "Exit"
+      ]
     }
+  }
 }
