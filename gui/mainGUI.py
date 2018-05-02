@@ -23,7 +23,6 @@ run_list = ['Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
         self.RUN_CONFIG = [os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json']
-        print(self.RUN_CONFIG)
         Frame.__init__(self, *args, **kwargs)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
