@@ -63,7 +63,7 @@ class TestBenchmarkRun(unittest.TestCase):
         })
 
         for f in [t.controller_run_args, t.backend_run_args, t.injector_run_args]:
-            self.assertTrue("env/Main.jar" in f())
+            self.assertTrue(any("env/Main.jar" in arg for arg in f()))
             self.assertTrue("java" in f())
             self.assertEqual("java", f()[0])
 
