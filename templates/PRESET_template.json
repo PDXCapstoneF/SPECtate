@@ -1,6 +1,7 @@
 {
 	"args": [
 		"ir",
+		"duration",
 		"groupCount",
 		"workerTier1",
 		"workerTier2",
@@ -8,8 +9,8 @@
 	],
 
 	"translations": {
-		"ir": "specjbb.controller.preset.ir":
-		"duration": "specjbb.controller.preset.duration":
+		"ir": "specjbb.controller.preset.ir",
+		"duration": "specjbb.controller.preset.duration",
 		"groupCount": "specjbb.group.count",
 		"workerTier1": "specjbb.forkjoin.workers.Tier1",
 		"workerTier2": "specjbb.forkjoin.workers.Tier2",

@@ -10,10 +10,10 @@
 	],
 
 	"translations": {
-		"minDuration": "specjbb.controller.loadlevel.duration.min":
-		"maxDuration": "specjbb.controller.loadlevel.duration.max":
-		"rtCurveStart": "specjbb.controller.rtcurve.start":
-		"groupCount": "specjbb.group.count":
+		"minDuration": "specjbb.controller.loadlevel.duration.min",
+		"maxDuration": "specjbb.controller.loadlevel.duration.max",
+		"rtCurveStart": "specjbb.controller.rtcurve.start",
+		"groupCount": "specjbb.group.count",
 		"workerTier1": "specjbb.forkjoin.workers.Tier1",
 		"workerTier2": "specjbb.forkjoin.workers.Tier2",
 		"workerTier3": "specjbb.forkjoin.workers.Tier3"
