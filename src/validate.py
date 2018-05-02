@@ -6,27 +6,6 @@ from six import text_type
 def is_stringy(v):
     return type(v) is text_type
 
-ConfigSchema = Schema({
-    Optional("meta"): {
-        object: object
-    },
-
-    "specjbb": {
-        "run_type": And(is_stringy,
-            lambda rt: rt.lower() in ["hbir", "hbir_rt", "preset", "loadlevel"]),
-        "kit_version": is_stringy,
-        "tag": is_stringy,
-        "jdk": is_stringy,
-        "numa_node": int,
-        "data": is_stringy,
-        "rt_start": int,
-        "duration": int,
-        "t": [int],
-    "jvm_options": [is_stringy],
-    },
-
-    })
-
 TemplateSchema = Schema({
     "args": [is_stringy],
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
@@ -47,7 +26,7 @@ TemplateSchema = Schema({
     })
 
 RunConfigSchema = Schema({
-    "template_name": is_stringy,
+    "template_type": is_stringy,
     "args": {
         Optional(is_stringy): object,
         },
@@ -69,7 +48,7 @@ def validate(unvalidated):
     # each of the args that appear in the RunList,
     for run in d["RunList"]:
         # for the TemplateData they pull from,
-        t = d["TemplateData"][run["template_name"]]
+        t = d["TemplateData"][run["template_type"]]
 
         # they need to appear in the template
         for arg in run["args"]:
@@ -98,6 +77,3 @@ def validate(unvalidated):
                     return None
 
     return d
-
-def validate_blackbox(unvalidated):
-    return ConfigSchema.validate(unvalidated)

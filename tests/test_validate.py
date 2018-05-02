@@ -1,33 +1,17 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, validate_blackbox, TemplateSchema
+from src.validate import validate, TemplateSchema
 
-class TestBlackboxConfigValidator(TestCase):
-    def test_empty_config_does_not_validate(self):
-        with self.assertRaises(SchemaError):
-            validate({})
-
+class TestSpectateConfigValidator(TestCase):
     def test_example_config_does_validate(self):
         with open('example_config.json') as f:
             j = json.loads(f.read())
-            self.assertTrue(validate_blackbox(j))
-
-    def test_invalid_config_does_not_validate(self):
-        with self.assertRaises(SchemaError):
-            with open('tests/fixtures/sample_config_invalid.json') as f:
-                j = json.loads(f.read())
-                self.assertFalse(validate(j))
-
-class TestSpectateConfigValidator(TestCase):
-    def test_example_spectate_config_does_validate(self):
-        with open('example_spectate_config.json') as f:
-            j = json.loads(f.read())
             self.assertTrue(validate(j))
 
-    def test_invalid_spectate_config_does_not_validate(self):
+    def test_invalid_config_does_not_validate(self):
         with self.assertRaises(Exception):
-            with open('tests/fixtures/sample_spectate_config_invalid.json') as f:
+            with open('tests/fixtures/sample_config_invalid.json') as f:
                 j = json.loads(f.read())
                 self.assertFalse(validate(j))
 
@@ -50,7 +34,7 @@ class TestSpectateConfigValidator(TestCase):
                 "TemplateData": {},
                 "RunList": [
                     {
-                        "template_name": "NONE",
+                        "template_type": "NONE",
                         "args": { "a": "b" },
                         }
                     ],
@@ -68,7 +52,7 @@ class TestSpectateConfigValidator(TestCase):
                 },
             "RunList": [
                 {
-                    "template_name": "example",
+                    "template_type": "example",
                     "args": {
                         "a": "b",
                         "arg1": 5,
@@ -95,7 +79,7 @@ class TestSpectateConfigValidator(TestCase):
             },
             "RunList": [
                 {
-                    "template_name": "example",
+                    "template_type": "example",
                     "args": {
                         "arg1": 5,
                         },

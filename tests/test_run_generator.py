@@ -8,7 +8,7 @@ class TestRunGenerator(unittest.TestCase):
     and translates them into objects that SpecJBBRun can consume.
     """
     def test_run_generator_generates_valid_RunList_with_example(self):
-        with open("example_spectate_config.json", 'r') as f:
+        with open("example_config.json", 'r') as f:
             c = json.loads(f.read())
 
         rg = src.run_generator.RunGenerator(**c)

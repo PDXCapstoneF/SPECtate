@@ -7,7 +7,7 @@ class RunGenerator:
         # let's go ahead and populate everything
         for run in RunList:
             run = RunConfigSchema.validate(run)
-            template = TemplateData.get(run["template_name"])
+            template = TemplateData.get(run["template_type"])
             template = TemplateSchema.validate(template)
 
             # populate default_props
