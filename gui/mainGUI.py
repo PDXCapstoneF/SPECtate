@@ -169,10 +169,10 @@ class MainWindow(Frame):
 
 
 def return_run_types():
-    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtype_options.json')
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_tate_config.json')
     with open(path_to_json, 'r') as json_file:
         parsed = json.load(json_file)
-        return [parsed.keys()]
+        return [parsed["TemplateData"].keys()]
 
 
 if __name__ == '__main__':
