@@ -1,5 +1,5 @@
 {
-	"templates": {
+	"TemplateData": {
 		"HBIR": {
 			"args": [
 				"arg1",
@@ -25,9 +25,9 @@
 
 		}
 	},
-	"runs": [
+	"RunList": [
 		{
-			"template_name": "HBIR BUT BETTER",
+			"template_type": "HBIR BUT BETTER",
 			"args": {
 				"arg1": "value 1",
 				"arg2": "value 1",
@@ -35,7 +35,7 @@
 			}
 		},
 		{
-			"template_name": "HBIR",
+			"template_type": "HBIR",
 			"args": {
 				"arg1": 4,
 				"arg2": false
@@ -43,7 +43,7 @@
 
 		},
 		{
-			"template_name": "HBIR",
+			"template_type": "HBIR",
 			"args": {
 				"arg1": 4,
 				"arg2": false
