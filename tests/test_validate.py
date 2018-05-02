@@ -118,3 +118,13 @@ class TestSpectateConfigValidator(TestCase):
             },
             "runs": []
             }))
+
+    def test_runs_with_template_as_filename(self):
+        self.assertTrue(validate({
+            "templates": {
+                "PRESET": "templates/PRESET_template.json",
+                "HBIR_RT": "templates/HBIR_RT_template.json",
+                "LOADLEVELS": "templates/LOADLEVELS_template.json",
+                },
+            "runs": [],
+            }))
