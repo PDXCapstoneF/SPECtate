@@ -33,7 +33,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_templates_with_extra_translations_dont_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [],
                     "translations": { 
@@ -41,14 +41,14 @@ class TestSpectateConfigValidator(TestCase):
                         },
                     },
                 },
-            "runs": [],
+            "RunList": [],
             }))
 
     def test_there_should_be_templates_if_there_are_runs(self):
         with self.assertRaises(Exception):
             self.assertFalse(validate({
-                "templates": {},
-                "runs": [
+                "TemplateData": {},
+                "RunList": [
                     {
                         "template_name": "NONE",
                         "args": { "a": "b" },
@@ -58,7 +58,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_extra_args_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [],
                     "translations": { 
@@ -66,7 +66,7 @@ class TestSpectateConfigValidator(TestCase):
                         },
                     },
                 },
-            "runs": [
+            "RunList": [
                 {
                     "template_name": "example",
                     "args": {
@@ -79,7 +79,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [
                         "arg1",
@@ -93,7 +93,7 @@ class TestSpectateConfigValidator(TestCase):
                     },
                 },
             },
-            "runs": [
+            "RunList": [
                 {
                     "template_name": "example",
                     "args": {
@@ -105,7 +105,7 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_extra_annotations_fail_to_validate(self):
         self.assertFalse(validate({
-            "templates": {
+            "TemplateData": {
                 "example": {
                     "args": [
                         "arg1",
@@ -116,5 +116,5 @@ class TestSpectateConfigValidator(TestCase):
                         },
                 },
             },
-            "runs": []
+            "RunList": []
             }))

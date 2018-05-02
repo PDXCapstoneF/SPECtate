@@ -57,19 +57,19 @@ RunConfigSchema = Schema({
     })
 
 SpectateConfig = Schema({
-    "templates": { 
+    "TemplateData": { 
         is_stringy: TemplateSchema,
     },
-    "runs": [RunConfigSchema],
+    "RunList": [RunConfigSchema],
     })
 
 def validate(unvalidated):
     d = SpectateConfig.validate(unvalidated)
 
     # each of the args that appear in the runs,
-    for run in d["runs"]:
+    for run in d["RunList"]:
         # for the templates they pull from,
-        t = d["templates"][run["template_name"]]
+        t = d["TemplateData"][run["template_name"]]
 
         # they need to appear in the template
         for arg in run["args"]:
@@ -83,7 +83,7 @@ def validate(unvalidated):
                 return None
 
     # for each template,
-    for template in d["templates"].values():
+    for template in d["TemplateData"].values():
         # all of the translations need to refer to
         # arguments specified by the user
         if "translations" in template:
