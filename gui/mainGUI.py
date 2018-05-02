@@ -1,6 +1,6 @@
 import os
 import sys
-
+from os.path import dirname, abspath
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -22,6 +22,8 @@ run_list = ['Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run
 
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
+        self.RUN_CONFIG = [os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json']
+        print(self.RUN_CONFIG)
         Frame.__init__(self, *args, **kwargs)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
@@ -134,9 +136,16 @@ class MainWindow(Frame):
         pass
 
     def import_runlist(self):
-        pass
+        """
+        load config file
+        """
+        filetuples = filedialog.askopenfilenames(title="Select file",
+                                                 filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
+        if filetuples:
+            self.RUN_CONFIG.append(filetuples[0])
 
     def import_runtypes(self):
+        # NOT NEEDED
         pass
 
     def run_group(self):
