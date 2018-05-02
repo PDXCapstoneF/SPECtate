@@ -2,6 +2,7 @@
 This module replaces `run.sh`.
 """
 
+import os
 from multiprocessing import Pool
 from uuid import uuid4
 import logging
@@ -17,6 +18,7 @@ class InvalidRunConfigurationException(Exception):
     Exception thrown by SpecJBBRun when given a run configuration
     that it can't figure out. Optionally has an error message.
     """
+
     def __init__(self, msg="Run was invalid"):
         self.msg = msg
 
@@ -40,6 +42,7 @@ class JvmRunOptions:
     A helper class for SpecJBBRun, to provide defaults and a way
     for lists, dict etc to be coerced into something that SpecJBBRun can work with.
     """
+
     def __init__(self, val=None):
         """
         Initialize JvmRunOptions based on the type of val.
@@ -111,11 +114,13 @@ class SpecJBBComponentOptions(dict):
     If rest is an int, it will be interpreted as the count for this particular component.
     If rest is not provided, the internal dict will be set to the default.
     """
+
     def __init__(self, component_type, rest=None):
         if isinstance(component_type, str):
             component_type = component_type.lower()
             if component_type not in SpecJBBComponentTypes:
-                raise Exception("invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
+                raise Exception(
+                    "invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
         else:
             raise Exception(
                 "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(component_type)))
@@ -146,7 +151,8 @@ class SpecJBBComponentOptions(dict):
                 "jvm_opts": []
             }
         else:
-            raise Exception("Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
+            raise Exception(
+                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
 
     def __getitem__(self, name):
         """
@@ -159,6 +165,7 @@ class SpecJBBComponentOptions(dict):
         Defined so that SpecJBBComponentOptions can be accessed via attr names.
         """
         return self.__dict__.__getitem__(name)
+
 
 class SpecJBBRun:
     """
@@ -190,7 +197,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
-        self.jar = jar
+        self.jar = os.path.abspath(jar)
         self.props = props
         self.props_file = props_file
         self.run_id = uuid4()
@@ -215,11 +222,11 @@ class SpecJBBRun:
             raise InvalidRunConfigurationException(
                 "'type' wasn't specified in 'controller'")
 
-
         if controller is None:
             self.controller = SpecJBBComponentOptions("composite")
         else:
-            self.controller = SpecJBBComponentOptions(controller["type"], controller)
+            self.controller = SpecJBBComponentOptions(
+                controller["type"], controller)
 
         self.backends = SpecJBBComponentOptions("backend", backends)
         self.injectors = SpecJBBComponentOptions("txinjector", injectors)
@@ -263,15 +270,28 @@ class SpecJBBRun:
         - setting up the transaction injectors and backends and running their tasks
         - emmitting "done" messages when finished
         """
+        results_directory = os.path.abspath(str(self.run_id))
+        self.log.debug("set logging directory to {}".format(results_directory))
+
+        self.log.debug("attempting to create results directory {}".format(results_directory))
+        try:
+            os.mkdir(results_directory)
+        except os.FileExistsError:
+            self.log.debug("run results directory already existed, continuing")
+
+        os.chdir(results_directory)
+
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
             c = configparser.ConfigParser()
             c.read_dict({'SPECtate': self.props})
             c.write(props_file)
+
         # setup jvms
         # we first need to setup the controller
         c = TaskRunner(*self.controller_run_args())
         self.dump()
+        self.log.debug(c)
 
         if self.controller["type"] is "composite":
             self.log.info("begin benchmark")
