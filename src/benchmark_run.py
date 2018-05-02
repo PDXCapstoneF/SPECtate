@@ -93,6 +93,9 @@ class JvmRunOptions:
         """
         return self.__dict__.__getitem__(name)
 
+    def __repr__(self):
+        return "{}".format(self.__dict__)
+
 
 """
 These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
@@ -167,6 +170,9 @@ class SpecJBBComponentOptions(dict):
         """
         return self.__dict__.__getitem__(name)
 
+    def __repr__(self):
+        return "{}".format(self.__dict__)
+
 
 class SpecJBBRun:
     """
@@ -237,7 +243,7 @@ class SpecJBBRun:
         Generator that yields TaskRunners for the backends and injectors
         with the correct JVM and SPECjbb2015 arguments for this particular run.
         """
-        if self.controller["type"] is "composite":
+        if self.controller["type"] == "composite":
             return
 
         self.log.info(
@@ -301,10 +307,9 @@ class SpecJBBRun:
         # we first need to setup the controller
         c = TaskRunner(*self.controller_run_args())
         self.dump()
-        self.log.debug(c)
 
-        if self.controller["type"] is "composite":
-            self.log.info("begin benchmark")
+        if self.controller["type"] == "composite":
+            self.log.info("begin composite benchmark")
             c.run()
             self.log.info("done")
             return
