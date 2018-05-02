@@ -15,7 +15,7 @@ before_deploy:
   - pipenv uninstall --all # clean out any dev dependencies
   - pipenv install # only add what we need
   - pip install pyinstaller # install pyinstaller
-  - ./load_paths.sh
+  - ./.load_paths.sh
   - pyinstaller mainCLI.spec # make our one-file executable
 deploy:
   provider: releases
