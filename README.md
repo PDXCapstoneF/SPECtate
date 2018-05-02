@@ -25,33 +25,36 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 * UNIX (Linux, Mac OSX), or Windows
-* [python](https://www.python.org/downloads/) >= 3.6
+* [python](https://www.python.org/downloads/) >= 3.6 OR [`pipenv`](https://docs.pipenv.org)
 * [SPECjbb®2015](https://www.spec.org/order.html)
 
 
 ### Setup
 
-```
-$ git clone https://github.com/PDXCapstoneF/SPECtate.git
-$ cd SPECtate/
-$ python -m unittest discover -s .
-```
+This project uses `pipenv` to manage dependencies:
 
-This project uses `pipenv` to manage dependencies. A suggested python manager is `pyenv`.
-
+```shell
+git clone https://github.com/PDXCapstoneF/SPECtate.git
+cd SPECtate/
+pip install pipenv
+pipenv install
+pipenv shell
+python -m unittest discover -s .
+```
 
 ## Example CLI Usage
 
-* Generate configurations, including run-type, java options, ... (example session)
+* Generate configurations, including run-type, java options, etc using an interactive, command-line dialogue:
 ```
-$ 
-```
-
-* Invoke SPECjbb using json/hjson/yaml file ... (example session)
-```
-$ 
+python mainCLI.py dialogue 
 ```
 
+* Invoke SPECjbb using a SPECtate configuration file:
+```
+python mainCLI.py run my_config.json --props specjbb2015.props
+# ...
+# run.sh doing its work
+```
 
 ## Documentation
 
@@ -60,17 +63,16 @@ $
 Example:
 
 ```
-$ cd SPECtate/
-$ pydoc -w dialogue; open dialogue.html
+pydoc -w dialogue; open dialogue.html
 ```
 
 The `-w` flag in the above command will "Write out the HTML documentation for a module to a file in the current directory."
 
 ## Testing
 
-* Unittests 
+* Unittests: `python -m unittest discover`
 
-* Travis-CI for Continuous integration testing during development
+* Travis-CI for Continuous integration testing during development: [here](https://travis-ci.org/PDXCapstoneF/SPECtate)
 
 
 ## License
