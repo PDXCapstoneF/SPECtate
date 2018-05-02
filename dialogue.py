@@ -337,7 +337,38 @@ def load_tate(run_list, template_dict):
         except:
             print('Unable to load filename {}'.format(filename))
     return run_list, template_dict
-        
+
+def reorder_run(run_list, template_dict):
+    print('Select an index to reorder.')
+    for index, run in enumerate(run_list):
+        print('Index {}: Tag {}'.format(index, run[RUNLIST_ARGS]['Tag']))
+
+    new_list = run_list[:]
+    try:
+        user_input = input('Which index do you want to reorder? ')
+        if user_input in EXIT_CONSTS:
+            return run_list, template_dict
+        old_index = int(user_input)
+        user_input = input('What index do you want it to be? ')
+        if user_input in EXIT_CONSTS:
+            return run_list, template_dict
+        new_index = int(user_input)
+
+        run = new_list.pop(old_index)
+        new_list.insert(new_index, run)
+        if input('Remove Tag {} from index {} and place it in {}? '\
+                 .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))\
+           in YES_CONSTS:
+            print('Run {} removed from index {} and placed in index {}.'\
+                  .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))
+            return new_list, template_dict
+    except:
+        print('Invalid index.')
+        return run_list, template_dict
+    
+    print('Reorder canceled.')
+    
+
 
 def error(run_dict, template_dict):
     print('Invalid input.')
@@ -367,6 +398,7 @@ def dialogue():
         'edit run' : edit_run,
         'save tate' : save_tate,
         'load tate' : load_tate,
+        'reorder run' : reorder_run,
     }
 
     option_description_dict = {
@@ -379,6 +411,7 @@ def dialogue():
         'edit run' : 'Edit a run',
         'save tate' : 'Save TateConfig',
         'load tate' : 'Load TateConfig',
+        'reorder run' : 'Reorder a run',
     }
 
     try:
