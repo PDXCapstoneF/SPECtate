@@ -201,7 +201,7 @@ class SpecJBBRun:
         self.jar = os.path.abspath(jar)
         self.props = props
         self.props_file = props_file
-        self.run_id = uuid4()
+        self.run_id = uuid4().hex
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
         self.java = JvmRunOptions(java)
@@ -245,8 +245,8 @@ class SpecJBBRun:
                 .format(self.backends["count"], self.injectors["count"]))
 
         for _ in range(self.backends["count"]):
-            group_id = uuid4()
-            backend_jvm_id = uuid4()
+            group_id = uuid4().hex
+            backend_jvm_id = uuid4().hex
             self.log.debug("constructing group {}".format(group_id))
             yield TaskRunner(*self.backend_run_args(),
                              '-G={}'.format(group_id),
@@ -256,7 +256,7 @@ class SpecJBBRun:
                 "constructing injectors for group {}".format(group_id))
 
             for _ in range(self.injectors["count"]):
-                ti_jvm_id = uuid4()
+                ti_jvm_id = uuid4().hex
                 self.log.debug(
                     "preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
                 yield TaskRunner(*self.injector_run_args(),
