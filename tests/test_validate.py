@@ -50,7 +50,7 @@ class TestSpectateConfigValidator(TestCase):
                 "TemplateData": {},
                 "RunList": [
                     {
-                        "template_name": "NONE",
+                        "template_type": "NONE",
                         "args": { "a": "b" },
                         }
                     ],
@@ -68,7 +68,7 @@ class TestSpectateConfigValidator(TestCase):
                 },
             "RunList": [
                 {
-                    "template_name": "example",
+                    "template_type": "example",
                     "args": {
                         "a": "b",
                         "arg1": 5,
@@ -95,7 +95,7 @@ class TestSpectateConfigValidator(TestCase):
             },
             "RunList": [
                 {
-                    "template_name": "example",
+                    "template_type": "example",
                     "args": {
                         "arg1": 5,
                         },

@@ -47,7 +47,7 @@ TemplateSchema = Schema({
     })
 
 RunConfigSchema = Schema({
-    "template_name": is_stringy,
+    "template_type": is_stringy,
     "args": {
         Optional(is_stringy): object,
         },
@@ -69,7 +69,7 @@ def validate(unvalidated):
     # each of the args that appear in the runs,
     for run in d["RunList"]:
         # for the templates they pull from,
-        t = d["TemplateData"][run["template_name"]]
+        t = d["TemplateData"][run["template_type"]]
 
         # they need to appear in the template
         for arg in run["args"]:
