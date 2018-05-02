@@ -1,0 +1,32 @@
+{
+	"args": [
+		"ir",
+		"groupCount",
+		"workerTier1",
+		"workerTier2",
+		"workerTier3"
+	],
+
+	"translations": {
+		"ir": "specjbb.controller.preset.ir":
+		"duration": "specjbb.controller.preset.duration":
+		"groupCount": "specjbb.group.count",
+		"workerTier1": "specjbb.forkjoin.workers.Tier1",
+		"workerTier2": "specjbb.forkjoin.workers.Tier2",
+		"workerTier3": "specjbb.forkjoin.workers.Tier3"
+
+	},
+
+	"default_props": {
+		"specjbb.comm.connect.client.pool.size": 192,
+		"specjbb.comm.connect.selector.runner.count": 4,
+		"specjbb.comm.connect.timeouts.connect": 650000,
+		"specjbb.comm.connect.timeouts.read": 650000,
+		"specjbb.comm.connect.timeouts.write": 650000,
+		"specjbb.comm.connect.worker.pool.max": 320,
+		"specjbb.customerDriver.threads": 64,
+		"specjbb.customerDriver.threads.saturate": 144,
+		"specjbb.customerDriver.threads.probe": 96,
+		"specjbb.mapreducer.pool.size": 27
+	}
+}
