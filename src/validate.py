@@ -3,8 +3,10 @@ from schema import Schema, And, Or, Optional
 # used for python2 and python3 string types
 from six import text_type
 
+
 def is_stringy(v):
     return type(v) is text_type
+
 
 TemplateSchema = Schema({
     "args": [is_stringy],
@@ -13,34 +15,35 @@ TemplateSchema = Schema({
     Optional("jar", default="specjbb2015.jar"): is_stringy,
     Optional("default_props"): {
         is_stringy: object,
-        },
+    },
     Optional("annotations"): {
         is_stringy: is_stringy,
-        },
+    },
     Optional("translations"): {
         is_stringy: is_stringy,
-        },
+    },
     Optional("types"): {
         is_stringy: is_stringy,
-        },
-    })
+    },
+})
 
 RunConfigSchema = Schema({
     "template_type": is_stringy,
     "args": {
         Optional(is_stringy): object,
-        },
+    },
     Optional("props_extra"): {
         Optional(is_stringy): is_stringy,
-        },
-    })
+    },
+})
 
 SpectateConfig = Schema({
-    "TemplateData": { 
+    "TemplateData": {
         is_stringy: TemplateSchema,
     },
     "RunList": [RunConfigSchema],
-    })
+})
+
 
 def validate(unvalidated):
     d = SpectateConfig.validate(unvalidated)

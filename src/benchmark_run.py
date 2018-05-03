@@ -276,15 +276,18 @@ class SpecJBBRun:
         self.log.debug("set logging directory to {}".format(results_directory))
 
         try:
-            self.log.debug("attempting to create results directory {}".format(results_directory))
+            self.log.debug(
+                "attempting to create results directory {}".format(results_directory))
             try:
                 os.mkdir(results_directory)
             except os.FileExistsError:
-                self.log.debug("run results directory already existed, continuing")
+                self.log.debug(
+                    "run results directory already existed, continuing")
 
             self._run()
         except Exception as e:
-            self.log.error("exception: {}, removing results directory".format(e))
+            self.log.error(
+                "exception: {}, removing results directory".format(e))
             shutil.rmtree(results_directory)
         finally:
             os.chdir(pwd)

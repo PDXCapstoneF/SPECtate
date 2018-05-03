@@ -3,6 +3,7 @@ from unittest import TestCase
 import json
 from src.validate import validate, TemplateSchema
 
+
 class TestSpectateConfigValidator(TestCase):
     def test_example_config_does_validate(self):
         with open('example_config.json') as f:
@@ -20,13 +21,13 @@ class TestSpectateConfigValidator(TestCase):
             "TemplateData": {
                 "example": {
                     "args": [],
-                    "translations": { 
+                    "translations": {
                         "arg1": "someValue",
-                        },
                     },
                 },
+            },
             "RunList": [],
-            }))
+        }))
 
     def test_there_should_be_TemplateData_if_there_are_RunList(self):
         with self.assertRaises(Exception):
@@ -35,31 +36,31 @@ class TestSpectateConfigValidator(TestCase):
                 "RunList": [
                     {
                         "template_type": "NONE",
-                        "args": { "a": "b" },
-                        }
-                    ],
-                }))
+                        "args": {"a": "b"},
+                    }
+                ],
+            }))
 
     def test_RunList_with_extra_args_fail_to_validate(self):
         self.assertFalse(validate({
             "TemplateData": {
                 "example": {
                     "args": [],
-                    "translations": { 
+                    "translations": {
                         "arg1": "someValue",
-                        },
                     },
                 },
+            },
             "RunList": [
                 {
                     "template_type": "example",
                     "args": {
                         "a": "b",
                         "arg1": 5,
-                        },
-                    }
-                ],
-            }))
+                    },
+                }
+            ],
+        }))
 
     def test_RunList_with_ommitted_with_no_defaults_fail_to_validate(self):
         self.assertFalse(validate({
@@ -68,12 +69,12 @@ class TestSpectateConfigValidator(TestCase):
                     "args": [
                         "arg1",
                         "noDefaults",
-                        ],
-                    "translations": { 
+                    ],
+                    "translations": {
                         "arg1": "someValue",
-                        },
-                "default_props": {
-                    "arg1": "defaultvalue",
+                    },
+                    "default_props": {
+                        "arg1": "defaultvalue",
                     },
                 },
             },
@@ -82,10 +83,10 @@ class TestSpectateConfigValidator(TestCase):
                     "template_type": "example",
                     "args": {
                         "arg1": 5,
-                        },
-                    }
-                ],
-            }))
+                    },
+                }
+            ],
+        }))
 
     def test_RunList_with_extra_annotations_fail_to_validate(self):
         self.assertFalse(validate({
@@ -93,12 +94,12 @@ class TestSpectateConfigValidator(TestCase):
                 "example": {
                     "args": [
                         "arg1",
-                        ],
-                    "annotations": { 
+                    ],
+                    "annotations": {
                         "arg1": "someValue",
                         "extraAnnotation": "someValue",
-                        },
+                    },
                 },
             },
             "RunList": []
-            }))
+        }))
