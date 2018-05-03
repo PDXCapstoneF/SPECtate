@@ -1,6 +1,6 @@
 import os
 import sys
-
+import platform
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -67,7 +67,10 @@ class MainWindow(Frame):
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
-        self.listbox.bind("<ButtonRelease-3>", self.popup_window)
+        if platform.system() = 'Darwin':
+            self.listbox.bind("<ButtonRelease-2>", self.popup_window)
+        else:
+            self.listbox.bind("<ButtonRelease-3>", self.popup_window)
 
         # Create canvas
         self.canvas = Canvas(self, width=80, height=self.height, bg="white", relief="sunken")
