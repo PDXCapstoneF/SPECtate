@@ -1,4 +1,5 @@
-from schema import Schema, And, Or, Optional
+import json
+from schema import Schema, And, Or, Optional, Use
 
 # used for python2 and python3 string types
 from six import text_type
@@ -37,9 +38,13 @@ RunConfigSchema = Schema({
     },
 })
 
+def load_template(fn):
+    with open(fn, 'r') as l:
+        return json.loads(l.read())
+
 SpectateConfig = Schema({
     "TemplateData": {
-        is_stringy: TemplateSchema,
+        is_stringy: Or(TemplateSchema, And(Use(load_template), TemplateSchema)),
     },
     "RunList": [RunConfigSchema],
 })
