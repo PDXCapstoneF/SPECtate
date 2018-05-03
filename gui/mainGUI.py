@@ -166,17 +166,14 @@ class MainWindow(Frame):
         popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
         popup_menu.tk_popup(event.x_root, event.y_root)
 
-    def get_runtype_args(self, run_type, to_search):
-        valid_keys = ["args", "default_props", "types", "translations", "annotations"]
-        if to_search not in valid_keys:
-            return None
+    def get_runtype_args(self, run_type):
         with open(self.RUN_CONFIG[-1]) as file:
             parsed = json.load(file)
             if run_type not in parsed["TemplateData"]:
                 print("{} not found.".format(run_type))
             results = dict()
             print("Runtype: {}".format(run_type))
-            for i in parsed["TemplateData"][run_type][to_search]:
+            for i in parsed["TemplateData"][run_type]["args"]:
                 results[i] = parsed["TemplateData"][run_type]["annotations"][i]
             return results
 
