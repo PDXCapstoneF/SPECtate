@@ -40,7 +40,8 @@ class spec_encoder(json.JSONEncoder):
 
 class spec_decoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
-        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+        json.JSONDecoder.__init__(
+            self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, obj):
         if '_type' not in obj:
@@ -61,7 +62,8 @@ class spec_run:
             self.num_runs = 1
             self.numa_nodes = 1
             self.tag = "tag-name"
-            self.run_type = 'composite'  # must be 'multi, 'distributed_ctrl_txl', 'distributed_sut', 'multi'
+            # must be 'multi, 'distributed_ctrl_txl', 'distributed_sut', 'multi'
+            self.run_type = 'composite'
             self.verbose = False
             self.report_level = 0  # must be between 0-3
             self.skip_report = False
@@ -177,25 +179,30 @@ class spec_run:
         exitcode = ping.wait()
         FNULL.close()
         if (exitcode != 0):
-            handle('ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
+            handle(
+                'ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
             return 4
 
         opts = self._spec_opts()
         tx_opts = self._tx_opts()
         result_dir = self._prerun(path)
-        cmd = '{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {}'.format(self.jdk, self.jvm_options, path, opts)
+        cmd = '{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {}'.format(
+            self.jdk, self.jvm_options, path, opts)
         tx_procs = []
         cont_std = open(os.path.join(result_dir, 'controller.log'), 'wb')
         cont_err = open(os.path.join(result_dir, 'controller.out'), 'wb')
-        controller = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
+        controller = Popen(shlex.split(cmd), cwd=path,
+                           stdout=PIPE, stderr=PIPE)
         # os.system('{} {} -jar {}/specjbb2015.jar -m DISTCONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, result_dir, result_dir))
         for g in range(self.properties.root['specjbb.group.count'].value):
             for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
-                ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
+                ti_name = "{}Group{}.TxInjector.txiJVM{}".format(
+                    result_dir, g, j)
                 cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={}'.format(self.jdk, self.jvm_options, path,
                                                                                  tx_opts, g)
                 tx_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
-                                 open(os.path.join(result_dir, '{}.log'.format(ti_name)), 'wb'),
+                                 open(os.path.join(result_dir,
+                                                   '{}.log'.format(ti_name)), 'wb'),
                                  open(os.path.join(result_dir, '{}.out'.format(ti_name)), 'wb')])
                 # os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
         while (controller.poll() is None):
@@ -238,7 +245,8 @@ class spec_run:
         exitcode = ping.wait()
         FNULL.close()
         if (exitcode != 0):
-            handle('ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
+            handle(
+                'ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
             return 4
         opts = self._tx_opts()
         procs = []
@@ -277,39 +285,44 @@ class spec_run:
         for x in range(self.num_runs):
             cont_std = open(os.path.join(result_dir, 'controller.log'), 'wb')
             cont_err = open(os.path.join(result_dir, 'controller.out'), 'wb')
-            cmd = '{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {}'.format(self.jdk, self.jvm_options, path, opts)
-            controller = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
+            cmd = '{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {}'.format(
+                self.jdk, self.jvm_options, path, opts)
+            controller = Popen(shlex.split(cmd), cwd=path,
+                               stdout=PIPE, stderr=PIPE)
             tx_procs = []
             be_procs = []
             # os.system('{} {} -jar {}/specjbb2015.jar -m MULTICONTROLLER {} 2> {}/controller.log > {}/controller.out &'.format(self.jdk, self.jvm_options, path, opts, x, result_dir, result_dir))
             for g in range(self.properties.root['specjbb.group.count'].value):
                 numa = numa_cmd.format((g - 1) % 4)
                 for j in range(self.properties.root['specjbb.txi.pergroup.count'].value):
-                    ti_name = "{}Group{}.TxInjector.txiJVM{}".format(result_dir, g, j)
+                    ti_name = "{}Group{}.TxInjector.txiJVM{}".format(
+                        result_dir, g, j)
                     if(has_numa):
                         cmd = '{} {} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(numa, self.jdk, self.jvm_options,
-                                                                                            path, tx_opts, g, ti_name,
-                                                                                            ti_name)
+                                                                                               path, tx_opts, g, ti_name,
+                                                                                               ti_name)
                     else:
                         cmd = '{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={}'.format(self.jdk, self.jvm_options,
-                                                                                        path, tx_opts, g, ti_name,
-                                                                                        ti_name)
+                                                                                            path, tx_opts, g, ti_name,
+                                                                                            ti_name)
                     tx_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
-                                     open(os.path.join(path, '{}.log'.format(ti_name)), 'wb'),
+                                     open(os.path.join(
+                                         path, '{}.log'.format(ti_name)), 'wb'),
                                      open(os.path.join(path, '{}.out'.format(ti_name)), 'wb')])
                     # os.system('{} {} -jar {}/specjbb2015.jar -m TXINJECTOR {} -G={} 2> {}.log > {}.out &'.format(self.jdk, self.jvm_options, path, tx_opts, g, ti_name, ti_name))
                 be_name = "{}{}.Backend.beJVM".format(result_dir, g)
                 if(has_numa):
                     cmd = '{} {} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(numa, self.jdk,
-                                                                                              self.jvm_options,
-                                                                                              path, tx_opts,
-                                                                                              g)
+                                                                                                 self.jvm_options,
+                                                                                                 path, tx_opts,
+                                                                                                 g)
                 else:
                     cmd = '{} {} -jar {}/specjbb2015.jar -m BACKEND {} -G={} -J=beJVM'.format(self.jdk, self.jvm_options,
-                                                                                          path, tx_opts,
-                                                                                          g)
+                                                                                              path, tx_opts,
+                                                                                              g)
                 be_procs.append([Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE),
-                                 open(os.path.join(path, '{}.log'.format(be_name)), 'wb'),
+                                 open(os.path.join(
+                                     path, '{}.log'.format(be_name)), 'wb'),
                                  open(os.path.join(path, '{}.out'.format(be_name)), 'wb')])
 
             while (controller.poll() is None):
@@ -465,9 +478,16 @@ con_types = [
 
 must_be_positive = "Value must be greater than 0"
 
-number_validator = lambda x: int(x) <= ord('9') and int(x) >= ord('0')
-float_validator = lambda x: (x <= ord('9') and x >= ord('0')) or x == ord('.')
-default_validator = lambda x: True
+
+def number_validator(x): return int(x) <= ord('9') and int(x) >= ord('0')
+
+
+def float_validator(x): return (
+    x <= ord('9') and x >= ord('0')) or x == ord('.')
+
+
+def default_validator(x): return True
+
 
 defaults = [
     propitem('specjbb.controller.type', 'HBIR_RT', 'Controls phases being controlled by Controller.', default_validator,
@@ -531,10 +551,12 @@ defaults = [
              help_text="Value must be a decimal greater than 0 and less than or equal to 1"),
 
     propitem('specjbb.controller.settle.time.min', 3000,
-             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(x) > 0,
+             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(
+                 x) > 0,
              help_text=must_be_positive),
     propitem('specjbb.controller.settle.time.max', 30000,
-             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(x) > 0,
+             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(
+                 x) > 0,
              help_text=must_be_positive),
 
     # propitem('specjbb.customerDriver.threads', 64, 'Maximum number of threads in ThreadPoolExecutor for all three probe/saturate/service requests on the TxInjector side.', lambda x: isinstance(x, int) and x >= 64,help_text=must_be_positive)
@@ -586,7 +608,8 @@ defaults = [
     propitem('specjbb.input.number_products', 100000, ' Number of products in each Supermarket', number_validator,
              lambda x: int(x) > 0, help_text=must_be_positive),
 
-    propitem('specjbb.logLevel', 'INFO', 'Log level output', default_validator, lambda x: x in loglevels, loglevels),
+    propitem('specjbb.logLevel', 'INFO', 'Log level output',
+             default_validator, lambda x: x in loglevels, loglevels),
 
     propitem('specjbb.time.check.interval', 10000,
              'Time interval (in milliseconds) for periodic time check from Time Server', number_validator,

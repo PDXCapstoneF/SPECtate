@@ -1,10 +1,12 @@
 import subprocess
 import itertools
 
+
 class TaskRunner:
     """
     Runs a specified task with the given options.
     """
+
     def __init__(self, path, *options, **popen_kw):
         if not path:
             raise Exception("Path not specified for executable")
@@ -14,7 +16,8 @@ class TaskRunner:
 
         for opt in options:
             if not isinstance(opt, str):
-                raise Exception("Option key was '{}':{}, not str".format(opt, type(opt)))
+                raise Exception(
+                    "Option key was '{}':{}, not str".format(opt, type(opt)))
 
         self.options = options
         self.kw = popen_kw
@@ -23,7 +26,6 @@ class TaskRunner:
 
     def __str__(self):
         return "TaskRunner(path={}, options={}, kw={})".format(self.path, self.options, self.kw)
-
 
     def argument_list(self):
         return [self.path] + self.options

@@ -2,21 +2,22 @@ import unittest
 
 from src.task_runner import TaskRunner
 
+
 class TestTaskRunner(unittest.TestCase):
     valid_options = [
-            "echo",
-            "hello",
-            "world",
-            ]
+        "echo",
+        "hello",
+        "world",
+    ]
 
     invalid_options = [
-            [ # given non-string arguments
-                "echo",
-                2,
-                None,
-                False,
-                ],
-            ]
+        [  # given non-string arguments
+            "echo",
+            2,
+            None,
+            False,
+        ],
+    ]
 
     def test_init_with_valid_options_works(self):
         TaskRunner(self.valid_options)
@@ -29,4 +30,3 @@ class TestTaskRunner(unittest.TestCase):
     def test_run_actually_RunList(self):
         t = TaskRunner("echo", "hello", "world")
         t.run()
-
