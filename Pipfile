@@ -4,11 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
+testfixtures = "*"
 
 [packages]
 docopt = "*"
 six = "*"
 schema = "*"
+uuid = "*"
 
 [requires]
 python_version = "3.6"
