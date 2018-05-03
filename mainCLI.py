@@ -1,15 +1,19 @@
 """SPECtate.
 
 Usage:
-    mainCLI.py run <config> [--props <props>]
-    mainCLI.py validate <config>
+    mainCLI.py run [options] <config> [--props <props>]
+    mainCLI.py validate [options] <config>
+    mainCLI.py dialogue [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
-    mainCLI.py dialogue
+
+Options:
+    --level=<log-level>       Set the logging level. Uses python.logging's names for the different leves. [default: INFO]
 """
 # library imports
 import json
 import os
+import logging
 import sys
 from subprocess import call
 from shutil import copy, rmtree
@@ -20,6 +24,8 @@ from docopt import docopt
 # source imports
 import dialogue
 from src import validate
+from src import run_generator
+from src import benchmark_run
 
 
 def to_list(s):
@@ -119,17 +125,27 @@ def do_validate(arguments):
 def do_dialogue(arguments):
     dialogue.dialogue()
 
+def do_run(arguments):
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    rs = run_generator.RunGenerator(**args)
+    for r in rs.runs:
+        s = benchmark_run.SpecJBBRun(**r)
+        
+        s.run()
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
 do = {
         'run': do_run,
         'validate': do_validate,
-        'dialogue' : do_dialogue
+        'dialogue' : do_dialogue,
         }
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')
+    logging.basicConfig(level=logging.getLevelName(arguments['--level']))
 
     for key, func in do.items():
         if arguments[key]:
