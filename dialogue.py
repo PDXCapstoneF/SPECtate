@@ -9,6 +9,7 @@ import json
 EXIT_CONSTS = set(['q', 'quit', 'exit'])
 YES_CONSTS = set(['y', 'yes'])
 
+
 def write_json(filename, python_dict):
     """
     Serialize python_dict (dictionary) to filename (text file).
@@ -30,9 +31,9 @@ def read_json(filename):
 
 # Utility functions.
 def print_dict(d):
-    for key, value in sorted(d.items(), key=lambda x : x[0]):
+    for key, value in sorted(d.items(), key=lambda x: x[0]):
         print("{}: {}".format(key, value))
-      
+
 
 # Level-one layer of dialogue.
 # All functions take run_dict, runtype_dict as arguments so that they can be
@@ -40,7 +41,7 @@ def print_dict(d):
 
 # Level-one layer of dialogue.
 def print_all_runs(run_dict, runtype_dict):
-    for k, v in sorted(run_dict.items(), key=lambda x : x[0]):
+    for k, v in sorted(run_dict.items(), key=lambda x: x[0]):
         print('\nTag {}\n'.format(k))
         print_dict(v)
 
@@ -52,7 +53,7 @@ def create_run(run_dict, runtype_dict):
         return
 
     print('Input the run type. Current options: {}'.format(
-            ' '.join(sorted(runtype_dict.keys()))))
+        ' '.join(sorted(runtype_dict.keys()))))
     run_type = input('-> ')
     if run_type not in runtype_dict.keys():
         user_input = input('{} is not currently an option. Add it? ')
@@ -79,8 +80,8 @@ def create_runtype(run_dict, runtype_dict):
             print('{} has already been added!'.format(user_input))
         option_set.add(user_input)
         option_list.append(user_input)
-    
-    if runtype_name.lower() not in EXIT_CONSTS: 
+
+    if runtype_name.lower() not in EXIT_CONSTS:
         runtype_dict[runtype_name] = option_list
 
 
@@ -106,7 +107,7 @@ def copy_run(run_dict, runtype_dict):
         old_run = input('-> ')
         new_run = input('Input the new run tag. ')
         # Deep copy is required.
-        run_dict[new_run] = {k : v for k, v in run_dict[old_run].items()}
+        run_dict[new_run] = {k: v for k, v in run_dict[old_run].items()}
     except:
         print('Unable to copy tag {}.'.format(old_run))
     print('Run copied to {}.'.format(new_run))
@@ -146,7 +147,8 @@ def load_runlist(run_dict, runtype_dict):
 
 
 def new_runlist(run_dict, runtype_dict):
-    user_input = input('Are you sure? This will remove all runs from the RunDict!')
+    user_input = input(
+        'Are you sure? This will remove all runs from the RunDict!')
     if user_input.lower() in YES_CONSTS:
         run_dict = {}
         print('RunDict has been cleared.')
@@ -167,7 +169,7 @@ def create_run_dialogue(arg_list):
 
 def edit_run_dialogue(old_run):
     new_run = {}
-    for key, value in sorted(old_run.items(), key=lambda x : x[0]):
+    for key, value in sorted(old_run.items(), key=lambda x: x[0]):
         new_run[key] = input("Input value for {}. Current value = {}. ".format(
                              key, value))
     return new_run
@@ -185,7 +187,7 @@ def dialogue():
     json_filename = input('Input RunDict filename. Default = ' +
                           '{}: '.format(default_json))
     runtype_filename = input('Input RunDict filename. Default = ' +
-                          '{}: '.format(default_runtype))
+                             '{}: '.format(default_runtype))
 
     if not json_filename:
         json_filename = default_json
@@ -194,26 +196,26 @@ def dialogue():
         runtype_filename = default_runtype
 
     function_dict = {
-        'print' : print_all_runs,
-        'create' : create_run,
-        'create runtype' : create_runtype,
-        'delete' : delete_run,
-        'copy' : copy_run,
-        'edit' : edit_run,
-        'save' : save_runlist,
-        'load' : load_runlist,
-        'new' : new_runlist
+        'print': print_all_runs,
+        'create': create_run,
+        'create runtype': create_runtype,
+        'delete': delete_run,
+        'copy': copy_run,
+        'edit': edit_run,
+        'save': save_runlist,
+        'load': load_runlist,
+        'new': new_runlist
     }
 
     option_description_dict = {
-        'print' : 'Print all runs',
-        'create' : 'Create a new run',
-        'delete' : 'Delete a run',
-        'copy' : 'Copy a run',
-        'edit' : 'Edit a run',
-        'save' : 'Save a run',
-        'load' : 'Load another run',
-        'new' : 'New run'
+        'print': 'Print all runs',
+        'create': 'Create a new run',
+        'delete': 'Delete a run',
+        'copy': 'Copy a run',
+        'edit': 'Edit a run',
+        'save': 'Save a run',
+        'load': 'Load another run',
+        'new': 'New run'
     }
 
     try:
