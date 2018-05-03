@@ -106,7 +106,7 @@ class TestSpectateConfigValidator(TestCase):
                     },
                 },
                 "RunList": []
-            }))
+            })
 
     def test_runs_with_template_as_filename(self):
         self.assertTrue(validate({
