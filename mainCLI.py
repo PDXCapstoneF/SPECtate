@@ -22,6 +22,7 @@ import dialogue
 from src import validate
 
 
+
 def to_list(s):
     if s["run_type"].lower() in ["hbir", "hbir_rt"]:
         return [
@@ -127,6 +128,7 @@ do = {
         'validate': do_validate,
         'dialogue' : do_dialogue
         }
+
 
 if __name__ == "__main__":
     arguments = docopt(__doc__, version='SPECtate v0.1')

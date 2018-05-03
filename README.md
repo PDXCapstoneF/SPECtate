@@ -27,6 +27,7 @@ These instructions will get you a copy of the project up and running on your loc
 * UNIX (Linux, Mac OSX), or Windows
 * [python](https://www.python.org/downloads/) >= 3.6
 * [SPECjbb®2015](https://www.spec.org/order.html)
+* [Tk](http://www.tkdocs.com/tutorial/install.html)
 
 
 ### Setup
