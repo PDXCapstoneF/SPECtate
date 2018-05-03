@@ -105,10 +105,10 @@ class TestSpectateConfigValidator(TestCase):
 
     def test_runs_with_template_as_filename(self):
         self.assertTrue(validate({
-            "templates": {
+            "TemplateData": {
                 "PRESET": "templates/PRESET_template.json",
                 "HBIR_RT": "templates/HBIR_RT_template.json",
                 "LOADLEVELS": "templates/LOADLEVELS_template.json",
                 },
-            "runs": [],
+            "RunList": [],
             }))
