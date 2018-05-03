@@ -143,13 +143,15 @@ class TestJvmRunOptions(unittest.TestCase):
         with self.assertRaises(Exception):
             j = JvmRunOptions(invalid_types)
 
+
 class TestSpecJBBComponentOptions(unittest.TestCase):
     def test_given_invalid_type(self):
         with self.assertRaises(Exception):
             SpecJBBComponentOptions("foo")
 
     def test_given_none(self):
-        component_options = list(map(lambda c: SpecJBBComponentOptions(c), SpecJBBComponentTypes))
+        component_options = list(
+            map(lambda c: SpecJBBComponentOptions(c), SpecJBBComponentTypes))
 
         for co in component_options:
             self.assertEqual(co["count"], 1)
@@ -158,7 +160,8 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
 
     def test_given_int(self):
         count = 5
-        component_options = list(map(lambda c: SpecJBBComponentOptions(c, count), SpecJBBComponentTypes))
+        component_options = list(
+            map(lambda c: SpecJBBComponentOptions(c, count), SpecJBBComponentTypes))
 
         for co in component_options:
             self.assertEqual(co["count"], count)
@@ -169,10 +172,10 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
         options = ["a", "b"]
         jvm_opts = ["c", "d"]
 
-        component_options = list(map(lambda c: SpecJBBComponentOptions(c, { 
+        component_options = list(map(lambda c: SpecJBBComponentOptions(c, {
             "options": options,
             "jvm_opts": jvm_opts,
-            }), SpecJBBComponentTypes))
+        }), SpecJBBComponentTypes))
 
         for co in component_options:
             self.assertEqual(co["count"], 1)
