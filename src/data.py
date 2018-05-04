@@ -5,18 +5,35 @@ import operator
 
 from src import objects
 
+
 def get_operator_fn(op):
-        return {
-            '<' : operator.lt,
-            '<=' : operator.le,
-            '>' : operator.gt,
-            '>=' : operator.ge,
-            '=' : operator.eq,
-            }[op]
+    """
+    Returns a builtin operator based on the comparator
+    that the argument represents.
+
+    :param op: A single character that's a comparator (<, >, <=, >=).
+    :return: A builtin operator
+    """
+    return {
+        '<': operator.lt,
+        '<=': operator.le,
+        '>': operator.gt,
+        '>=': operator.ge,
+        '=': operator.eq,
+    }[op]
+
 
 def constraint_string(s):
+    """
+    Returns a lambda that constrains a value x based on
+    a value interpolated from the argument.
+
+    :param s: A string that looks like "< 0"
+    :returns: A predicate based on s.
+    """
     op, *num = s.split()
-    def satisfies(x): 
+
+    def satisfies(x):
         if not num:
             return False
 
@@ -29,13 +46,22 @@ def constraint_string(s):
             return get_operator_fn(op)(x, n)
         except:
             return False
+
     return satisfies
 
+
 def to_propitem(data_item):
+    """
+    Returns a objects.propitem based on the argument.
+
+    :param data_item: A key, value pair where key is the name of the string property and value is a dictionary with more information about that property
+    :returns: One objects.propitem
+    """
     specjbb_property_name, values = data_item
 
     def missing(key, e):
-        raise Exception("Missing {} for configuration value {}: {}".format(key, specjbb_property_name, e))
+        raise Exception("Missing {} for configuration value {}: {}".format(
+            key, specjbb_property_name, e))
 
     try:
         default_value = values["default"]
@@ -59,8 +85,9 @@ def to_propitem(data_item):
     valid_options = None
     help_text = ""
 
-    # get the value validator
+    # get the value validator function
     if "allowed" not in values or values["allowed"] == "any":
+        # allow anything
         value_validator = lambda _: True
     else:
         # is allowed a dict?
@@ -72,9 +99,13 @@ def to_propitem(data_item):
         elif isinstance(allowed, dict):
             # allowed is more complex
             if "type" not in allowed and "within" not in allowed:
-                raise Exception("Not given a valid 'allowed' specification for {}".format(specjbb_property_name))
+                raise Exception(
+                    "Not given a valid 'allowed' specification for {}".format(
+                        specjbb_property_name))
 
             if "type" in allowed:
+                # type is either a constraint string,
+                # or a list like an enum
                 t = allowed["type"]
                 help_text = allowed.get("text", None)
 
@@ -85,19 +116,24 @@ def to_propitem(data_item):
                     value_validator = lambda x: x in t
                     valid_options = t
                 else:
-                    raise Exception("Invalid 'type' specification for 'allowed' in {}: {}".format(specjbb_property_name, t))
+                    raise Exception(
+                        "Invalid 'type' specification for 'allowed' in {}: {}".
+                        format(specjbb_property_name, t))
+
             elif "within" in allowed:
+                # within is a list of constraint strings
                 w = allowed["within"]
                 if not isinstance(w, list):
-                    raise Exception("'within' not a list for {}: {}".format(specjbb_property_name, w))
+                    raise Exception("'within' not a list for {}: {}".format(
+                        specjbb_property_name, w))
                 value_validator = lambda x: all(map(lambda f: f(x), map(constraint_string, w)))
         else:
-            raise Exception("Unknown 'allowed' type given for {}: {}".format(specjbb_property_name, allowed))
+            raise Exception("Unknown 'allowed' type given for {}: {}".format(
+                specjbb_property_name, allowed))
 
     if not value_validator(default_value):
         # "WARNING: default value for property {} didn't pass validation: {}".format(specjbb_property_name, default_value)
         pass
-
 
     return objects.propitem(
         specjbb_property_name,
@@ -111,6 +147,12 @@ def to_propitem(data_item):
 
 
 class DataLoader:
+    """
+    Responsible for loading data from 'data.yml', which is a big
+    list of annotations, constraints, help text and defaults for
+    all of the options provided in specjbb2015.props.
+    """
+
     def __init__(self, data_file="data.yml"):
         self.data_file = data_file
         _current_file_path = path.abspath(path.dirname(__file__))
