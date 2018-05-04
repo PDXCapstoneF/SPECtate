@@ -559,7 +559,12 @@ defaults = [
                  x) > 0,
              help_text=must_be_positive),
 
-    # propitem('specjbb.customerDriver.threads', 64, 'Maximum number of threads in ThreadPoolExecutor for all three probe/saturate/service requests on the TxInjector side.', lambda x: isinstance(x, int) and x >= 64,help_text=must_be_positive)
+    propitem('specjbb.customerDriver.threads', 64,
+            'Maximum number of threads in ThreadPoolExecutor for all three probe/saturate/service requests on the TxInjector side.',
+            number_validator,
+            lambda x: x >= 64,
+            help_text=must_be_positive),
+
     propitem('specjbb.customerDriver.threads.saturate', 64,
              'Maximum number of threads in ThreadPoolExecutor for saturate requests on the TxInjector side.',
              number_validator, lambda x: int(x) >= 64, help_text="Value must be greater than or equal to 64"),
@@ -571,7 +576,12 @@ defaults = [
              'Maximum number of threads in ThreadPoolExecutor for service requests on the TxInjector side.',
              number_validator,
              lambda x: int(x) >= 64, help_text="Value must be greater than or equal to 64"),
-    # propitem('specjbb.forkjoin.workers', multiprocessing.cpu_count() * 2, 'Maximum number of worker threads in ForkJoinPool in each tier on the Backend side.', lambda x:isinstance(x, int),help_text=must_be_positive)
+    propitem('specjbb.forkjoin.workers',
+            "multiprocessing.cpu_count() * 2",
+            'Maximum number of worker threads in ForkJoinPool in each tier on the Backend side.',
+            number_validator,
+            default_validator,
+            help_text=must_be_positive),
     propitem('specjbb.forkjoin.workers.Tier1', multiprocessing.cpu_count() * 2,
              'Maximum number of worker threads in ForkJoinPool in tier 1 on the Backend side.',
              number_validator, lambda x: int(x) > 0, help_text=must_be_positive),
