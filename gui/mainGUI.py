@@ -166,6 +166,7 @@ class MainWindow(Frame):
         popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
         popup_menu.tk_popup(event.x_root, event.y_root)
 
+
     def get_runtype_args(self, run_type):
         with open(self.RUN_CONFIG[-1]) as file:
             parsed = json.load(file)
