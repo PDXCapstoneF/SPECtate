@@ -6,8 +6,8 @@ import json
 import os.path
 
 
-import objects
-from objects import spec_decoder, spec_encoder, spec_config, spec_run
+import src.objects
+from src.objects import spec_decoder, spec_encoder, spec_config, spec_run
 
 TAB = 9
 ENTER = 10
