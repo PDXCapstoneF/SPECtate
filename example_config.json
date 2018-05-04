@@ -13,6 +13,18 @@
 				"T2",
 				"T3"
 			],
+			"annotations" : {
+			  "Tag" : "Name of the run",
+			  "Kit Version" : "Version of SpecJBB",
+			  "JDK" : "Version of the JVM that will run SpecJBB",
+			  "RTSTART" : "What percentage of total output will we start at",
+			  "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+			  "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+			  "Data Collection" : "What data collection process will monitor while running SpecJBB",
+			  "T1" : "How many threads does Tier 1 have access to",
+			  "T2" : "How many threads does Tier 2 have access to",
+			  "T3" : "How many threads does Tier 3 have access to"
+			},
 			"default_props": {
 				"specjbb.controller.type": "HBIR",
 				"specjbb.time.server": false,
@@ -61,6 +73,18 @@
 				"T2",
 				"T3"
 			],
+			"annotations" : {
+			  "Tag" : "Name of the run",
+			  "Kit Version" : "Version of SpecJBB",
+			  "JDK" : "Version of the JVM that will run SpecJBB",
+			  "RTSTART" : "What percentage of total output will we start at",
+			  "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+			  "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+			  "Data Collection" : "What data collection process will monitor while running SpecJBB",
+			  "T1" : "How many threads does Tier 1 have access to",
+			  "T2" : "How many threads does Tier 2 have access to",
+			  "T3" : "How many threads does Tier 3 have access to"
+			},
 			"default_props": {
 				"specjbb.controller.type": "HBIR_RT",
 				"specjbb.time.server": false,
