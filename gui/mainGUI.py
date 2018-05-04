@@ -167,8 +167,20 @@ class MainWindow(Frame):
         popup_menu.tk_popup(event.x_root, event.y_root)
 
 
+    def get_runtype_args(self, run_type):
+        with open(self.RUN_CONFIG[-1]) as file:
+            parsed = json.load(file)
+            if run_type not in parsed["TemplateData"]:
+                print("{} not found.".format(run_type))
+            results = dict()
+            print("Runtype: {}".format(run_type))
+            for i in parsed["TemplateData"][run_type]["args"]:
+                results[i] = parsed["TemplateData"][run_type]["annotations"][i]
+            return results
+
+
 def return_run_types():
-    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_tate_config.json')
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_config.json')
     with open(path_to_json, 'r') as json_file:
         parsed = json.load(json_file)
         return [parsed["TemplateData"].keys()]
