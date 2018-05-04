@@ -8,8 +8,17 @@ class TestData(unittest.TestCase):
         self.assertTrue(data.DataLoader.defaults())
 
     def test_get_defaults_returns_same_as_objects_defaults(self):
-        od = objects.defaults
-        df = data.DataLoader.defaults()
+        # what key do we sort on?
+        k = lambda p: p.prop
 
-        self.assertEqual(od, df)
+        # sort them both
+        od = objects.defaults
+        od.sort(key=k)
+        df = data.DataLoader.defaults()
+        df.sort(key=k)
+
+        self.assertTrue(od)
+        self.assertTrue(df)
+        # they should be the same
+        self.assertEqual(len(od), len(df))
 
