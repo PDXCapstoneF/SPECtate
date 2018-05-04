@@ -17,17 +17,18 @@ class TestSpectateConfigValidator(TestCase):
                 self.assertFalse(validate(j))
 
     def test_TemplateData_with_extra_translations_dont_validate(self):
-        self.assertFalse(validate({
-            "TemplateData": {
-                "example": {
-                    "args": [],
-                    "translations": {
-                        "arg1": "someValue",
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [],
+                        "translations": {
+                            "arg1": "someValue",
+                        },
                     },
                 },
-            },
-            "RunList": [],
-        }))
+                "RunList": [],
+            })
 
     def test_there_should_be_TemplateData_if_there_are_RunList(self):
         with self.assertRaises(Exception):
@@ -42,64 +43,67 @@ class TestSpectateConfigValidator(TestCase):
             }))
 
     def test_RunList_with_extra_args_fail_to_validate(self):
-        self.assertFalse(validate({
-            "TemplateData": {
-                "example": {
-                    "args": [],
-                    "translations": {
-                        "arg1": "someValue",
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [],
+                        "translations": {
+                            "arg1": "someValue",
+                        },
                     },
                 },
-            },
-            "RunList": [
-                {
-                    "template_type": "example",
-                    "args": {
-                        "a": "b",
-                        "arg1": 5,
-                    },
-                }
-            ],
-        }))
+                "RunList": [
+                    {
+                        "template_type": "example",
+                        "args": {
+                            "a": "b",
+                            "arg1": 5,
+                        },
+                    }
+                ],
+            })
 
     def test_RunList_with_ommitted_with_no_defaults_fail_to_validate(self):
-        self.assertFalse(validate({
-            "TemplateData": {
-                "example": {
-                    "args": [
-                        "arg1",
-                        "noDefaults",
-                    ],
-                    "translations": {
-                        "arg1": "someValue",
-                    },
-                    "default_props": {
-                        "arg1": "defaultvalue",
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [
+                            "arg1",
+                            "noDefaults",
+                        ],
+                        "translations": {
+                            "arg1": "someValue",
+                        },
+                        "default_props": {
+                            "arg1": "defaultvalue",
+                        },
                     },
                 },
-            },
-            "RunList": [
-                {
-                    "template_type": "example",
-                    "args": {
-                        "arg1": 5,
-                    },
-                }
-            ],
-        }))
+                "RunList": [
+                    {
+                        "template_type": "example",
+                        "args": {
+                            "arg1": 5,
+                        },
+                    }
+                ],
+            })
 
     def test_RunList_with_extra_annotations_fail_to_validate(self):
-        self.assertFalse(validate({
-            "TemplateData": {
-                "example": {
-                    "args": [
-                        "arg1",
-                    ],
-                    "annotations": {
-                        "arg1": "someValue",
-                        "extraAnnotation": "someValue",
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [
+                            "arg1",
+                        ],
+                        "annotations": {
+                            "arg1": "someValue",
+                            "extraAnnotation": "someValue",
+                        },
                     },
                 },
-            },
-            "RunList": []
-        }))
+                "RunList": []
+            })
