@@ -154,21 +154,45 @@ class DataLoader:
     """
 
     def __init__(self, data_file="data.yml"):
+        """
+        Initializes this DataLoader.
+
+        :param data_file: String that is a relative filename
+        """
         self.data_file = data_file
         _current_file_path = path.abspath(path.dirname(__file__))
         self.data_file_path = path.join(_current_file_path, self.data_file)
 
     @cachedproperty
     def data(self):
+        """
+        Returns the raw data from the configured data file.
+        Will return the same value each time it's called after
+        the first time, even if the data file changes.
+
+        (See <http://boltons.readthedocs.io/en/latest/cacheutils.html#boltons.cacheutils.cachedproperty>)
+        """
         with open(self.data_file_path) as dfp:
             self.data = yaml.load(dfp)
         return self.data
 
     @cachedproperty
     def as_propitem(self):
+        """
+        Returns the raw data from the configured data file as
+        objects.propitems.
+        Will return the same value each time it's called after
+        the first time, even if the data file changes.
+
+        (See <http://boltons.readthedocs.io/en/latest/cacheutils.html#boltons.cacheutils.cachedproperty>)
+        """
         self.propitem = list(map(to_propitem, self.data.items()))
         return self.propitem
 
     @staticmethod
     def defaults():
+        """
+        Returns the exact same thing as objects.defaults, but
+        using 'data.yml' rather than the definition in objects.
+        """
         return DataLoader().as_propitem
