@@ -286,9 +286,9 @@ class SpecJBBRun:
                 self.log.debug(
                     "run results directory already existed, continuing")
 
-            for _ in range(self.times):
+            for number_of_times in range(self.times):
                 self.log.debug(
-                        "beginning run {}".format(self.times))
+                        "beginning run {}/{}".format(number_of_times, self.times))
                 self._run()
 
         except Exception as e:
