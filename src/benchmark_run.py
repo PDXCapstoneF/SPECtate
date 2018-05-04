@@ -187,6 +187,7 @@ class SpecJBBRun:
                  injectors=None,
                  java=None,
                  jar=None,
+                 times=1,
                  props={},
                  props_file='specjbb2015.props'):
         """
@@ -205,6 +206,7 @@ class SpecJBBRun:
             raise InvalidRunConfigurationException
 
         self.jar = os.path.abspath(jar)
+        self.times = times
         self.props = props
         self.props_file = props_file
         self.run_id = uuid4().hex
@@ -284,7 +286,11 @@ class SpecJBBRun:
                 self.log.debug(
                     "run results directory already existed, continuing")
 
-            self._run()
+            for _ in range(self.times):
+                self.log.debug(
+                        "beginning run {}".format(self.times))
+                self._run()
+
         except Exception as e:
             self.log.error(
                 "exception: {}, removing results directory".format(e))
