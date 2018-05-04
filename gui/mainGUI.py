@@ -31,6 +31,9 @@ class MainWindow(Frame):
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
         menubar = Menu(self.master)
+
+
+
         # File Menu
         filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
@@ -59,9 +62,26 @@ class MainWindow(Frame):
         self.master.config(menu=menubar)
 
         self.counter = 1
-
+        self.left_frame = Frame(self.master, background="white",
+                                borderwidth=5, relief=RIDGE,
+                                height=250,
+                                width=50,
+                                )
+        self.right_frame = Frame(self.master, background="white",
+                                 borderwidth=5, relief=RIDGE,
+                                 height=250,
+                                 width=50,
+                                 )
+        self.left_frame.pack(side=LEFT,
+                             fill=BOTH,
+                             expand=YES,
+                             )
+        self.right_frame.pack(side=RIGHT,
+                              fill=BOTH,
+                              expand=YES,
+                              )
         # Create scroll list
-        self.listbox = Listbox(self, width=20, height=self.height, relief="sunken", font="Arial")
+        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief="sunken", font="Arial", selectmode=EXTENDED)
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
         self.list_scrollbar.config(command=self.listbox.yview)
@@ -71,14 +91,20 @@ class MainWindow(Frame):
         self.listbox.bind("<Button-3>", self.popup_window)
 
         # Create canvas
-        self.canvas = Canvas(self, width=80, height=self.height, bg="white", relief="sunken")
+        self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg="white", relief="sunken")
         self.canvas.config(scrollregion=(0, 0, 300, 650), highlightthickness=0)
         self.canvas.pack(side="left", expand=True, fill="both")
 
         # Create a dummy text inside canvas
-        self.form = Text(self.canvas, height=self.height, font="Arial")
-        self.form.insert("end", "Click to see...")
-        self.form.pack(expand=True, fill="both")
+        args = self.get_runtype_args("HBIR")
+        for idx, i in enumerate(args):
+            self.arg_label = Label(self.canvas, text="{} (Default: ?)".format(args[i]), font=("Calibri", 12))
+            self.form = Text(self.canvas, height=1, font="Calibri", bg="grey", width=10)
+            self.form.insert("end", "default val")
+            self.arg_label.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
+            self.form.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
+            self.arg_label.grid(row=idx, column=1, sticky=W)
+            self.form.grid(row=idx, column=0, sticky=W)
 
         # Add items to the listbox
         i = 0
@@ -166,9 +192,26 @@ class MainWindow(Frame):
         popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
         popup_menu.tk_popup(event.x_root, event.y_root)
 
+    def get_runtype_args(self, run_type):
+        """
+        Searches the most recently used config file for args pertaining to run_type.
+        It also returns each args annotations.
+        :param run_type:
+        :return: {'arg': 'annotation', ...}
+        """
+        with open(self.RUN_CONFIG[-1]) as file:
+            parsed = json.load(file)
+            if run_type not in parsed["TemplateData"]:
+                print("{} not found.".format(run_type))
+            results = dict()
+            # print("Runtype: {}".format(run_type))
+            for i in parsed["TemplateData"][run_type]["args"]:
+                results[i] = parsed["TemplateData"][run_type]["annotations"][i]
+            return results
+
 
 def return_run_types():
-    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_tate_config.json')
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_config.json')
     with open(path_to_json, 'r') as json_file:
         parsed = json.load(json_file)
         return [parsed["TemplateData"].keys()]
