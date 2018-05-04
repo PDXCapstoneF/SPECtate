@@ -1,0 +1,281 @@
+---
+specjbb.controller.type:
+  default: HBIR_RT
+  annotation: Controls phases being controlled by Controller.
+  allowed:
+    type: 
+      - HBIR_RT
+      - HBIR
+      - PRESET
+      - FIXED_RT
+      - FIXED_RT_LOADLEVELS
+      - FIXED_LOADLEVELS
+
+specjbb.comm.connect.client.pool.size:
+  default: 256
+  annotation: Network connection pool size, i.e. number of sockets for I/O communication for each Agent.
+  allowed: "> 0"
+
+specjbb.comm.connect.worker.pool.min:
+  default: 1
+  annotation: Minimum number of worker threads in the network connection pool.
+  allowed: "> 0"
+
+
+specjbb.comm.connect.worker.pool.max:
+  default: 256
+  annotation: Maximum number of worker threads in the network connection pool.
+  allowed: "> 0"
+
+specjbb.comm.connect.selector.runner.count:
+  default: 0
+  annotation: Number of acceptor threads for handling new connections and scheduling existing ones.
+  allowed:
+    type: ">= 0"
+    text: Value must an integer. Special 0 value will force to using the default connectivity provider setting
+
+
+specjbb.comm.connect.timeouts.connect:
+  default: 60000
+  annotation: Timeout (in milliseconds) for I/O connection operation.
+  allowed: "> 0"
+
+specjbb.comm.connect.timeouts.read:
+  default: 60000
+  annotation: Timeout (in milliseconds) for I/O read operation.
+  allowed: "> 0"
+
+specjbb.comm.connect.timeouts.write:
+  default: 60000
+  annotation: Timeout (in milliseconds) for I/O write operation.
+  allowed: "> 0"
+
+specjbb.controller.host:
+  default: localhost
+  annotation: IP address / host name of the machine where Controller program will be launched.
+  allowed: any
+
+specjbb.controller.port:
+  default: 24000
+  annotation: The network port to which Controller listener will bind.
+  allowed: "> 0"
+
+
+specjbb.controller.handshake.period:
+  default: 5000
+  annotation: Time period (in milliseconds) for logging status of the initial Controller "<-> Agent handshaking."
+  allowed: "> 0"
+
+
+specjbb.controller.handshake.timeout:
+  default: 600000
+  annotation: Timeout (in milliseconds) for initial Controller "<-> Agent handshaking."
+  allowed: "> 0"
+
+specjbb.controller.maxir.maxFailedPoints:
+  default: 3
+  annotation: Number of points to try after max-jOPS was found to ensure there are no more passes and max-jOPS value is correct.
+  allowed: 
+    type: ">= 0"
+    text: Value must be greater than or equal to 0
+
+
+specjbb.controller.preset.ir:
+  default: 1000
+  annotation: Sets IR for preset for controller type 
+  allowed: "> 0"
+
+
+specjbb.controller.preset.duration:
+  default: 600000
+  annotation: Sets duration in milliseconds for preset for controller type 
+  allowed: "> 0"
+
+
+specjbb.controller.rtcurve.duration.min:
+  default: 60000
+  annotation: Sets duration of steady period of RT step level in milliseconds
+  allowed: "> 0"
+
+
+specjbb.controller.rtcurve.duration.max:
+  default: 90000
+  annotation: Sets duration of steady period of RT step level in milliseconds
+  allowed: "> 0"
+
+
+specjbb.controller.rtcurve.start:
+  default: 0
+  annotation: Sets the RT start percent
+  allowed:
+    within:
+      - ">= 0"
+      - "<= 100"
+    text: Value must be between 0 and 100
+
+
+specjbb.controller.rtcurve.step:
+  default: 0.01
+  annotation: Sets the RT step level to a percent
+  allowed:
+    within:
+      - "> 0.0"
+      - "<= 1.0"
+    text: Value must be a decimal greater than 0 and less than or equal to 1
+
+
+specjbb.controller.rtcurve.warmup.step:
+  default: 0.1
+  annotation: Injection rate for warming up before response-time curve building defined as the percent of the high-bound.
+  allowed:
+    within:
+      - "> 0.0"
+      - "<= 1.0"
+    text: Value must be a decimal greater than 0 and less than or equal to 1
+
+
+specjbb.controller.settle.time.min:
+  default: 3000
+  annotation: Sets duration of settle period of RT step level in milliseconds
+  allowed: "> 0"
+
+
+specjbb.controller.settle.time.max:
+  default: 30000
+  annotation: Sets duration of settle period of RT step level in milliseconds
+  allowed: "> 0"
+
+specjbb.customerDriver.threads:
+  default: 64
+  annotation: Maximum number of threads in ThreadPoolExecutor for all three probe/saturate/service requests on the TxInjector side.
+  allowed: ">= 64"
+
+
+specjbb.customerDriver.threads.saturate:
+  default: 64
+  annotation: Maximum number of threads in ThreadPoolExecutor for saturate requests on the TxInjector side.
+  allowed:
+    type: ">= 64"
+    text: Value must be greater than or equal to 64
+
+
+specjbb.customerDriver.threads.probe:
+  default: 64
+  annotation: Maximum number of threads in ThreadPoolExecutor for probe requests on the TxInjector side.
+  allowed:
+    type: ">= 64"
+    text: Value must be greater than or equal to 64
+
+
+specjbb.customerDriver.threads.service:
+  default: 64
+  annotation: Maximum number of threads in ThreadPoolExecutor for service requests on the TxInjector side.
+  allowed:
+    type: ">= 64"
+    text: Value must be greater than or equal to 64
+
+specjbb.forkjoin.workers:
+  default: multiprocessing.cpu_count() * 2
+  annotation: Maximum number of worker threads in ForkJoinPool in each tier on the Backend side.
+  allowed:
+    type: "> 0"
+
+
+specjbb.forkjoin.workers.Tier1:
+  default: multiprocessing.cpu_count() * 2
+  annotation: Maximum number of worker threads in ForkJoinPool in tier 1 on the Backend side.
+  allowed:
+    type: "> 0"
+
+
+specjbb.forkjoin.workers.Tier2:
+  default: multiprocessing.cpu_count() * 2
+  annotation: Maximum number of worker threads in ForkJoinPool in tier 2 on the Backend side.
+  allowed:
+    type: "> 0"
+
+
+specjbb.forkjoin.workers.Tier3:
+  default: multiprocessing.cpu_count() * 2
+  annotation: Maximum number of worker threads in ForkJoinPool in tier 3 on the Backend side.
+  allowed:
+    type: "> 0"
+
+
+specjbb.group.count:
+  default: 1
+  annotation: Number of Groups for the run, where Group is TxInjector(s) mapped to Backend.
+  allowed: "> 0"
+
+
+specjbb.heartbeat.period:
+  default: 10000
+  annotation: How often (in milliseconds) Controller sends heartbeat message to an Agent checking it is alive
+  allowed: "> 0"
+
+
+specjbb.heartbeat.threshold:
+  default: 100000
+  annotation: How much time (in milliseconds) await for heartbeat response from an Agent.
+  allowed: "> 0"
+
+specjbb.time.server:
+  default: false
+  annotation: Enables Controller communication with Time Server.
+
+
+specjbb.txi.pergroup.count:
+  default: 1
+  annotation: Number of TxInjectors per Backend in one Group.
+  allowed: "> 0"
+
+
+specjbb.run.datafile.dir:
+  default: .
+  annotation: Directory for storing binary log file of the run.
+  allowed: 
+    type: any
+    text: Enter a directory
+
+
+specjbb.mapreducer.pool.size:
+  default: 2
+  annotation: Controller ForkJoinPool size supporting parallel work of TxInjector/Backend agents.
+  allowed: "> 0"
+
+
+specjbb.input.number_customers:
+  default: 100000
+  annotation: Total number of customers
+  allowed: "> 0"
+
+
+specjbb.input.number_products:
+  default: 100000
+  annotation: Number of products in each Supermarket
+  allowed: "> 0"
+
+specjbb.logLevel:
+  default: INFO
+  annotation: Log level output
+  allowed:
+    type: 
+      - SEVERE
+      - WARNING
+      - INFO
+      - CONFIG
+      - FINE
+      - FINER
+      - FINEST
+
+
+specjbb.time.check.interval:
+  default: 10000
+  annotation: Time interval (in milliseconds) for periodic time check from Time Server
+  allowed: "> 0"
+
+
+specjbb.time.offset.max:
+  default: 600000
+  annotation: Maximum time offset (in milliseconds) between Controller and Time Server on the benchmark start
+  allowed: "> 0"
