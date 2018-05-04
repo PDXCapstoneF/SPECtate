@@ -11,6 +11,8 @@ docopt = "*"
 six = "*"
 schema = "*"
 uuid = "*"
+pyyaml = "*"
+boltons = "*"
 
 [requires]
 python_version = "3.6"
