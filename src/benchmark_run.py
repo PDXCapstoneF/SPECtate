@@ -1,5 +1,7 @@
 """
-This module replaces `run.sh`.
+This module adds the necessary machinery to do
+SPECjbb2015 runs without much additional configuration,
+with logging and error handling included.
 """
 
 import os
@@ -270,6 +272,10 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
+        """
+        Sets up the results directory, and executes the configured
+        runs based on self.
+        """
         pwd = os.getcwd()
         results_directory = os.path.abspath(str(self.run_id))
 
@@ -295,10 +301,10 @@ class SpecJBBRun:
     def _run(self):
         """
         Executes this particular SpecJBBRun by:
-        - writing the props file for this run at self.props_file
-        - setting up the controller and running its task
-        - setting up the transaction injectors and backends and running their tasks
-        - emmitting "done" messages when finished
+            - writing the props file for this run at self.props_file
+            - setting up the controller and running its task
+            - setting up the transaction injectors and backends and running their tasks
+            - emmitting "done" messages when finished
         """
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
@@ -333,14 +339,15 @@ class SpecJBBRun:
 
     def dump(self, level=logging.DEBUG):
         """
-        Dumps info about this currently configured run.
+        Dumps all the information about this currently configured run.
         """
 
         self.log.log(level, vars(self))
 
     def _full_options(self, options_dict):
         """
-        Returns a list of arguments, formatted for the specific JVM invocation.
+        Returns a list of arguments (as they would be passed to Popen),
+        formatted for the specific JVM invocation.
         """
         self.log.debug(
             "full options being generated from: {}".format(options_dict))
@@ -355,10 +362,13 @@ class SpecJBBRun:
         return java + spec
 
     def controller_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.controller)
 
     def backend_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.backends)
 
     def injector_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.injectors)
