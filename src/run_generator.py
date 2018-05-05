@@ -9,7 +9,7 @@ The intention is that you pass a Tate Config into the
 RunGenerator, and it updates itself to have a list of
 all the runs present in that configuration.
 """
-from src.validate import TemplateSchema, RunConfigSchema
+from src.validate import TemplateDataSchema, RunConfigSchema
 
 
 class RunGenerator:
@@ -28,7 +28,7 @@ class RunGenerator:
         Initializes this instance to hold all the validated runs in the
         provided configuration.
 
-        :param TemplateData: A TemplateData object. (See src.validate.TemplateSchema)
+        :param TemplateData: A TemplateData object. (See src.validate.TemplateDataSchema)
         :param RunList: A list of RunList objects. (See src.validate.RunConfigSchema)
         """
         self.runs = []
@@ -37,7 +37,7 @@ class RunGenerator:
         for run in RunList:
             run = RunConfigSchema.validate(run)
             template = TemplateData.get(run["template_type"])
-            template = TemplateSchema.validate(template)
+            template = TemplateDataSchema.validate(template)
 
             # populate default_props
             props = template.get("default_props", dict()).copy()
