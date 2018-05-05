@@ -24,17 +24,17 @@ class spec_config():
         else:
             self.type = "spec_config"
 
-    def tojson(self):
+    def _tojson(self):
         """Returns dictionary of json terms.  Should only be called internally"""
         if(self.type == "spec_config"):
             return {
                 "_type":"spec_config",
-                "runs": list(map(lambda x: x.tojson(), self.runs))
+                "runs": list(map(lambda x: x._tojson(), self.runs))
             }
         else:
-            return self.totateconfig()
+            return self._totateconfig()
 
-    def totateconfig(self):
+    def _totateconfig(self):
         return {
             "TemplateData": { "CURSES" : {
                 "args" : [
@@ -75,7 +75,7 @@ class spec_config():
                     "Data Collection" : "string"
                 }
             }},
-            "RunList" : list(map(lambda x: x.totateconfig(), self.runs))
+            "RunList" : list(map(lambda x: x._totateconfig(), self.runs))
             }
 
     def save(self, path):
@@ -86,7 +86,7 @@ class spec_config():
 class spec_encoder(json.JSONEncoder):
     def default(self, obj):
         if (isinstance(obj, spec_config) or isinstance(obj, spec_run) or isinstance(obj, props) or isinstance(obj,                                                                                             propitem)):
-            return obj.tojson()
+            return obj._tojson()
         return super(spec_encoder, self).default(obj)
 
 
@@ -189,7 +189,7 @@ class spec_run:
         self.properties.set(trans, value)
 
 
-    def tojson(self):
+    def _tojson(self):
         """Returns dictionary of json terms.  Should only be called internally"""
         return {
             "jdk": self.jdk,
@@ -203,10 +203,10 @@ class spec_run:
             "report_level": self.report_level,
             "skip_report": self.skip_report,
             "ignore_kit_validation": self.ignore_kit_validation,
-            "props": self.properties.tojson()
+            "props": self.properties._tojson()
         }
 
-    def totateconfig(self):
+    def _totateconfig(self):
         return {
             "template_type" : "CURSES",
             "JDK" : self.jdk,
@@ -220,7 +220,7 @@ class spec_run:
             "Ignore Kit Validation" : self.ignore_kit_validation,
             "Number of Runs" : self.num_runs,
             "Data Collection" : self.data_collection,
-            "props_extra" : self.properties.totateconfig()
+            "props_extra" : self.properties._totateconfig()
         }
 
     def _defHandle(msg):
@@ -536,7 +536,7 @@ class propitem:
             self.valid_opts = valid_opts
         self.value = def_value
 
-    def write(self, f):
+    def _write(self, f):
         """Called internally only.  Writes to a config file if different than the default value"""
         if (self.value != self.def_value):
             f.write("{} = {}".format(self.prop, self.value))
@@ -550,9 +550,9 @@ class propitem:
         """Resets this property to the default value"""
         self.value = self.def_value
 
-    def totateconfig(self):return self.tojson()
+    def _totateconfig(self):return self._tojson()
 
-    def tojson(self):
+    def _tojson(self):
         """Called internally only.  Returns dictionary of json values"""
         return {
             "prop": self.prop,
@@ -760,13 +760,13 @@ class props:
                 if (isinstance(p, propitem)):
                     p.write(f)
 
-    def tojson(self):
+    def _tojson(self):
         """Called internally only.  Returns dictionary of json values"""
         return {
-            "modified": list(map(lambda x: x.tojson(), self.get_modified()))
+            "modified": list(map(lambda x: x._tojson(), self.get_modified()))
         }
 
-    def totateconfig(self):
+    def _totateconfig(self):
         return {
-            "props_extra" : list(map(lambda x: x.tojson(), self.get_modified()))
+            "props_extra" : list(map(lambda x: x._tojson(), self.get_modified()))
         }
