@@ -29,7 +29,7 @@ class RunGenerator:
         provided configuration.
 
         :param TemplateData: A TemplateData object. (See src.validate.TemplateDataSchema)
-        :param RunList: A list of RunList objects. (See src.validate.RunConfigSchema)
+        :param RunList: A list of RunConfig objects. (See src.validate.RunConfigSchema)
         """
         self.runs = []
 
