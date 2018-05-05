@@ -9,19 +9,8 @@ import os.path
 import objects
 from objects import spec_decoder, spec_encoder, spec_config, spec_run
 
-TAB = 9
-ENTER = 10
-ESC = 27
-DOWN = 258
-UP = 259
-LEFT = 260
-RIGHT = 261
-HOME = 262
-BACK = 263
-DEL = 330
-PGDN = 338
-PGUP = 339
-END = 360
+#KEY_ENTER = 343, but my ENTER key registers as 10 =/
+KEY_ENTER = 10
 
 STARTY = 2
 xoffset = 5
@@ -67,7 +56,7 @@ def select_from(stdscr, x, y, value, list):
     pad = curses.newpad(1, 100)
     height, width = stdscr.getmaxyx()
     idx = list.index(value)
-    while (k != ENTER and k != ord('q')):
+    while (k != KEY_ENTER and k != ord('q')):
         pad.clear()
         draw_status_bar(stdscr, "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
         if (k == curses.KEY_UP and idx > 0):
@@ -100,9 +89,9 @@ def input_text(stdscr, x, y, value, validator):
     pad = curses.newpad(1, xmax)
     cursorx =  min(x + len(value), width - 1)
 
-    while (k != ENTER):
+    while (k != KEY_ENTER):
         pad.clear()
-        if (k == BACK and idx > 0):
+        if (k == curses.KEY_BACKSPACE and idx > 0):
             if (idx < len(value)):
                 value = value[:idx - 1] + value[idx:]
             else:
@@ -121,7 +110,7 @@ def input_text(stdscr, x, y, value, validator):
             idx += 1
             if (cursorx < (width - 1)):
                 cursorx += 1
-        elif (k == DEL and idx < len(value)):
+        elif (k == curses.KEY_DC and idx < len(value)):
             if (idx > 1):
                 value = value[:idx] + value[idx + 1:]
             else:
@@ -197,7 +186,7 @@ def draw_edit_props(stdscr, p):
                 cury -= 1
             else:
                 pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
-        elif k == ENTER:
+        elif k == KEY_ENTER:
             if (p[index].valid_opts != []):
                 value = select_from(stdscr, xoffset + startx, cury, str(p[index].value), p[index].valid_opts)
                 p[index].value = value
@@ -237,7 +226,7 @@ def draw_edit_run(stdscr, runinfo):
             cury = cury + 1
         elif k == curses.KEY_UP and cury > y:
             cury = cury - 1
-        elif k == ENTER:
+        elif k == KEY_ENTER:
             name = array[cury - y]
             if (name == 'verbose' or name == 'skip_report' or name == 'ignore_kit_validation'):
                 value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [True, False])
@@ -282,6 +271,7 @@ def edit_config(stdscr, config=None, path=""):
         starty = draw_title(stdscr)
         stdscr.addstr(starty + len(config.runs), xoffset, "{}. Add new run:".format(len(config.runs) + 1))
         draw_status_bar(stdscr, "Press 'ENTER' to edit a run | Press 'RIGHT' to adjust run position | Press q to quit")
+        draw_notice_bar(stdscr, "Press 'C' to change config type: {}".format(config.type))
         if (position):
             stdscr.move(cury, xoffset + 2)
         else:
@@ -336,19 +326,27 @@ def edit_config(stdscr, config=None, path=""):
             position = False
         elif (k == curses.KEY_RIGHT and index < len(config.runs)):
             position = True
-        elif (k == DEL and index < len(config.runs) - 1):
+        elif (k == curses.KEY_DC and index < len(config.runs)):
             position = False
-            draw_status_bar(stdscr, "Remove run {} from this config? (y/N)".format(config.runs[index]))
+            draw_status_bar(stdscr, "Remove run {} from this config? (y/N)".format(config.runs[index].tag))
             resp = stdscr.getch()
             if (resp == ord('y') or resp == ord('Y')):
                 del config.runs[index]
                 pad, endy = _getpad()
-        elif k == ENTER:
+        elif k == KEY_ENTER:
             position = False
             if (index == len(config.runs)):
-                config.runs.append(spec_run())
+                newrun = spec_run()
+                origtag = newrun.tag
+                offset = 1
+                while(any(x.tag == newrun.tag for x in config.runs)):
+                    newrun.tag = "{}-{}".format(origtag, offset)
+                    offset += 1
+                config.runs.append(newrun)
             config.runs[index] = draw_edit_run(stdscr, config.runs[index])
             pad, endy = _getpad()
+        elif k == ord('c') or k == ord('C'):
+            config.switch_type()
 
         _draw()
 
@@ -374,6 +372,15 @@ def draw_title(stdscr):
     stdscr.attroff(curses.A_BOLD)
     return STARTY + 2  # the current y
 
+
+def draw_notice_bar(stdscr, noticebarstr):
+    height, width = stdscr.getmaxyx()
+    stdscr.attron(curses.color_pair(3))
+    if (len(noticebarstr) > width):
+        noticebarstr = noticebarstr[:width - 1]
+    start_x = int((width // 2) - (len(noticebarstr) // 2) - len(noticebarstr) % 2)
+    stdscr.addstr(height - 3, start_x, noticebarstr)
+    stdscr.attroff(curses.color_pair(3))
 
 def draw_status_bar(stdscr, statusbarstr):
     height, width = stdscr.getmaxyx()
@@ -403,6 +410,8 @@ def draw_get_config_path(stdscr):
 
     stdscr.addstr(y, xoffset, "Config file path:")
     path = input_text(stdscr, xoffset + len("Config file path:") + 1, y, "", lambda x: True)
+    if(not os.path.exists(path) and not path.endswith('.json')):
+        path += '.json'
     if (os.path.isfile(path)):
         if (True):  # do_validate(({'<config>' : path}))):
             config = load_config(path)
@@ -448,17 +457,22 @@ def run_config(stdscr):
         nonlocal pad
         nonlocal maxy
         c = index % logmax
-        pad.addstr(c, 0, msg) # c == new bottom
-        if(index < maxy - cury):
-            pad.refresh(0, 0, cury, xoffset, cury + index, width - xoffset - 1)
-        else:
+        pad.addstr(c, 0, msg)  # c == new bottom
+        pad.refresh(0, 0, maxy - c, xoffset, maxy, width - xoffset - 1)
+        if(c < logmax - 1):
+            pad.refresh(c + 1, 0, cury, xoffset, (maxy - c), width - xoffset - 1)
+        #if(index < maxy - cury):
+         #   pad.refresh(0, 0, cury, xoffset, cury + c, width - xoffset - 1)
+          #  if(c < logmax - 1):
+           #     pad.refresh(c + 1, 0, cury, xoffset, cury + c, width - xoffset - 1)
+       # else:
           #  if c + cury < maxy:
           #      pad.refresh(0, 0, cury, xoffset, cury + c, width - xoffset - 1)
            # else:
                 #print 0 -> c
                 #print logmax - (c
-                pad.refresh(0,0, maxy - c, xoffset, maxy, width - xoffset - 1)
-                pad.refresh(logmax - c, 0, cury, xoffset, maxy - c - 1, width - xoffset - 1)
+        #        pad.refresh(0,0, maxy - c, xoffset, maxy, width - xoffset - 1)
+         #       pad.refresh(logmax - c, 0, cury, xoffset, maxy - c - 1, width - xoffset - 1)
         index += 1
         draw_status_bar(stdscr, 'c={}, index={}, msg=""'.format(c, index, msg))
         stdscr.refresh()
@@ -492,7 +506,7 @@ def run_config(stdscr):
     for r in config.runs:
         # draw_status_bar(stdscr, "Starting run '{}'".format(r.tag))
 
-        result = r.run(path, _handle)
+        result = r.run(path, _handle, lambda x:x)
         if (result == 2):
             #curses.noecho()
             #curses.cbreak()
@@ -502,7 +516,7 @@ def run_config(stdscr):
             #curses.echo()
             #curses.nocbreak()
             #curses.endwin()
-            result = r.run(path, _handle)
+            result = r.run(path, _handle, lambda x:x)
             if (result == 2):
                 #curses.noecho()
                 #curses.cbreak()
@@ -658,7 +672,7 @@ def draw_view_run(stdscr, runinfo):
     k = 0
     _draw()
     while (k != ord('q')):  # 27 == 'ESC'
-        if k == ENTER:
+        if k == KEY_ENTER:
             draw_view_props(stdscr, runinfo.properties)
 
         _draw()
@@ -703,7 +717,7 @@ def view_runs(stdscr):
             elif (index > 0):
                 index -= 1
 
-        elif k == ENTER:
+        elif k == KEY_ENTER:
             draw_view_run(stdscr, config.runs[index])
         _draw(stdscr, cury, pad, index)
 
@@ -743,7 +757,7 @@ def draw_menu(stdscr):
     while (k != ord('q')):
 
         # Initialization
-        if (k == ENTER):
+        if (k == KEY_ENTER):
             opts[cursor_y - (STARTY + 2)](stdscr)
         elif (k >= ord('1') and k <= ord('4')):
             opts[int(k)](stdscr)
