@@ -1,8 +1,36 @@
+"""
+This module defines a RunGenerator that:
+    - is (partially) responsible for validating templates and runs given in a Tate config
+    - is responsible for populating arguments, props etc
+    - is responsible for generating the specific run's .props file
+    - is responsible for giving the right arguments to a benchmark_run.SpecJBBRun so that it can do its thing
+
+The intention is that you pass a Tate Config into the
+RunGenerator, and it updates itself to have a list of
+all the runs present in that configuration.
+"""
 from src.validate import TemplateSchema, RunConfigSchema
 
 
 class RunGenerator:
+    """
+    This class is responsible for taking a Tate config and
+    updating self.runs with a list of validated runs that
+    you can then pass to benchmark_run.SpecJBBRun for a successful
+    benchmarking run.
+
+    The accompanying test module contains examples for how
+    this should and shouldn't work.
+    """
+
     def __init__(self, TemplateData=None, RunList=None):
+        """
+        Initializes this instance to hold all the validated runs in the
+        provided configuration.
+
+        :param TemplateData: A TemplateData object. (See src.validate.TemplateSchema)
+        :param RunList: A list of RunList objects. (See src.validate.RunConfigSchema)
+        """
         self.runs = []
 
         # let's go ahead and populate everything
