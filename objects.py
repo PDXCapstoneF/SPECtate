@@ -8,6 +8,8 @@ import datetime
 
 from subprocess import Popen, PIPE, STDOUT
 
+import copy
+
 
 class spec_config():
     # runs contains a list of spec_run's
@@ -121,11 +123,16 @@ class spec_decoder(json.JSONDecoder):
             translations = temp.get('translations', {})
             for k, v in run.items():
                 if k in known_args:
-                    r.set_known_arg(k, v)
+                    r._set_known_arg(k, v)
                     continue
                 t = translations.get(k, '')
                 if(t != ''):
-                    r.set_by_translation(t, v)
+                    r._set_by_translation(t, v)
+            extra = run.get('props_extra', [])
+            for d in extra:
+                name = d.get('prop', '')
+                value = d.get('value', '')
+                r.properties.set(name, value)
             ret.runs.append(r)
         return ret
 
@@ -166,7 +173,7 @@ class spec_run:
             self.run_type = arg
 
 
-    def set_known_arg(self, key, value):
+    def _set_known_arg(self, key, value):
         if(key == 'JDK'):
             self.jdk = value
         elif key == 'JVM Options': self.jvm_options = value
@@ -185,7 +192,7 @@ class spec_run:
         elif key == 'Data Collection':
             self.data_collection = value
 
-    def set_by_translation(self, trans, value):
+    def _set_by_translation(self, trans, value):
         self.properties.set(trans, value)
 
 
@@ -250,16 +257,16 @@ class spec_run:
         #       orig = os.getcwd()
         #        os.chdir(path)
         switch = {
-            'composite': self.run_composite,
-            'distributed_ctrl_txl': self.run_distributed_ctrl_txl,
-            'distributed_sut': self.distributed_sut,
-            'multi': self.run_multi
+            'composite': self._run_composite,
+            'distributed_ctrl_txl': self._run_distributed_ctrl_txl,
+            'distributed_sut': self._distributed_sut,
+            'multi': self._run_multi
         }
         ret = switch[self.run_type](path, handle_out, handle_err)
         #      os.chdir(orig)
         return ret
 
-    def run_composite(self, path, handle_out, handle_err):
+    def _run_composite(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         cmd = '{} {} -jar {}/specjbb2015.jar -m COMPOSITE {}'.format(
             self.jdk, self.jvm_options, path, self._spec_opts())
@@ -287,7 +294,7 @@ class spec_run:
 
         return 0
 
-    def run_distributed_ctrl_txl(self, path, handle_out, handle_err):
+    def _run_distributed_ctrl_txl(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
 
@@ -349,7 +356,7 @@ class spec_run:
             return -1
         return 0
 
-    def distributed_sut(self, path, handle_out, handle_err):
+    def _distributed_sut(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
         # Check if ip responds here
@@ -388,7 +395,7 @@ class spec_run:
         # Each process will continue until manually terminated.
         return 0
 
-    def run_multi(self, path, handle_out, handle_err):
+    def _run_multi(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         result_dir = self._prerun(path)
         opts = self._spec_opts()
@@ -734,7 +741,7 @@ defaults = [
 
 class props:
     def __init__(self, fromjson=None):
-        self.root = {a.prop: a for a in defaults}
+        self.root = {a.prop: copy.deepcopy(a) for a in defaults}
         if (not fromjson is None):
             for p in fromjson.get('modified', []):
                 self.root.update({p['prop']: p['value']})
@@ -758,7 +765,7 @@ class props:
             f.write("#SPECjbb config")
             for p in self.root.values():
                 if (isinstance(p, propitem)):
-                    p.write(f)
+                    p._write(f)
 
     def _tojson(self):
         """Called internally only.  Returns dictionary of json values"""
@@ -767,6 +774,4 @@ class props:
         }
 
     def _totateconfig(self):
-        return {
-            "props_extra" : list(map(lambda x: x._tojson(), self.get_modified()))
-        }
+        return list(map(lambda x: x._tojson(), self.get_modified()))
