@@ -18,12 +18,19 @@ except:
     with open("properties.json") as properties_file:
         properties = json.load(properties_file)
 
-run_list = ['Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3']
+run_list = ['HBIR', 'HBIR_RT', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3']
 
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
         self.RUN_CONFIG = [os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json']
+        self.colors = {'canvas': 'white',
+                       'label': 'white',
+                       'frame': 'white',
+                       'entry': 'white',
+                       'text': 'white'}
         Frame.__init__(self, *args, **kwargs)
+        self.form      = None
+        self.arg_label = None
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
         self.master.title(properties["program_name"])
@@ -60,51 +67,34 @@ class MainWindow(Frame):
 
         # Publish Menu
         self.master.config(menu=menubar)
-
-        self.counter = 1
-        self.left_frame = Frame(self.master, background="white",
+        self.left_frame = Frame(self.master, background=self.colors['frame'],
                                 borderwidth=5, relief=RIDGE,
                                 height=250,
-                                width=50,
-                                )
-        self.right_frame = Frame(self.master, background="white",
+                                width=50)
+        self.right_frame = Frame(self.master, background=self.colors['frame'],
                                  borderwidth=5, relief=RIDGE,
                                  height=250,
-                                 width=50,
-                                 )
+                                 width=50)
         self.left_frame.pack(side=LEFT,
                              fill=BOTH,
-                             expand=YES,
-                             )
+                             expand=YES)
         self.right_frame.pack(side=RIGHT,
                               fill=BOTH,
-                              expand=YES,
-                              )
+                              expand=YES)
         # Create scroll list
-        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief="sunken", font="Arial", selectmode=EXTENDED)
+        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial", selectmode=EXTENDED)
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
-        self.list_scrollbar.config(command=self.listbox.yview)
+        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview)
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
         self.listbox.bind("<Button-3>", self.popup_window)
 
         # Create canvas
-        self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg="white", relief="sunken")
+        self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
         self.canvas.config(scrollregion=(0, 0, 300, 650), highlightthickness=0)
-        self.canvas.pack(side="left", expand=True, fill="both")
-
-        # Create a dummy text inside canvas
-        args = self.get_runtype_args("HBIR")
-        for idx, i in enumerate(args):
-            self.arg_label = Label(self.canvas, text="{} (Default: ?)".format(args[i]), font=("Calibri", 12))
-            self.form = Text(self.canvas, height=1, font="Calibri", bg="grey", width=10)
-            self.form.insert("end", "default val")
-            self.arg_label.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
-            self.form.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
-            self.arg_label.grid(row=idx, column=1, sticky=W)
-            self.form.grid(row=idx, column=0, sticky=W)
+        self.canvas.pack(side="right", expand=True, fill="both")
 
         # Add items to the listbox
         i = 0
@@ -112,18 +102,65 @@ class MainWindow(Frame):
             self.listbox.insert(i, run_list[i])
             i += 1
 
+    def make_arg_form(self, root, fields):
+        entries = {}
+        if self.canvas is not None:
+            self.canvas.destroy()
+            # self.tater = PhotoImage(file='tater.png')
+            self.potato = PhotoImage(file="tater.pgm")
+            self.potato = self.potato.zoom(5)
+            self.potato = self.potato.subsample(50)
+            self.canvas = Canvas(self.right_frame,
+                                 width=80,
+                                 height=self.height,
+                                 bg=self.colors['canvas'],
+                                 relief=GROOVE)
+            self.canvas.pack(side="right", expand=True, fill="both")
+        if fields is None:
+            self.canvas.create_image(5, 5, image=self.potato, anchor='nw', state=NORMAL)                # Label
+            self.arg_label = Label(self.canvas,
+                                   text="Well this is weird... I don't have anything to show you.",
+                                   relief=RAISED,
+                                   font=("Calibri", 12),
+                                   width=64,
+                                   justify=LEFT)
+            self.arg_label.pack(pady=0, padx=150, fill=X, side=TOP, anchor='nw')
+            self.arg_label.grid(row=50, column=1, sticky=W)
+
+        if fields is not None:
+            for idx, i in enumerate(fields):
+                self.form = Entry(self.canvas,
+                                  insertofftime=500,
+                                  font=("Calibri", 12),
+                                  bg=self.colors['text'],
+                                  width=8,
+                                  relief=RIDGE,highlightcolor='black',
+                                  fg='black',
+                                  justify=CENTER)
+                self.form.insert(INSERT, "default")
+                entries[i] = self.form
+                var = StringVar()
+                var.set(fields[i])
+
+                # Label
+                self.arg_label = Label(self.canvas,
+                                       textvariable=var,
+                                       relief=RAISED,
+                                       font=("Calibri", 12),
+                                       width=64,
+                                       justify=LEFT)
+                self.arg_label.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
+                self.form.pack(pady=idx, padx=100, fill=X, side=TOP, anchor='w')
+                self.form.grid(row=idx, column=0, sticky=W)
+                self.arg_label.grid(row=idx, column=1, sticky=W)
+
+        return entries
+
     def on_select(self, event):
         selection = event.widget.curselection()
         if selection:
             content = event.widget.get(selection[0])
-            if self.counter == 1:
-                self.form.delete(1.0, "end") # CLEAR THE TEXT WHICH IS DISPLAYED AT FIRST RUNNING
-                self.form.insert("end", content)
-                self.counter += 1 #ONE ITEM HAS BEEN SELECTED AND PRINTED SUCCESSFULLY
-            elif self.counter > 1:
-                self.form.delete(1.0, "end")
-                self.form.insert("end", content)
-                self.counter = 1 # RESET THE COUNTER SO THAT NEXT SELECTED ITEM DISPLAYS PROPERLY
+            self.make_arg_form(root=self.canvas, fields=self.get_runtype_args(content))
 
     def create_new_run(self):
         """
@@ -192,6 +229,7 @@ class MainWindow(Frame):
         popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
         popup_menu.tk_popup(event.x_root, event.y_root)
 
+
     def get_runtype_args(self, run_type):
         """
         Searches the most recently used config file for args pertaining to run_type.
@@ -203,8 +241,8 @@ class MainWindow(Frame):
             parsed = json.load(file)
             if run_type not in parsed["TemplateData"]:
                 print("{} not found.".format(run_type))
+                return None
             results = dict()
-            # print("Runtype: {}".format(run_type))
             for i in parsed["TemplateData"][run_type]["args"]:
                 results[i] = parsed["TemplateData"][run_type]["annotations"][i]
             return results
