@@ -1,36 +1,34 @@
 import os
 import sys
-from os.path import dirname, abspath
+
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append('../src/')  # @todo: avoid PYTHONPATH
+from src.validate import *
 
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 import json
-from objects import spec_run
-
 
 try:
     with open("gui/properties.json") as properties_file:
         properties = json.load(properties_file)
-except:
+except FileNotFoundError:
     with open("properties.json") as properties_file:
         properties = json.load(properties_file)
 
-run_list = ['HBIR', 'HBIR_RT', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3', 'Run1', 'Run2', 'Run3']
 
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
-        self.RUN_CONFIG = [os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json']
         self.colors = {'canvas': 'white',
                        'label': 'white',
                        'frame': 'white',
                        'entry': 'white',
                        'text': 'white'}
         Frame.__init__(self, *args, **kwargs)
-        self.form      = None
-        self.arg_label = None
+        self.form, self.arg_label, self.tater, self.new_run_window = None, None, None, None
+        self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
         self.master.title(properties["program_name"])
@@ -38,14 +36,15 @@ class MainWindow(Frame):
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
         menubar = Menu(self.master)
-
-
+        self.run_manager.get_run_from_list("specjbb")
 
         # File Menu
         filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runlist"], command=self.import_runlist)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runtypes"], command=self.import_runtypes)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runlist"],
+                             command=self.import_runlist)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runtypes"],
+                             command='')
         filemenu.add_command(label=properties["commands"]["file"]["items"]["load_group"], command=self.load_group)
         filemenu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
         filemenu.add_command(label=properties["commands"]["file"]["items"]["new_run"], command=self.create_new_run)
@@ -82,7 +81,8 @@ class MainWindow(Frame):
                               fill=BOTH,
                               expand=YES)
         # Create scroll list
-        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial", selectmode=EXTENDED)
+        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
+                               selectmode=EXTENDED)
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
         self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview)
@@ -98,18 +98,17 @@ class MainWindow(Frame):
 
         # Add items to the listbox
         i = 0
+
+        run_list = self.run_manager.get_run_list_tags()
         while i < len(run_list):
             self.listbox.insert(i, run_list[i])
             i += 1
 
-    def make_arg_form(self, root, fields):
+    def make_arg_form(self, fields):
         entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
-            # self.tater = PhotoImage(file='tater.png')
-            self.potato = PhotoImage(file="tater.pgm")
-            self.potato = self.potato.zoom(5)
-            self.potato = self.potato.subsample(50)
+            self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,
@@ -117,10 +116,10 @@ class MainWindow(Frame):
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
-            self.canvas.create_image(5, 5, image=self.potato, anchor='nw', state=NORMAL)                # Label
+            self.canvas.create_image(5, 5, image=self.tater, anchor='nw', state=NORMAL)  # Label
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
-                                   relief=RAISED,
+                                   # relief=SUNKEN,
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
@@ -134,7 +133,7 @@ class MainWindow(Frame):
                                   font=("Calibri", 12),
                                   bg=self.colors['text'],
                                   width=8,
-                                  relief=RIDGE,highlightcolor='black',
+                                  relief=RIDGE, highlightcolor='black',
                                   fg='black',
                                   justify=CENTER)
                 self.form.insert(INSERT, "default")
@@ -160,7 +159,31 @@ class MainWindow(Frame):
         selection = event.widget.curselection()
         if selection:
             content = event.widget.get(selection[0])
-            self.make_arg_form(root=self.canvas, fields=self.get_runtype_args(content))
+            if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
+                print("MainWindow continues to edit the same run.")
+            else:
+                print("MainWindow switched to new run.")
+                self.run_manager.set_current_run(content)
+            self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)))
+
+    def popup_window(self, event):
+        """
+        create a popup window for right clicking on an item in listbox
+        allow to delete or duplicate the selected item
+        """
+        popup_menu = Menu(self.listbox, tearoff=0)
+        # item = self.listbox.get(self.listbox.curselection())
+        popup_menu.add_command(label='Delete', command=lambda: self.listbox.delete(self.listbox.curselection()))
+        popup_menu.add_command(label='Duplicate',
+                               command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
+        popup_menu.tk_popup(event.x_root, event.y_root)
+
+    def save_as(self):
+        pass
+
+    def on_close(self):
+        if messagebox.askyesno("Exit", "Are you sure to exit?"):
+            self.quit()
 
     def create_new_run(self):
         """
@@ -169,12 +192,14 @@ class MainWindow(Frame):
         self.new_run_window = Toplevel(self)
         self.new_run_window.title("Choose Runtype")
         self.new_run_window.minsize(width=25, height=20)
-        runtypes = return_run_types()[0]
+        runtypes = self.run_manager.get_template_types()[0]
         var = StringVar()
+        var.set("L")
         for type in runtypes:
-            chk = Radiobutton(self.new_run_window, text=type, value=type, variable=var)
-            chk.pack(anchor='w', expand=NO, padx=60)
-        Button(self.new_run_window, text='Confirm', command=lambda: self.add_new_run(var.get())).pack(anchor='s')
+            chk = Radiobutton(self.new_run_window, text=type, variable=var, indicatoron=TRUE)
+            chk.pack(anchor='w', expand=YES, padx=60)
+        button = Button(self.new_run_window, text='Confirm', command=lambda: self.add_new_run(var.get()))
+        button.pack(anchor='s')
 
     def add_new_run(self, runtype):
         """
@@ -189,70 +214,110 @@ class MainWindow(Frame):
         pass
 
     def load_group(self):
-        filetuples = filedialog.askopenfilenames(title="Select file",
-                                               filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
+        file_tuples = filedialog.askopenfilenames(title="Select file",
+                                                  filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
         # json file loaded
-        pass
-
-    def save_as(self):
-        pass
+        print("I should do something with: " % file_tuples)
 
     def import_runlist(self):
         """
         load config file
         """
-        filetuples = filedialog.askopenfilenames(title="Select file",
-                                                 filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
-        if filetuples:
-            self.RUN_CONFIG.append(filetuples[0])
-
-    def import_runtypes(self):
-        # NOT NEEDED
-        pass
+        file_tuples = filedialog.askopenfilenames(title="Select file",
+                                                  filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
+        if file_tuples:
+            self.run_manager.RUN_CONFIG = file_tuples[0]
 
     def run_group(self):
         # call CLI function
         pass
 
-    def on_close(self):
-        if messagebox.askyesno("Exit", "Are you sure to exit?"):
-            self.quit()
 
-    def popup_window(self, event):
+class RunManager:
+    def __init__(self, config_file=None):
+        self.current_run = None
+        if config_file is None:
+            self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
+        elif config_file is not None:
+            self.RUN_CONFIG = config_file
+        with open(self.RUN_CONFIG) as file:
+            parsed = json.load(file)
+            self.validated_runs = validate(parsed)
+        self.get_run_list_tags()
+
+    def initialized(self):
+        if self.validated_runs is not None and isinstance(self.validated_runs, dict):
+            return True
+        return False
+
+    def get_run_list(self):
+        if self.initialized:
+            return self.validated_runs["RunList"]
+
+    def get_run_list_tags(self):
+        if self.initialized:
+            return [(lambda x: x["args"]["Tag"])(x) for x in self.get_run_list()]
+
+    def set_current_run(self, new_run_tag):
+        if self.initialized:
+            self.current_run = new_run_tag
+
+    def get_current_run(self):
         """
-        create a popup window for right clicking on an item in listbox
-        allow to delete or duplicate the selected item
+        Used to track which run user is currently editing in the MainWindow.
+        :return:
         """
-        popup_menu = Menu(self.listbox, tearoff=0)
-        # item = self.listbox.get(self.listbox.curselection())
-        popup_menu.add_command(label='Delete', command=lambda: self.listbox.delete(self.listbox.curselection()))
-        popup_menu.add_command(label='Duplicate', command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
-        popup_menu.tk_popup(event.x_root, event.y_root)
+        if self.initialized:
+            return self.current_run
 
+    def get_run_from_list(self, to_find):
+        """
+        :param to_find: a string (run tag) to look for
+        :return:
+        """
+        if self.initialized:
+            if isinstance(to_find, str):
+                for run in self.get_run_list():
+                    if to_find in run["args"]["Tag"]:
+                        return run
 
-    def get_runtype_args(self, run_type):
+    def get_template_types(self):
+        """
+        Returns available template types.
+        :return: list
+        """
+        if self.initialized:
+            return [self.validated_runs["TemplateData"].keys()]
+
+    def get_template_type_args(self, run_type):
         """
         Searches the most recently used config file for args pertaining to run_type.
         It also returns each args annotations.
         :param run_type:
         :return: {'arg': 'annotation', ...}
         """
-        with open(self.RUN_CONFIG[-1]) as file:
-            parsed = json.load(file)
-            if run_type not in parsed["TemplateData"]:
-                print("{} not found.".format(run_type))
+        if self.initialized:
+            if not run_type:
                 return None
-            results = dict()
-            for i in parsed["TemplateData"][run_type]["args"]:
-                results[i] = parsed["TemplateData"][run_type]["annotations"][i]
-            return results
+            if isinstance(run_type, dict):
+                run_type = run_type["template_type"]
+            if isinstance(run_type, str):
+                if run_type not in self.validated_runs["TemplateData"].keys():
+                    print("{} not found.".format(run_type))
+                    return None
+                results = dict()
+                for i in self.validated_runs["TemplateData"][run_type]["args"]:
+                    results[i] = self.validated_runs["TemplateData"][run_type]["annotations"][i]
+                return results
 
-
-def return_run_types():
-    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'example_config.json')
-    with open(path_to_json, 'r') as json_file:
-        parsed = json.load(json_file)
-        return [parsed["TemplateData"].keys()]
+    def compare_tags(self, a, b):
+        if b is None:
+            return None
+        if isinstance(b, dict):
+            if isinstance(b, dict):
+                return a == b["args"]["Tag"]
+            elif isinstance(b, str):
+                return a == b
 
 
 if __name__ == '__main__':
