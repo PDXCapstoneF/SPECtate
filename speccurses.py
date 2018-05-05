@@ -17,10 +17,12 @@ xoffset = 5
 
 run_types = ['composite', 'distributed_ctrl_txl', 'distributed_sut', 'multi']
 
+
 def _remove_control_chars(s):
     if(isinstance(s, str)):
         return ''.join([i if ord(i) < 128 else '' for i in s])
     return _remove_control_chars(s.decode())
+
 
 def display_run(stdscr, runinfo, y=STARTY + 2):
     """
@@ -30,14 +32,16 @@ def display_run(stdscr, runinfo, y=STARTY + 2):
     :param y: The current y value
     :return: The new y value, as well as the max length of any property in the current run
     """
-    mem = [attr for attr in dir(runinfo) if not callable(getattr(runinfo, attr)) and not attr.startswith("__")]
+    mem = [attr for attr in dir(runinfo) if not callable(
+        getattr(runinfo, attr)) and not attr.startswith("__")]
     valueoffset = len(max(mem, key=len)) + 2
     for name in mem:
         if (name == 'properties'):
             stdscr.addstr(y, xoffset, name)
         else:
             stdscr.addstr(y, xoffset, "{}:".format(name))
-            stdscr.addstr(y, xoffset + valueoffset, str(getattr(runinfo, name)))
+            stdscr.addstr(y, xoffset + valueoffset,
+                          str(getattr(runinfo, name)))
         y += 1
     return y, valueoffset
 
@@ -58,7 +62,8 @@ def select_from(stdscr, x, y, value, list):
     idx = list.index(value)
     while (k != KEY_ENTER and k != ord('q')):
         pad.clear()
-        draw_status_bar(stdscr, "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
+        draw_status_bar(
+            stdscr, "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
         if (k == curses.KEY_UP and idx > 0):
             idx -= 1
         elif (k == curses.KEY_DOWN and idx < len(list) - 1):
@@ -87,7 +92,7 @@ def input_text(stdscr, x, y, value, validator):
     height, width = stdscr.getmaxyx()
     xmax = width * 2
     pad = curses.newpad(1, xmax)
-    cursorx =  min(x + len(value), width - 1)
+    cursorx = min(x + len(value), width - 1)
 
     while (k != KEY_ENTER):
         pad.clear()
@@ -133,12 +138,13 @@ def input_text(stdscr, x, y, value, validator):
         stdscr.move(y, cursorx)
         pad.addstr(0, 0, "".join(value))
         if(idx != (cursorx - x)):
-            #[0 1 2 3 4 5 6 7]
+            # [0 1 2 3 4 5 6 7]
             #   o   W
             #   o X
             #               I
             # I - ((W - o) - (W - X))
-            pad.refresh(0, idx - ((width - 1 - x) - (width - 1 - cursorx)), y, x, y, width - 1)
+            pad.refresh(0, idx - ((width - 1 - x) -
+                                  (width - 1 - cursorx)), y, x, y, width - 1)
         else:
             pad.refresh(0, 0, y, x, y, width - 1)
         k = stdscr.getch()
@@ -162,7 +168,8 @@ def draw_edit_props(stdscr, p):
         draw_title(stdscr)
         draw_status_bar(stdscr, "Press 'q' to exit or 'ENTER' to edit a value")
         stdscr.addstr(height - 3, 0, p[index].desc)
-        pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+        pad.refresh(index - (cury - starty), 0, starty,
+                    xoffset, height - 5, width - xoffset - 1)
         stdscr.move(cury, xoffset)
         stdscr.refresh()
 
@@ -179,19 +186,23 @@ def draw_edit_props(stdscr, p):
             if (cury < height - 5):
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if (cury > starty):
                 cury -= 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == KEY_ENTER:
             if (p[index].valid_opts != []):
-                value = select_from(stdscr, xoffset + startx, cury, str(p[index].value), p[index].valid_opts)
+                value = select_from(
+                    stdscr, xoffset + startx, cury, str(p[index].value), p[index].valid_opts)
                 p[index].value = value
             else:
-                value = input_text(stdscr, xoffset + startx, cury, p[index].value, p[index].input_validator)
+                value = input_text(stdscr, xoffset + startx,
+                                   cury, p[index].value, p[index].input_validator)
                 if (not p[index].value_validator(value)):
                     draw_show_message(stdscr, p[index].help_text)
                 else:
@@ -219,7 +230,8 @@ def draw_edit_run(stdscr, runinfo):
     k = 0
     y = STARTY + 2
     cury = y
-    array = [attr for attr in dir(runinfo) if not callable(getattr(runinfo, attr)) and not attr.startswith("__")]
+    array = [attr for attr in dir(runinfo) if not callable(
+        getattr(runinfo, attr)) and not attr.startswith("__")]
     endy, startx = _draw()
     while (k != ord('q')):  # 27 == 'ESC'
         if k == curses.KEY_DOWN and cury < (endy - 1):
@@ -229,13 +241,16 @@ def draw_edit_run(stdscr, runinfo):
         elif k == KEY_ENTER:
             name = array[cury - y]
             if (name == 'verbose' or name == 'skip_report' or name == 'ignore_kit_validation'):
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [True, False])
+                value = select_from(stdscr, xoffset + startx,
+                                    cury, getattr(runinfo, name), [True, False])
                 setattr(runinfo, name, value)
             elif (name == 'report_level'):
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [0, 1, 2])
+                value = select_from(stdscr, xoffset + startx,
+                                    cury, getattr(runinfo, name), [0, 1, 2])
                 setattr(runinfo, name, value)
             elif (name == 'run_type'):
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), run_types)
+                value = select_from(stdscr, xoffset + startx,
+                                    cury, getattr(runinfo, name), run_types)
                 setattr(runinfo, name, value)
             elif (name == 'properties'):
                 draw_edit_props(stdscr, runinfo.properties.get_all())
@@ -269,20 +284,24 @@ def edit_config(stdscr, config=None, path=""):
         stdscr.clear()
         stdscr.refresh()
         starty = draw_title(stdscr)
-        stdscr.addstr(starty + len(config.runs), xoffset, "{}. Add new run:".format(len(config.runs) + 1))
-        draw_status_bar(stdscr, "Press 'ENTER' to edit a run | Press 'RIGHT' to adjust run position | Press q to quit")
+        stdscr.addstr(starty + len(config.runs), xoffset,
+                      "{}. Add new run:".format(len(config.runs) + 1))
+        draw_status_bar(
+            stdscr, "Press 'ENTER' to edit a run | Press 'RIGHT' to adjust run position | Press q to quit")
         draw_notice_bar(stdscr, "Press 'C' to change config type: {}".format(config.type))
         if (position):
             stdscr.move(cury, xoffset + 2)
         else:
             stdscr.move(cury, xoffset)
-        pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+        pad.refresh(index - (cury - starty), 0, starty,
+                    xoffset, height - 2, width - xoffset - 1)
         stdscr.refresh()
         return starty, pad
 
     def _getpad():
         p = pad_runs(stdscr, config.runs)
-        p.addstr(len(config.runs), 0, "{}. {}".format(len(config.runs), "Add new run"))
+        p.addstr(len(config.runs), 0, "{}. {}".format(
+            len(config.runs), "Add new run"))
         return p, min(starty + len(config.runs), height - 1)
 
     k = 0
@@ -297,30 +316,38 @@ def edit_config(stdscr, config=None, path=""):
         if k == curses.KEY_DOWN:
             if ((not position and cury < endy) or (position and cury < endy - 1)):
                 if (position):
-                    config.runs[index + 1], config.runs[index] = config.runs[index], config.runs[index + 1]
+                    config.runs[index +
+                                1], config.runs[index] = config.runs[index], config.runs[index + 1]
                     pad, endy = _getpad()
-                    pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+                    pad.refresh(index - (cury - starty), 0, starty,
+                                xoffset, height - 2, width - xoffset - 1)
                 cury += 1
                 index += 1
             elif ((not position and index < len(config.runs) - 1) or (position and index < len(config.runs) - 1)):
                 if (position):
-                    config.runs[index + 1], config.runs[index] = config.runs[index], config.runs[index + 1]
+                    config.runs[index +
+                                1], config.runs[index] = config.runs[index], config.runs[index + 1]
                     pad, endy = _getpad()
-                    pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+                    pad.refresh(index - (cury - starty), 0, starty,
+                                xoffset, height - 2, width - xoffset - 1)
                 index += 1
         elif k == curses.KEY_UP:
             if (cury > starty):
                 if (position):
-                    config.runs[index - 1], config.runs[index] = config.runs[index], config.runs[index - 1]
+                    config.runs[index -
+                                1], config.runs[index] = config.runs[index], config.runs[index - 1]
                     pad, endy = _getpad()
-                    pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+                    pad.refresh(index - (cury - starty), 0, starty,
+                                xoffset, height - 2, width - xoffset - 1)
                 cury -= 1
                 index -= 1
             elif (index > 0):
                 if (position):
-                    config.runs[index - 1], config.runs[index] = config.runs[index], config.runs[index - 1]
+                    config.runs[index -
+                                1], config.runs[index] = config.runs[index], config.runs[index - 1]
                     pad, endy = _getpad()
-                    pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+                    pad.refresh(index - (cury - starty), 0, starty,
+                                xoffset, height - 2, width - xoffset - 1)
                 index -= 1
         elif (k == curses.KEY_LEFT):
             position = False
@@ -328,7 +355,8 @@ def edit_config(stdscr, config=None, path=""):
             position = True
         elif (k == curses.KEY_DC and index < len(config.runs)):
             position = False
-            draw_status_bar(stdscr, "Remove run {} from this config? (y/N)".format(config.runs[index].tag))
+            draw_status_bar(
+                stdscr, "Remove run {} from this config? (y/N)".format(config.runs[index]))
             resp = stdscr.getch()
             if (resp == ord('y') or resp == ord('Y')):
                 del config.runs[index]
@@ -388,7 +416,8 @@ def draw_status_bar(stdscr, statusbarstr):
     if (len(statusbarstr) > width):
         statusbarstr = statusbarstr[:width - 1]
     stdscr.addstr(height - 1, 0, statusbarstr)
-    stdscr.addstr(height - 1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+    stdscr.addstr(height - 1, len(statusbarstr), " " *
+                  (width - len(statusbarstr) - 1))
     stdscr.attroff(curses.color_pair(3))
 
 
@@ -409,7 +438,8 @@ def draw_get_config_path(stdscr):
     draw_status_bar(stdscr, "Please enter the path of a config")
 
     stdscr.addstr(y, xoffset, "Config file path:")
-    path = input_text(stdscr, xoffset + len("Config file path:") + 1, y, "", lambda x: True)
+    path = input_text(stdscr, xoffset +
+                      len("Config file path:") + 1, y, "", lambda x: True)
     if(not os.path.exists(path) and not path.endswith('.json')):
         path += '.json'
     if (os.path.isfile(path)):
@@ -448,6 +478,7 @@ def run_config(stdscr):
     if (config is None):
         return
     index = 0
+
     def _handle(msg):
         msg = _remove_control_chars(msg)
         if(msg.isspace()):
@@ -499,18 +530,18 @@ def run_config(stdscr):
 
     pad = curses.newpad(height, width - 1 - xoffset)
 
-    #stdscr.keypad(0)
-    #curses.echo()
-    #curses.nocbreak()
-    #curses.endwin()
+    # stdscr.keypad(0)
+    # curses.echo()
+    # curses.nocbreak()
+    # curses.endwin()
     for r in config.runs:
         # draw_status_bar(stdscr, "Starting run '{}'".format(r.tag))
 
         result = r.run(path, _handle, lambda x:x)
         if (result == 2):
-            #curses.noecho()
-            #curses.cbreak()
-            #stdscr.keypad(1)
+            # curses.noecho()
+            # curses.cbreak()
+            # stdscr.keypad(1)
             path = draw_get_path(stdscr)
             #stdscr.keypad(0)
             #curses.echo()
@@ -518,26 +549,29 @@ def run_config(stdscr):
             #curses.endwin()
             result = r.run(path, _handle, lambda x:x)
             if (result == 2):
-                #curses.noecho()
-                #curses.cbreak()
-                #stdscr.keypad(1)
-                draw_status_bar(stdscr, "Invalid SPECjbb path. Press any key to continue")
+                # curses.noecho()
+                # curses.cbreak()
+                # stdscr.keypad(1)
+                draw_status_bar(
+                    stdscr, "Invalid SPECjbb path. Press any key to continue")
                 stdscr.getch()
                 return
         if (result == -1):
-            #curses.noecho()
-            #curses.cbreak()
-            #stdscr.keypad(1)
-            draw_status_bar(stdscr, "An error occured running the benchmark. Press any key to continue")
+            # curses.noecho()
+            # curses.cbreak()
+            # stdscr.keypad(1)
+            draw_status_bar(
+                stdscr, "An error occured running the benchmark. Press any key to continue")
             stdscr.getch()
             return
-            #curses.echo()
-            #curses.nocbreak()
-            #curses.endwin()
-    #curses.noecho()
-    #curses.cbreak()
-    #stdscr.keypad(1)
-    draw_status_bar(stdscr, "All runs have been completed - Press any key to continue")
+            # curses.echo()
+            # curses.nocbreak()
+            # curses.endwin()
+    # curses.noecho()
+    # curses.cbreak()
+    # stdscr.keypad(1)
+    draw_status_bar(
+        stdscr, "All runs have been completed - Press any key to continue")
     stdscr.getch()
 
 
@@ -549,7 +583,8 @@ def create_config(stdscr):
     y = draw_title(stdscr)
     stdscr.addstr(y, xoffset, "Enter config name:")
 
-    path = input_text(stdscr, xoffset + len("Enter config name:") + 1, y, "", lambda x: True).strip()
+    path = input_text(
+        stdscr, xoffset + len("Enter config name:") + 1, y, "", lambda x: True).strip()
     if (path.isspace() or path == ""):
         draw_show_message(stdscr, "Config name cannot be blank")
         return
@@ -557,7 +592,8 @@ def create_config(stdscr):
         stdscr.clear()
         stdscr.refresh()
         y = draw_title(stdscr)
-        stdscr.addstr(y, xoffset, "Warning: file {} already exists, overwrite? (y/N)".format(path))
+        stdscr.addstr(
+            y, xoffset, "Warning: file {} already exists, overwrite? (y/N)".format(path))
         k = stdscr.getch()
         if (k != ord('Y') and k != ord('y')):
             return
@@ -602,12 +638,15 @@ def draw_view_props(stdscr, p):
         stdscr.refresh()
         draw_title(stdscr)
         if (show_all):
-            draw_status_bar(stdscr, "Press 'q' to exit | Press 'a' to hide defaults")
+            draw_status_bar(
+                stdscr, "Press 'q' to exit | Press 'a' to hide defaults")
         else:
-            draw_status_bar(stdscr, "Press 'q' to exit | Press 'a' to show all properties")
+            draw_status_bar(
+                stdscr, "Press 'q' to exit | Press 'a' to show all properties")
         if (len(visprops) > 0):
             stdscr.addstr(height - 3, 0, visprops[index].desc)
-        pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+        pad.refresh(index - (cury - starty), 0, starty,
+                    xoffset, height - 5, width - xoffset - 1)
         stdscr.move(cury, xoffset)
         stdscr.refresh()
 
@@ -628,13 +667,15 @@ def draw_view_props(stdscr, p):
             if (cury < height - 5):
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if (cury > starty):
                 cury -= 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif (k == ord('a') or k == ord('A')):
             show_all = not show_all
             if (show_all):
@@ -664,7 +705,8 @@ def draw_view_run(stdscr, runinfo):
         stdscr.refresh()
 
         ey, ex = display_run(stdscr, runinfo, draw_title(stdscr))
-        draw_status_bar(stdscr, "Press 'q' to exit or 'ENTER' to view run properties")
+        draw_status_bar(
+            stdscr, "Press 'q' to exit or 'ENTER' to view run properties")
 
         stdscr.refresh()
         return ey, ex
@@ -688,9 +730,11 @@ def view_runs(stdscr):
         stdscr.clear()
         stdscr.refresh()
         draw_title(stdscr)
-        draw_status_bar(stdscr, "Press 'ENTER' to view a run | Press 'q' to quit")
+        draw_status_bar(
+            stdscr, "Press 'ENTER' to view a run | Press 'q' to quit")
         stdscr.move(py, xoffset)
-        pad.refresh(index - (py - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+        pad.refresh(index - (py - starty), 0, starty,
+                    xoffset, height - 2, width - xoffset - 1)
         stdscr.refresh()
 
     height, width = stdscr.getmaxyx()
@@ -709,7 +753,8 @@ def view_runs(stdscr):
             elif (index < len(config.runs) - 1):
                 # pad scrolling down
                 index += 1
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 2, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 2, width - xoffset - 1)
         elif k == curses.KEY_UP:
             if (cury > starty):
                 cury -= 1
