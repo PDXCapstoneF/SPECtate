@@ -29,7 +29,6 @@ class MainWindow(Frame):
         Frame.__init__(self, *args, **kwargs)
         self.form, self.arg_label, self.tater, self.new_run_window = None, None, None, None
         self.run_manager = RunManager(config_file=None)
-        self.run_manager.get_run_from_list("specjbb")
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
         self.master.title(properties["program_name"])
@@ -186,7 +185,7 @@ class MainWindow(Frame):
 
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?") == True:
-            if messagebox.askyesno("Save", "Would you like to save before exitting?") == True:
+            if messagebox.askyesno("Save", "Would you like to save before exiting?") == True:
                 self.save_as()
             self.quit()
         else:
@@ -196,7 +195,6 @@ class MainWindow(Frame):
         """
         create a new window for choosing a runtype
         """
-        print("Im in create_new_run")
         self.button_results = None
         self.new_run_window = Toplevel(self)
         self.new_run_window.title("Choose Runtype")
@@ -232,10 +230,11 @@ class MainWindow(Frame):
         pass
 
     def load_group(self):
+        # @todo: is this needed?
         file_tuples = filedialog.askopenfilenames(title="Select file",
                                                   filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
         # json file loaded
-        print("I should do something with: " % file_tuples)
+        print("# @todo: I should do something with: " % file_tuples)
 
     def import_runlist(self):
         """
@@ -306,7 +305,6 @@ class RunManager:
         :return: str
         """
         if run_type not in self.get_template_types()[0]:
-            print("Run type not found.")
             return None
         run_type_copy = self.validated_runs["TemplateData"][run_type]
         new_args = dict()
@@ -318,7 +316,6 @@ class RunManager:
                 new_args[arg] = 0
         run_type_copy["args"] = new_args
         run_type_copy["args"]["Tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
-        print("Run type copy upon creation: {}".format(run_type_copy))
         self.insert_into_config_list(key="RunList", data=run_type_copy)
         return run_type_copy["args"]["Tag"]
 
@@ -416,7 +413,6 @@ class RunManager:
                 run_type = run_type["template_type"]
             if isinstance(run_type, str):
                 if run_type not in self.validated_runs["TemplateData"].keys():
-                    print("{} not found.".format(run_type))
                     return None
                 results = dict()
                 for i in self.validated_runs["TemplateData"][run_type]["args"]:
