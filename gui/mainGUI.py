@@ -179,7 +179,7 @@ class MainWindow(Frame):
         popup_menu.tk_popup(event.x_root, event.y_root)
 
     def save_as(self):
-        pass
+        self.run_manager.write_to_file()
 
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
@@ -221,7 +221,7 @@ class MainWindow(Frame):
         self.new_run_window.destroy()
         run = self.run_manager.create_run(runtype)
         self.listbox.insert(END, run)
-        self.run_manager.insert_into_config_list("RunList", run)
+        # self.run_manager.insert_into_config_list("RunList", run)
 
     def save_group(self):
         # save stuff
@@ -248,7 +248,7 @@ class RunManager:
     def __init__(self, config_file=None):
         self.current_run = None
         self.template_fields = ["args", "annotations", "default_props", "types", "translations"]
-        self.backup_filename = "output.back.json"
+        self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
@@ -257,6 +257,7 @@ class RunManager:
             with open(self.RUN_CONFIG) as file:
                 parsed = json.load(file)
                 self.validated_runs = validate(parsed)
+                print(self.validated_runs)
         except IOError:
             print("Error: {} does not exist.\nPlease supply a valid onfiguration file.".format(self.RUN_CONFIG))
         if not self.initialized():
@@ -270,9 +271,14 @@ class RunManager:
         """
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
-    def write_to_file(self, fname):
-        with open(fname, 'w') as fh:
-            json.dump(self.validated_runs, fh)
+    def write_to_file(self):
+        test = True
+        if test is True:
+            with open(self.test_file, 'w') as fh:
+                json.dump(self.validated_runs, fh, indent=4)
+        else:
+            with open(self.RUN_CONFIG, 'w') as fh:
+                json.dump(self.validated_runs, fh)
 
     def insert_into_config_list(self, key, data):
         # @todo: test
@@ -292,19 +298,23 @@ class RunManager:
                 elif key == "RunList":
                     # @todo: verify that I actually update by uncommenting these lines.
                     self.validated_runs["RunList"].append(data)
+                    print("After insert: {}".format(self.validated_runs))
                     return True
             except Exception:  # not a valid run
                 return None
 
     def create_run(self, run_type):
         """
+        # @todo: there is a bug somewhere around here, causing an update of a key in the TemplateData section instead of
+        # RunList section.
+
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
         :return: str
         """
         if run_type not in self.get_template_types()[0]:
             return None
-        run_type_copy = self.validated_runs["TemplateData"][run_type]
+        run_type_copy = self.validated_runs["TemplateData"][run_type].copy()
         new_args = dict()
 
         for arg in run_type_copy["args"]:
