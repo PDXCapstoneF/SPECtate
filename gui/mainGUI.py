@@ -305,7 +305,6 @@ class RunManager:
 
     def create_run(self, run_type):
         """
-        # @todo: there is a bug somewhere around here, causing an update of a key in the TemplateData section instead of
         # RunList section.
 
         Creates a run to insert into run_list. Values will be initialized to a default value.
