@@ -1,15 +1,15 @@
 import os
 import sys
+import json
+from tkinter import *
+from tkinter import filedialog
+from tkinter import messagebox
+import uuid
 
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
-
-from tkinter import *
-from tkinter import filedialog
-from tkinter import messagebox
-import json
 
 try:
     with open("gui/properties.json") as properties_file:
@@ -29,43 +29,16 @@ class MainWindow(Frame):
         Frame.__init__(self, *args, **kwargs)
         self.form, self.arg_label, self.tater, self.new_run_window = None, None, None, None
         self.run_manager = RunManager(config_file=None)
+        self.run_manager.get_run_from_list("specjbb")
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
         self.master.title(properties["program_name"])
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
-        menubar = Menu(self.master)
-        self.run_manager.get_run_from_list("specjbb")
 
-        # File Menu
-        filemenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runlist"],
-                             command=self.import_runlist)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_runtypes"],
-                             command='')
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["load_group"], command=self.load_group)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_run"], command=self.create_new_run)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["run_group"], command=self.run_group)
-        filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
+        self.publish_menu()
 
-        # Edit Menu
-        editmenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["edit"]["title"], menu=editmenu)
-        editmenu.add_command(label=properties["commands"]["edit"]["items"][0], command='')
-        editmenu.add_command(label=properties["commands"]["edit"]["items"][1], command='')
-
-        # Help Menu
-        helpmenu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label=properties["commands"]["help"]["title"], menu=helpmenu)
-        helpmenu.add_command(label=properties["commands"]["help"]["items"][0], command='')
-        helpmenu.add_command(label=properties["commands"]["help"]["items"][1], command='')
-
-        # Publish Menu
-        self.master.config(menu=menubar)
         self.left_frame = Frame(self.master, background=self.colors['frame'],
                                 borderwidth=5, relief=RIDGE,
                                 height=250,
@@ -103,6 +76,36 @@ class MainWindow(Frame):
         while i < len(run_list):
             self.listbox.insert(i, run_list[i])
             i += 1
+
+    def publish_menu(self):
+        self.menubar = Menu(self.master)
+
+        # File Menu
+        filemenu = Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
+                             command=lambda: self.create_new_run())
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["save"], command=lambda: self.create_new_run)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_config"], command=lambda: self.import_runlist)
+        filemenu.add_separator()
+        filemenu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
+
+        # Edit Menu
+        editmenu = Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label=properties["commands"]["edit"]["title"], menu=editmenu)
+        editmenu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
+        editmenu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
+
+        # Help Menu
+        helpmenu = Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label=properties["commands"]["help"]["title"], menu=helpmenu)
+        helpmenu.add_command(label=properties["commands"]["help"]["items"]["wiki"], command='')
+        helpmenu.add_command(label=properties["commands"]["help"]["items"]["exit"], command='')
+
+        # Publish Menu
+        self.master.config(menu=self.menubar)
 
     def make_arg_form(self, fields):
         entries = {}
@@ -182,23 +185,34 @@ class MainWindow(Frame):
         pass
 
     def on_close(self):
-        if messagebox.askyesno("Exit", "Are you sure to exit?"):
+        if messagebox.askyesno("Exit", "Are you sure to exit?") == True:
+            if messagebox.askyesno("Save", "Would you like to save before exitting?") == True:
+                self.save_as()
             self.quit()
+        else:
+            return
 
     def create_new_run(self):
         """
         create a new window for choosing a runtype
         """
+        print("Im in create_new_run")
+        self.button_results = None
         self.new_run_window = Toplevel(self)
         self.new_run_window.title("Choose Runtype")
         self.new_run_window.minsize(width=25, height=20)
         runtypes = self.run_manager.get_template_types()[0]
-        var = StringVar()
-        var.set("L")
-        for type in runtypes:
-            chk = Radiobutton(self.new_run_window, text=type, variable=var, indicatoron=TRUE)
-            chk.pack(anchor='w', expand=YES, padx=60)
-        button = Button(self.new_run_window, text='Confirm', command=lambda: self.add_new_run(var.get()))
+        var = StringVar(value="0")
+        for idx, runtype in enumerate(runtypes):
+            chk = Radiobutton(self.new_run_window,
+                              text=runtype,
+                              variable=var,
+                              value=runtype)
+            chk.pack(anchor='w', padx=60)
+        button = Button(self.new_run_window,
+                        text='Confirm',
+                        variable=self.button_results,
+                        command=lambda: self.add_new_run(var))
         button.pack(anchor='s')
 
     def add_new_run(self, runtype):
@@ -206,8 +220,12 @@ class MainWindow(Frame):
         add a new run into the end of runlist
         :param runtype: string
         """
+        # @todo: create the run object. Then call self.run_man to add to list.
+        runtype = runtype.get()
         self.new_run_window.destroy()
-        self.listbox.insert(END, runtype)
+        run = self.run_manager.create_run(runtype)
+        self.listbox.insert(END, run)
+        self.run_manager.insert_into_config_list("RunList", run)
 
     def save_group(self):
         # save stuff
@@ -228,62 +246,157 @@ class MainWindow(Frame):
         if file_tuples:
             self.run_manager.RUN_CONFIG = file_tuples[0]
 
-    def run_group(self):
-        # call CLI function
-        pass
-
 
 class RunManager:
     def __init__(self, config_file=None):
         self.current_run = None
+        self.template_fields = ["args", "annotations", "default_props", "types", "translations"]
+        self.backup_filename = "output.back.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
             self.RUN_CONFIG = config_file
-        with open(self.RUN_CONFIG) as file:
-            parsed = json.load(file)
-            self.validated_runs = validate(parsed)
-        self.get_run_list_tags()
+        try:
+            with open(self.RUN_CONFIG) as file:
+                parsed = json.load(file)
+                self.validated_runs = validate(parsed)
+        except IOError:
+            print("Error: {} does not exist.\nPlease supply a valid onfiguration file.".format(self.RUN_CONFIG))
+        if not self.initialized():
+            print("Run configuration not loaded. Please supply a valid configuration file.")
 
     def initialized(self):
-        if self.validated_runs is not None and isinstance(self.validated_runs, dict):
-            return True
-        return False
+        """
+        Checks that the current runs in memory are not NULL and are set to a correct type.
+        A precaution for preventing key errors from arising in other methods.
+        :return: Bool
+        """
+        return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
+
+    def write_to_file(self, fname):
+        with open(fname, 'w') as fh:
+            json.dump(self.validated_runs, fh)
+
+    def insert_into_config_list(self, key, data):
+        # @todo: test
+        """
+        This method can insert a template or run into
+        `TemplateData` or `RunList`, respectively.
+        :param key: str
+        :param data: dict
+        :return: dict
+        """
+        if key not in ["TemplateData", "RunList"] or data is None or not isinstance(data, dict):
+            return None
+        if self.initialized:
+            try:
+                if key == "TemplateData":
+                    self.validated_runs[key][data["RunType"]] = data
+                elif key == "RunList":
+                    # @todo: verify that I actually update by uncommenting these lines.
+                    self.validated_runs["RunList"].append(data)
+                    return True
+            except Exception:  # not a valid run
+                return None
+
+    def create_run(self, run_type):
+        """
+        Creates a run to insert into run_list. Values will be initialized to a default value.
+        :param run_type: str
+        :return: str
+        """
+        if run_type not in self.get_template_types()[0]:
+            print("Run type not found.")
+            return None
+        run_type_copy = self.validated_runs["TemplateData"][run_type]
+        new_args = dict()
+
+        for arg in run_type_copy["args"]:
+            if run_type_copy["types"][arg] == "string":
+                new_args[arg] = "0"
+            if run_type_copy["types"][arg] == "integer":
+                new_args[arg] = 0
+        run_type_copy["args"] = new_args
+        run_type_copy["args"]["Tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
+        print("Run type copy upon creation: {}".format(run_type_copy))
+        self.insert_into_config_list(key="RunList", data=run_type_copy)
+        return run_type_copy["args"]["Tag"]
+
+    def duplicate_run(self, from_tag, new_tag_name):
+        # @todo: test
+        """
+        Insert into run_list a copy of an existing run having the Tag `from_tag`.
+        `new_tag_name` will override the tag in the copy.
+        :param from_tag: str
+        :param new_tag_name: str
+        :return:
+        """
+        if self.initialized():
+            run = self.get_run_from_list(from_tag)
+            if run is not None and isinstance(run, dict) and "Tag" in run:
+                run["Tag"] = new_tag_name
+                self.insert_into_config_list("RunList", run)
+
+    def get_template_fields(self):
+        """
+        Returns fields for the structure of a run template,
+        (e.g. `args`, `annotations` `translations`, ...)
+        :return: list
+        """
+        return self.template_fields
 
     def get_run_list(self):
+        """
+        Returns runs from run list.
+        :return: list
+        """
         if self.initialized:
             return self.validated_runs["RunList"]
 
     def get_run_list_tags(self):
+        # @todo: test
+        """
+        Returns the tags of all runs currently in the run list.
+        :return: list
+        """
         if self.initialized:
             return [(lambda x: x["args"]["Tag"])(x) for x in self.get_run_list()]
 
     def set_current_run(self, new_run_tag):
-        if self.initialized:
-            self.current_run = new_run_tag
+        # @todo: test
+        """
+        Sets the current run to track.
+        :param new_run_tag:
+        :return: string
+        """
+        self.current_run = new_run_tag
+        return self.current_run
 
     def get_current_run(self):
+        # @todo: test
         """
         Used to track which run user is currently editing in the MainWindow.
-        :return:
+        :return: string
         """
         if self.initialized:
             return self.current_run
 
-    def get_run_from_list(self, to_find):
+    def get_run_from_list(self, tag_to_find):
+        # @todo: test
         """
-        :param to_find: a string (run tag) to look for
-        :return:
+        Search for run in run list by tag, having the key value `tag_to_find`.
+        :param tag_to_find: a string (run tag) to look for
+        :return: dict
         """
         if self.initialized:
-            if isinstance(to_find, str):
+            if isinstance(tag_to_find, str):
                 for run in self.get_run_list():
-                    if to_find in run["args"]["Tag"]:
+                    if tag_to_find in run["args"]["Tag"]:
                         return run
 
     def get_template_types(self):
         """
-        Returns available template types.
+        Returns available template types (e.g. ["HBIR", "HBIR_RT", ...]
         :return: list
         """
         if self.initialized:
@@ -291,10 +404,10 @@ class RunManager:
 
     def get_template_type_args(self, run_type):
         """
-        Searches the most recently used config file for args pertaining to run_type.
-        It also returns each args annotations.
-        :param run_type:
-        :return: {'arg': 'annotation', ...}
+        Searches the config file for args pertaining to `run_type`.
+        It also returns each arg's annotation, in the form: {'arg_x': 'annotation_x', ...}
+        :param run_type: dict or str
+        :return: dict
         """
         if self.initialized:
             if not run_type:
@@ -311,12 +424,23 @@ class RunManager:
                 return results
 
     def compare_tags(self, a, b):
-        if b is None:
-            return None
-        if isinstance(b, dict):
+        """
+        Compares run tag `a` with run tag `b`.
+        :param a: dict or str
+        :param b: dict or str
+        :return: Bool
+        """
+        if a or b is None:
+            return False
+        if isinstance(a, dict):
+            if isinstance(b, dict):
+                return a["args"]["Tag"] == b["args"]["Tag"]
+            elif isinstance(b, str):
+                return a["args"]["Tag"] == b
+        elif isinstance(a, str):
             if isinstance(b, dict):
                 return a == b["args"]["Tag"]
-            elif isinstance(b, str):
+            if isinstance(b, str):
                 return a == b
 
 
