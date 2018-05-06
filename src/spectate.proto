@@ -1,0 +1,35 @@
+syntax  = "proto3";
+
+package spectate;
+
+service SPECtateDistributedRunner {
+	rpc DoRun(RunConfiguration) returns (BenchmarkResults) {}
+}
+
+message SPECjbbPair {
+	string prop_name = 1;
+	string value = 2;
+	string type = 3;
+}
+
+enum Component {
+	BACKEND = 0;
+	INJECTOR = 1;
+}
+
+message RunConfiguration {
+	// The string to invoke java on the local machine.
+	string java = 1;
+	// The options to pass to the JVM on the local machine.
+	repeated string java_options = 2;
+	// The name of the component
+	Component component = 3;
+	repeated string component_options = 4;
+	repeated SPECjbbPair props = 5;
+}
+
+message BenchmarkResults {
+	// Relative path on this machine to retrieve results
+	// for this specific run.
+	string results_path = 1;
+}
