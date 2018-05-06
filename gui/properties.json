@@ -12,28 +12,27 @@
     "file": {
       "title": "File",
       "items": {
-        "import_runlist": "Import Run List",
-        "import_runtypes": "Import Runtypes",
+        "new_run": "New Run",
+        "new_runtype": "New Run Type",
+        "save": "Save",
         "save_as": "Save As...",
-        "new_run": "Create New Run",
-        "run_group": "Run Group",
-        "load_group": "Load Group",
+        "import_config": "Import Run Configurations",
         "exit": "Exit"
       }
     },
     "edit": {
       "title": "Edit",
-      "items": [
-        "Undo",
-        "Redo"
-      ]
+      "items": {
+        "undo": "Undo",
+        "redo": "Redo"
+      }
     },
     "help": {
       "title": "Help",
-      "items": [
-        "Wiki",
-        "Exit"
-      ]
+      "items": {
+        "wiki": "Wiki",
+        "exit": "Exit"
+      }
     }
   }
 }

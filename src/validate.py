@@ -35,6 +35,7 @@ RunConfigSchema = Schema({
     Optional("props_extra"): {
         Optional(is_stringy): is_stringy,
     },
+    Optional("times", default=1): int,
 })
 
 SpectateConfig = Schema({
