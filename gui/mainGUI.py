@@ -51,6 +51,7 @@ class MainWindow(Frame):
                                  width=50)
         self.left_frame.pack(side=LEFT, fill=BOTH, expand=YES)
         self.right_frame.pack(side=RIGHT, fill=BOTH, expand=YES)
+
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
                                selectmode=EXTENDED)
@@ -60,7 +61,13 @@ class MainWindow(Frame):
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
-        self.listbox.bind("<Button-3>", self.popup_window)
+        self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
+
+        # Create popup menu
+        self.popup_menu = Menu(self.listbox, tearoff=0)
+        self.popup_menu.add_command(label='Delete', command=lambda: self.delete_selected(self.listbox.curselection()))
+        self.popup_menu.add_command(label='Duplicate',
+                                    command=lambda: self.duplicate_selected(self.listbox.curselection()))
 
         # Create canvas
         self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
@@ -126,7 +133,6 @@ class MainWindow(Frame):
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
-            self.arg_label.pack(pady=0, padx=150, fill=X, side=TOP, anchor='nw')
             self.arg_label.grid(row=50, column=1, sticky=W)
 
         if fields is not None:
@@ -151,8 +157,6 @@ class MainWindow(Frame):
                                        font=("Calibri", 12),
                                        width=64,
                                        justify=LEFT)
-                self.arg_label.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
-                self.form.pack(pady=idx, padx=100, fill=X, side=TOP, anchor='w')
                 self.form.grid(row=idx, column=0, sticky=W)
                 self.arg_label.grid(row=idx, column=1, sticky=W)
 
@@ -171,15 +175,29 @@ class MainWindow(Frame):
 
     def popup_window(self, event):
         """
-        create a popup window for right clicking on an item in listbox
+        Create a popup window for right clicking on an item in listbox
         allow to delete or duplicate the selected item
         """
-        popup_menu = Menu(self.listbox, tearoff=0)
-        # item = self.listbox.get(self.listbox.curselection())
-        popup_menu.add_command(label='Delete', command=lambda: self.listbox.delete(self.listbox.curselection()))
-        popup_menu.add_command(label='Duplicate',
-                               command=lambda: self.listbox.insert(END, self.listbox.get(self.listbox.curselection())))
-        popup_menu.tk_popup(event.x_root, event.y_root)
+        widget = event.widget
+        index = widget.nearest(event.y)
+        # check if right click on blank space
+        _, yoffset, _, height = widget.bbox(index)
+        if event.y > height + yoffset + 5:
+            return
+        selection = self.listbox.curselection()
+        if index not in selection:
+            self.listbox.selection_clear(0, END)
+        self.listbox.select_set(index)
+        self.listbox.activate(index)
+        self.popup_menu.tk_popup(event.x_root, event.y_root)
+
+    def delete_selected(self, selection):
+        for item in selection[::-1]:
+            self.listbox.delete(item)
+
+    def duplicate_selected(self, selection):
+        for item in selection:
+            self.listbox.insert(END, self.listbox.get(item))
 
     def save_as(self):
         self.run_manager.write_to_file()
