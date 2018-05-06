@@ -27,7 +27,7 @@ class MainWindow(Frame):
                        'entry': 'white',
                        'text': 'white'}
         Frame.__init__(self, *args, **kwargs)
-        self.form, self.arg_label, self.tater, self.new_run_window = None, None, None, None
+        self.form, self.arg_label, self.tater, self.new_run_window, self.menu_bar = None, None, None, None, None
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
@@ -46,12 +46,8 @@ class MainWindow(Frame):
                                  borderwidth=5, relief=RIDGE,
                                  height=250,
                                  width=50)
-        self.left_frame.pack(side=LEFT,
-                             fill=BOTH,
-                             expand=YES)
-        self.right_frame.pack(side=RIGHT,
-                              fill=BOTH,
-                              expand=YES)
+        self.left_frame.pack(side=LEFT, fill=BOTH, expand=YES)
+        self.right_frame.pack(side=RIGHT, fill=BOTH, expand=YES)
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
                                selectmode=EXTENDED)
@@ -77,34 +73,36 @@ class MainWindow(Frame):
             i += 1
 
     def publish_menu(self):
-        self.menubar = Menu(self.master)
+        self.menu_bar = Menu(self.master)
 
         # File Menu
-        filemenu = Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label=properties["commands"]["file"]["title"], menu=filemenu)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
-                             command=lambda: self.create_new_run())
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["save"], command=lambda: self.create_new_run)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["import_config"], command=lambda: self.import_runlist)
-        filemenu.add_separator()
-        filemenu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
+        file_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
+                              command=lambda: self.create_new_run())
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
+                              command=lambda: self.create_new_run)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
+                              command=lambda: self.import_runlist)
+        file_menu.add_separator()
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
 
         # Edit Menu
-        editmenu = Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label=properties["commands"]["edit"]["title"], menu=editmenu)
-        editmenu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
-        editmenu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
+        edit_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
+        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
+        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
 
         # Help Menu
-        helpmenu = Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label=properties["commands"]["help"]["title"], menu=helpmenu)
-        helpmenu.add_command(label=properties["commands"]["help"]["items"]["wiki"], command='')
-        helpmenu.add_command(label=properties["commands"]["help"]["items"]["exit"], command='')
+        help_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=properties["commands"]["help"]["title"], menu=help_menu)
+        help_menu.add_command(label=properties["commands"]["help"]["items"]["wiki"], command='')
+        help_menu.add_command(label=properties["commands"]["help"]["items"]["exit"], command='')
 
         # Publish Menu
-        self.master.config(menu=self.menubar)
+        self.master.config(menu=self.menu_bar)
 
     def make_arg_form(self, fields):
         entries = {}
@@ -184,8 +182,8 @@ class MainWindow(Frame):
         pass
 
     def on_close(self):
-        if messagebox.askyesno("Exit", "Are you sure to exit?") == True:
-            if messagebox.askyesno("Save", "Would you like to save before exiting?") == True:
+        if messagebox.askyesno("Exit", "Are you sure to exit?"):
+            if messagebox.askyesno("Save", "Would you like to save before exiting?"):
                 self.save_as()
             self.quit()
         else:
@@ -195,7 +193,7 @@ class MainWindow(Frame):
         """
         create a new window for choosing a runtype
         """
-        self.button_results = None
+        button_results = None
         self.new_run_window = Toplevel(self)
         self.new_run_window.title("Choose Runtype")
         self.new_run_window.minsize(width=25, height=20)
@@ -209,7 +207,7 @@ class MainWindow(Frame):
             chk.pack(anchor='w', padx=60)
         button = Button(self.new_run_window,
                         text='Confirm',
-                        variable=self.button_results,
+                        variable=button_results,
                         command=lambda: self.add_new_run(var))
         button.pack(anchor='s')
 
@@ -315,6 +313,7 @@ class RunManager:
             if run_type_copy["types"][arg] == "integer":
                 new_args[arg] = 0
         run_type_copy["args"] = new_args
+        run_type_copy["template_type"] = str(run_type)
         run_type_copy["args"]["Tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
         self.insert_into_config_list(key="RunList", data=run_type_copy)
         return run_type_copy["args"]["Tag"]
