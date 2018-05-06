@@ -126,7 +126,6 @@ class MainWindow(Frame):
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
-            self.arg_label.pack(pady=0, padx=150, fill=X, side=TOP, anchor='nw')
             self.arg_label.grid(row=50, column=1, sticky=W)
 
         if fields is not None:
@@ -151,8 +150,6 @@ class MainWindow(Frame):
                                        font=("Calibri", 12),
                                        width=64,
                                        justify=LEFT)
-                self.arg_label.pack(pady=idx, padx=50, fill=X, side=TOP, anchor='w')
-                self.form.pack(pady=idx, padx=100, fill=X, side=TOP, anchor='w')
                 self.form.grid(row=idx, column=0, sticky=W)
                 self.arg_label.grid(row=idx, column=1, sticky=W)
 
