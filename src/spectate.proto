@@ -12,20 +12,19 @@ message SPECjbbPair {
 	string type = 3;
 }
 
-enum Component {
-	BACKEND = 0;
-	INJECTOR = 1;
-}
-
 message RunConfiguration {
-	// The string to invoke java on the local machine.
+	// Command to invoke the JVM on the target machine
 	string java = 1;
-	// The options to pass to the JVM on the local machine.
-	repeated string java_options = 2;
-	// The name of the component
-	Component component = 3;
-	repeated string component_options = 4;
-	repeated SPECjbbPair props = 5;
+	// Location of specjbb2015.jar on the target machine
+	string jar = 2;
+	// Options to provide to the JVM
+	repeated string java_options = 3;
+	// Options to provide to SPECjbb
+	repeated string spec_options = 4;
+	// The location to store the .props file locally
+	string props_file = 5;
+	// The props to write locally
+	repeated SPECjbbPair props = 6;
 }
 
 message BenchmarkResults {
