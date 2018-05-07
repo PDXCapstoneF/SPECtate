@@ -77,12 +77,12 @@ def to_run_configuration(meta, run):
     
     proto_props = map(to_pair, meta.props.items())
     log.info("run configured {}".format(run))
-
+    spec_options = ["-m", run["type"].upper()] + run.options + ["-G", run["-G"], "-J", run["-J"]]
     return spectate_pb2.RunConfiguration(
             java=meta.java.path,
             jar='specjbb2015.jar', # TODO: this should be somewhere else
             java_options=meta.java.options,
-            spec_options=run.options + ["-G", run["-G"], "-J", run["-J"]],
+            spec_options=spec_options,
             props_file='specjbb2015.props', # TODO: this too
             props=proto_props,
         )
