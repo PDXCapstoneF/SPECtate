@@ -85,7 +85,7 @@ class RunManager:
         """
         if run_type not in self.get_template_types()[0]:
             return None
-        run_type_copy = self.validated_runs["TemplateData"][run_type].deepcopy()
+        run_type_copy = copy.deepcopy(self.validated_runs["TemplateData"][run_type])
         new_args = dict()
 
         for arg in run_type_copy["args"]:
@@ -176,7 +176,6 @@ class RunManager:
         :param action: str
         :return: dict
         """
-        print("TAG TO FIND: {}".format(tag_to_find))
         if self.initialized():
             if isinstance(tag_to_find, str):
                 for idx, run in enumerate(self.validated_runs["RunList"]):
@@ -184,8 +183,6 @@ class RunManager:
                         if action == "del":
                             run_copy = copy.deepcopy(run)
                             del self.validated_runs["RunList"][idx]
-                            # del run
-                            # self.validated_runs["RunList"].remove(run)
                             return run_copy
                         return run
         return None
