@@ -38,6 +38,30 @@ def do(task):
     log.debug("finished task {}".format(task))
 
 
+def run_in_result_directory(f, name):
+    pwd = os.getcwd()
+    results_directory = os.path.abspath(name)
+
+    log.debug("set logging directory to {}".format(results_directory))
+
+    try:
+        log.debug(
+            "attempting to create results directory {}".format(results_directory))
+        try:
+            os.mkdir(results_directory)
+        except os.FileExistsError:
+            log.debug(
+                "run results directory already existed, continuing")
+
+        f()
+    except Exception as e:
+        log.error(
+            "exception: {}, removing results directory".format(e))
+        shutil.rmtree(results_directory)
+    finally:
+        os.chdir(pwd)
+    return results_directory
+
 class JvmRunOptions:
     """
     A helper class for SpecJBBRun, to provide defaults and a way
@@ -238,10 +262,18 @@ class SpecJBBRun:
         self.backends = SpecJBBComponentOptions("backend", backends)
         self.injectors = SpecJBBComponentOptions("txinjector", injectors)
 
-    def _generate_tasks(self):
+    def tasks(self):
         """
         Generator that yields TaskRunners for the backends and injectors
         with the correct JVM and SPECjbb2015 arguments for this particular run.
+        """
+        for component in self.components_grouped():
+            yield TaskRunner(*self._full_options(component))
+
+    def components_grouped(self):
+        """
+        Returns each of the SpecJBBComponentOptions with the proper group and
+        JVM ID assignments.
         """
         if self.controller["type"] == "composite":
             return
@@ -253,45 +285,28 @@ class SpecJBBRun:
         for _ in range(self.backends["count"]):
             group_id = uuid4().hex
             backend_jvm_id = uuid4().hex
-            self.log.debug("constructing group {}".format(group_id))
-            yield TaskRunner(*self.backend_run_args(),
-                             '-G={}'.format(group_id),
-                             '-J={}'.format(backend_jvm_id))
+            self.log.debug("constructing tasks for group {}".format(group_id))
+            yield SpecJBBComponentOptions("backend",
+                    rest={
+                        '-G': group_id,
+                        '-J': backend_jvm_id,
+                        })
 
             self.log.debug(
-                "constructing injectors for group {}".format(group_id))
+                "constructing injector tasks for group {}".format(group_id))
 
             for _ in range(self.injectors["count"]):
                 ti_jvm_id = uuid4().hex
                 self.log.debug(
-                    "preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
-                yield TaskRunner(*self.injector_run_args(),
-                                 '-G={}'.format(group_id),
-                                 '-J={}'.format(ti_jvm_id))
+                    "preparing injector in group={} with jvmid={}".format(group_id, ti_jvm_id))
+                yield SpecJBBComponentOptions("txinjector",
+                        rest={
+                            '-G': group_id,
+                            '-J': ti_jvm_id,
+                        })
 
     def run(self):
-        pwd = os.getcwd()
-        results_directory = os.path.abspath(str(self.run_id))
-
-        self.log.debug("set logging directory to {}".format(results_directory))
-
-        try:
-            self.log.debug(
-                "attempting to create results directory {}".format(results_directory))
-            try:
-                os.mkdir(results_directory)
-            except os.FileExistsError:
-                self.log.debug(
-                    "run results directory already existed, continuing")
-
-            self._run()
-        except Exception as e:
-            self.log.error(
-                "exception: {}, removing results directory".format(e))
-            shutil.rmtree(results_directory)
-        finally:
-            os.chdir(pwd)
-        return results_directory
+        run_in_result_directory(self._run, str(self.run_id))
 
     def _run(self):
         """
@@ -320,7 +335,7 @@ class SpecJBBRun:
 
         c.start()
 
-        tasks = [task for task in self._generate_tasks()]
+        tasks = [task for task in self.tasks()]
         pool = Pool(processes=len(tasks))
 
         self.dump()
