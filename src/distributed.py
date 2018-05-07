@@ -2,6 +2,8 @@ from concurrent import futures
 import time
 import logging
 import json
+import configparser
+from pydoc import locate
 
 import grpc
 
@@ -17,10 +19,26 @@ log = logging.getLogger(__name__)
 class SPECtateDistributedRunnerServicer(spectate_pb2_grpc.SPECtateDistributedRunnerServicer):
     def DoBenchmarkRun(self, request, context):
         log.debug("(server) recieved request: {}".format(request))
+        props = dict()
+        props_file_location = 'specjbb2015.props'
+
+        # coerce prop types
+        for p in request.props:
+            t = locate(p.type)
+            props[p.prop_name] = t(p.value)
+
+        # write props file
+        with open(props_file_location, 'w+') as props_file:
+            c = configparser.ConfigParser()
+            c.read_dict({'SPECtate': props})
+            c.write(props_file)
+
+        # run the given task
         t = task_runner.TaskRunner(request.java, 
-                *request.java_options, "-m", *request.component_options)
-        t.run()
-        return spectate_pb2.BenchmarkResults(results_path="anywhere")
+                *request.java_options, "-p", props_file_location, 
+                *request.component_options)
+
+        return spectate_pb2.BenchmarkResults(results_path=t.run())
 
 def listen():
     """Starts a server listening for SPECtate actions."""
@@ -34,6 +52,14 @@ def listen():
     except KeyboardInterrupt:
         server.stop(0)
 
+def to_pair(p):
+    name, value = p
+    return spectate_pb2.SPECjbbPair(**{
+        "prop_name": name,
+        "value": str(value),
+        "type": type(value).__name__,
+        })
+
 def to_run_configuration(run):
     """
     Adapts a run that would be submit to SpecJBBRun to a
@@ -41,13 +67,6 @@ def to_run_configuration(run):
     """
     log.debug("(client) recieved run configuration {}".format(run))
     
-    def to_pair(p):
-        return spectate_pb2.SPECjbbPair(**{
-            "prop_name": p[0],
-            "value": str(p[1]),
-            "type": type(p[1]).__name__,
-            })
-
     props = map(to_pair, run["props"].items())
 
     return spectate_pb2.RunConfiguration(
