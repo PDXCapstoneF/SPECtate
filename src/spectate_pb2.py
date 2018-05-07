@@ -3,7 +3,6 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
-from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
@@ -20,34 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='spectate.proto',
   package='spectate',
   syntax='proto3',
-  serialized_pb=_b('\n\x0espectate.proto\x12\x08spectate\"=\n\x0bSPECjbbPair\x12\x11\n\tprop_name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\"\x9f\x01\n\x10RunConfiguration\x12\x0c\n\x04java\x18\x01 \x01(\t\x12\x14\n\x0cjava_options\x18\x02 \x03(\t\x12&\n\tcomponent\x18\x03 \x01(\x0e\x32\x13.spectate.Component\x12\x19\n\x11\x63omponent_options\x18\x04 \x03(\t\x12$\n\x05props\x18\x05 \x03(\x0b\x32\x15.spectate.SPECjbbPair\"(\n\x10\x42\x65nchmarkResults\x12\x14\n\x0cresults_path\x18\x01 \x01(\t*&\n\tComponent\x12\x0b\n\x07\x42\x41\x43KEND\x10\x00\x12\x0c\n\x08INJECTOR\x10\x01\x32g\n\x19SPECtateDistributedRunner\x12J\n\x0e\x44oBenchmarkRun\x12\x1a.spectate.RunConfiguration\x1a\x1a.spectate.BenchmarkResults\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0espectate.proto\x12\x08spectate\"=\n\x0bSPECjbbPair\x12\x11\n\tprop_name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\"\x93\x01\n\x10RunConfiguration\x12\x0c\n\x04java\x18\x01 \x01(\t\x12\x0b\n\x03jar\x18\x02 \x01(\t\x12\x14\n\x0cjava_options\x18\x03 \x03(\t\x12\x14\n\x0cspec_options\x18\x04 \x03(\t\x12\x12\n\nprops_file\x18\x05 \x01(\t\x12$\n\x05props\x18\x06 \x03(\x0b\x32\x15.spectate.SPECjbbPair\"(\n\x10\x42\x65nchmarkResults\x12\x14\n\x0cresults_path\x18\x01 \x01(\t2g\n\x19SPECtateDistributedRunner\x12J\n\x0e\x44oBenchmarkRun\x12\x1a.spectate.RunConfiguration\x1a\x1a.spectate.BenchmarkResults\"\x00\x62\x06proto3')
 )
 
-_COMPONENT = _descriptor.EnumDescriptor(
-  name='Component',
-  full_name='spectate.Component',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='BACKEND', index=0, number=0,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='INJECTOR', index=1, number=1,
-      options=None,
-      type=None),
-  ],
-  containing_type=None,
-  options=None,
-  serialized_start=295,
-  serialized_end=333,
-)
-_sym_db.RegisterEnumDescriptor(_COMPONENT)
-
-Component = enum_type_wrapper.EnumTypeWrapper(_COMPONENT)
-BACKEND = 0
-INJECTOR = 1
 
 
 
@@ -111,29 +85,36 @@ _RUNCONFIGURATION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='java_options', full_name='spectate.RunConfiguration.java_options', index=1,
-      number=2, type=9, cpp_type=9, label=3,
+      name='jar', full_name='spectate.RunConfiguration.jar', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='java_options', full_name='spectate.RunConfiguration.java_options', index=2,
+      number=3, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='component', full_name='spectate.RunConfiguration.component', index=2,
-      number=3, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='component_options', full_name='spectate.RunConfiguration.component_options', index=3,
+      name='spec_options', full_name='spectate.RunConfiguration.spec_options', index=3,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='props', full_name='spectate.RunConfiguration.props', index=4,
-      number=5, type=11, cpp_type=10, label=3,
+      name='props_file', full_name='spectate.RunConfiguration.props_file', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='props', full_name='spectate.RunConfiguration.props', index=5,
+      number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -151,7 +132,7 @@ _RUNCONFIGURATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=92,
-  serialized_end=251,
+  serialized_end=239,
 )
 
 
@@ -181,16 +162,14 @@ _BENCHMARKRESULTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=253,
-  serialized_end=293,
+  serialized_start=241,
+  serialized_end=281,
 )
 
-_RUNCONFIGURATION.fields_by_name['component'].enum_type = _COMPONENT
 _RUNCONFIGURATION.fields_by_name['props'].message_type = _SPECJBBPAIR
 DESCRIPTOR.message_types_by_name['SPECjbbPair'] = _SPECJBBPAIR
 DESCRIPTOR.message_types_by_name['RunConfiguration'] = _RUNCONFIGURATION
 DESCRIPTOR.message_types_by_name['BenchmarkResults'] = _BENCHMARKRESULTS
-DESCRIPTOR.enum_types_by_name['Component'] = _COMPONENT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 SPECjbbPair = _reflection.GeneratedProtocolMessageType('SPECjbbPair', (_message.Message,), dict(
@@ -222,8 +201,8 @@ _SPECTATEDISTRIBUTEDRUNNER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=335,
-  serialized_end=438,
+  serialized_start=283,
+  serialized_end=386,
   methods=[
   _descriptor.MethodDescriptor(
     name='DoBenchmarkRun',
