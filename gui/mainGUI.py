@@ -121,7 +121,7 @@ class MainWindow(Frame):
             self.canvas.destroy()
             try:
                 self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
-            except :
+            except:
                 self.tater = PhotoImage(file="gui/tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
@@ -189,6 +189,8 @@ class MainWindow(Frame):
         if event.y > height + yoffset + 5:
             return
         selection = self.listbox.curselection()
+        # print(self.listbox.get(self.listbox.curselection()))
+
         if index not in selection:
             self.listbox.selection_clear(0, END)
         self.listbox.select_set(index)
@@ -197,11 +199,14 @@ class MainWindow(Frame):
 
     def delete_selected(self, selection):
         for item in selection[::-1]:
+            # @todo: RunManager call here
             self.listbox.delete(item)
 
     def duplicate_selected(self, selection):
         for item in selection:
-            self.listbox.insert(END, self.listbox.get(item))
+            inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(self.listbox.curselection()))
+            if inserted is not None and isinstance(inserted, dict):
+                self.listbox.insert(END, inserted["args"]["Tag"])
 
     def save_as(self):
         self.run_manager.write_to_file()

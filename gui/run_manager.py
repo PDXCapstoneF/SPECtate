@@ -23,7 +23,6 @@ class RunManager:
         # if self.RUN_CONFIG
 
         if Path(self.RUN_CONFIG).is_file():
-            print("Valid file!")
             with open(self.RUN_CONFIG) as file:
                 parsed = json.load(file)
                 self.validated_runs = validate(parsed)
@@ -99,7 +98,7 @@ class RunManager:
         self.insert_into_config_list(key="RunList", data=run_type_copy)
         return run_type_copy["args"]["Tag"]
 
-    def duplicate_run(self, from_tag, new_tag_name):
+    def duplicate_run(self, from_tag):
         # @todo: test
         """
         Insert into run_list a copy of an existing run having the Tag `from_tag`.
@@ -110,9 +109,19 @@ class RunManager:
         """
         if self.initialized():
             run = self.get_run_from_list(from_tag)
-            if run is not None and isinstance(run, dict) and "Tag" in run:
-                run["Tag"] = new_tag_name
-                self.insert_into_config_list("RunList", run)
+            run_copy = run.copy()
+            if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
+                run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
+                if self.insert_into_config_list("RunList", run_copy):
+                    return run_copy
+                else:
+                    return None
+
+    def remove_run(self, tag_to_remove):
+        if self.initialized():
+            print("Before Remove: {}".format(self.get_run_list()))
+            self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
+            print("After Remove: {}".format(self.get_run_list()))
 
     def get_template_fields(self):
         """
@@ -158,18 +167,24 @@ class RunManager:
         if self.initialized():
             return self.current_run
 
-    def get_run_from_list(self, tag_to_find):
+    def get_run_from_list(self, tag_to_find, action=None):
         # @todo: test
         """
         Search for run in run list by tag, having the key value `tag_to_find`.
         :param tag_to_find: a string (run tag) to look for
+        :param action: str
         :return: dict
         """
         if self.initialized():
             if isinstance(tag_to_find, str):
                 for run in self.get_run_list():
                     if tag_to_find in run["args"]["Tag"]:
-                        return run
+                        if action == "del":
+                            run_copy = run.copy()
+                            del run
+                            return run_copy
+                    return run
+        return None
 
     def get_template_types(self):
         """
