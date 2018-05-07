@@ -78,9 +78,10 @@ class MainWindow(Frame):
         i = 0
 
         run_list = self.run_manager.get_run_list_tags()
-        while i < len(run_list):
-            self.listbox.insert(i, run_list[i])
-            i += 1
+        if run_list is not None:
+            while i < len(run_list):
+                self.listbox.insert(i, run_list[i])
+                i += 1
 
     def publish_menu(self):
         self.menu_bar = Menu(self.master)
@@ -118,7 +119,10 @@ class MainWindow(Frame):
         entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
-            self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
+            try:
+                self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
+            except :
+                self.tater = PhotoImage(file="gui/tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,

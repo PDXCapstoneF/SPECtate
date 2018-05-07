@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+from pathlib import Path
 import sys
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,20 +12,28 @@ from src.validate import *
 
 class RunManager:
     def __init__(self, config_file=None):
-        self.current_run = None
+        self.current_run, self.validated_runs = None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
         self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
             self.RUN_CONFIG = config_file
-        try:
+
+        # if self.RUN_CONFIG
+
+        if Path(self.RUN_CONFIG).is_file():
+            print("Valid file!")
             with open(self.RUN_CONFIG) as file:
                 parsed = json.load(file)
                 self.validated_runs = validate(parsed)
-                print(self.validated_runs)
-        except IOError:
-            print("Error: {} does not exist.\nPlease supply a valid onfiguration file.".format(self.RUN_CONFIG))
+        elif not Path(self.RUN_CONFIG).is_file():
+            if Path(os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json').is_file():
+                self.RUN_CONFIG = os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json'
+                with open(self.RUN_CONFIG) as file:
+                    parsed = json.load(file)
+                    self.validated_runs = validate(parsed)
+
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
 
@@ -118,7 +127,7 @@ class RunManager:
         Returns runs from run list.
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return self.validated_runs["RunList"]
 
     def get_run_list_tags(self):
@@ -127,7 +136,7 @@ class RunManager:
         Returns the tags of all runs currently in the run list.
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return [(lambda x: x["args"]["Tag"])(x) for x in self.get_run_list()]
 
     def set_current_run(self, new_run_tag):
@@ -146,7 +155,7 @@ class RunManager:
         Used to track which run user is currently editing in the MainWindow.
         :return: string
         """
-        if self.initialized:
+        if self.initialized():
             return self.current_run
 
     def get_run_from_list(self, tag_to_find):
@@ -156,7 +165,7 @@ class RunManager:
         :param tag_to_find: a string (run tag) to look for
         :return: dict
         """
-        if self.initialized:
+        if self.initialized():
             if isinstance(tag_to_find, str):
                 for run in self.get_run_list():
                     if tag_to_find in run["args"]["Tag"]:
@@ -167,7 +176,7 @@ class RunManager:
         Returns available template types (e.g. ["HBIR", "HBIR_RT", ...]
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return [self.validated_runs["TemplateData"].keys()]
 
     def get_template_type_args(self, run_type):
@@ -177,7 +186,7 @@ class RunManager:
         :param run_type: dict or str
         :return: dict
         """
-        if self.initialized:
+        if self.initialized():
             if not run_type:
                 return None
             if isinstance(run_type, dict):
