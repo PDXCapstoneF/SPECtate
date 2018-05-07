@@ -5,6 +5,7 @@ Usage:
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py listen [options]
+    mainCLI.py shout [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
 
@@ -152,6 +153,7 @@ do = {
     'validate': do_validate,
     'dialogue': do_dialogue,
     'listen': do_listen,
+    'shout': lambda _: distributed.test(),
 }
 
 if __name__ == "__main__":
