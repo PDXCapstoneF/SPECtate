@@ -6,6 +6,7 @@ import configparser
 from pydoc import locate
 
 import grpc
+from uuid import uuid4
 
 import spectate_pb2
 import spectate_pb2_grpc
@@ -18,9 +19,9 @@ log = logging.getLogger(__name__)
 
 class SPECtateDistributedRunnerServicer(spectate_pb2_grpc.SPECtateDistributedRunnerServicer):
     def DoBenchmarkRun(self, request, context):
-        log.debug("(server) recieved request: {}".format(request))
+        log.debug("(server) recieved request")
+
         props = dict()
-        props_file_location = 'specjbb2015.props'
 
         # coerce prop types
         for p in request.props:
@@ -28,17 +29,24 @@ class SPECtateDistributedRunnerServicer(spectate_pb2_grpc.SPECtateDistributedRun
             props[p.prop_name] = t(p.value)
 
         # write props file
-        with open(props_file_location, 'w+') as props_file:
-            c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': props})
-            c.write(props_file)
+        def do_component():
+            with open(request.props_file, 'w+') as props_file:
+                c = configparser.ConfigParser()
+                c.read_dict({'SPECtate': props})
+                c.write(props_file)
 
-        # run the given task
-        t = task_runner.TaskRunner(request.java, 
-                *request.java_options, "-p", props_file_location, 
-                *request.component_options)
+            # run the given task
+            t = task_runner.TaskRunner(request.java, "-jar", request.jar,
+                    *request.java_options, *request.spec_options,
+                    "-p", request.props_file)
 
-        return spectate_pb2.BenchmarkResults(results_path=t.run())
+            # run it in a results directory and return the path
+            t.run()
+
+
+        path = benchmark_run.run_in_result_directory(do_component, uuid4().hex)
+
+        return spectate_pb2.BenchmarkResults(results_path=path)
 
 def listen():
     """Starts a server listening for SPECtate actions."""
@@ -60,36 +68,40 @@ def to_pair(p):
         "type": type(value).__name__,
         })
 
-def to_run_configuration(run):
+def to_run_configuration(meta, run):
     """
     Adapts a run that would be submit to SpecJBBRun to a
     protobuf equivalent.
     """
-    log.debug("(client) recieved run configuration {}".format(run))
+    log.debug("(client) recieved run configuration")
     
-    props = map(to_pair, run["props"].items())
+    proto_props = map(to_pair, meta.props.items())
+    log.info("run configured {}".format(run))
 
     return spectate_pb2.RunConfiguration(
-        java=run["java"],
-        java_options=["-jar", run["jar"]],
-        component=spectate_pb2.BACKEND, # TODO: how do we split these out
-        component_options=[],
-        props=props,
+            java=meta.java.path,
+            jar='specjbb2015.jar', # TODO: this should be somewhere else
+            java_options=meta.java.options,
+            spec_options=run.options + ["-G", run["-G"], "-J", run["-J"]],
+            props_file='specjbb2015.props', # TODO: this too
+            props=proto_props,
         )
 
 
-def submit_run(run):
+def submit_run(meta, component):
     """Submits a run to a listening SPECtate server."""
     channel = grpc.insecure_channel('localhost:50051')
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
-    response = stub.DoBenchmarkRun(to_run_configuration(run))
+    response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
     print("SPECtate client received: {}".format(response))
 
 def test():
-    with open('example_config.json', 'r') as f:
+    with open('env/example.json', 'r') as f:
         l = f.read()
     example = json.loads(l)
     rg = run_generator.RunGenerator(**example)
     
     for run in rg.runs:
-        submit_run(run)
+        s = benchmark_run.SpecJBBRun(**run)
+        for component in s.components_grouped():
+            submit_run(s, component)
