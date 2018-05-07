@@ -291,6 +291,7 @@ class SpecJBBRun:
             shutil.rmtree(results_directory)
         finally:
             os.chdir(pwd)
+        return results_directory
 
     def _run(self):
         """
