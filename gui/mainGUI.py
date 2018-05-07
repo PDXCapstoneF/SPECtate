@@ -188,9 +188,8 @@ class MainWindow(Frame):
         _, yoffset, _, height = widget.bbox(index)
         if event.y > height + yoffset + 5:
             return
-        selection = self.listbox.curselection()
-        # print(self.listbox.get(self.listbox.curselection()))
 
+        selection = self.listbox.curselection()
         if index not in selection:
             self.listbox.selection_clear(0, END)
         self.listbox.select_set(index)

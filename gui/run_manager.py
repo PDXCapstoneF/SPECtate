@@ -120,9 +120,7 @@ class RunManager:
 
     def remove_run(self, tag_to_remove):
         if self.initialized():
-            print("Before Remove: {}".format(self.get_run_list()))
             self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
-            print("After Remove: {}".format(self.get_run_list()))
 
     def get_template_fields(self):
         """
