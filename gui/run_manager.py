@@ -4,6 +4,7 @@ import uuid
 import os
 from pathlib import Path
 import sys
+import copy
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
@@ -69,14 +70,14 @@ class RunManager:
                 if key == "TemplateData":
                     self.validated_runs[key][data["RunType"]] = data
                 elif key == "RunList":
-                    self.validated_runs["RunList"].append(data)
+                    self.validated_runs[key].append(data)
                     return True
             except Exception:  # not a valid run
                 return None
 
     def create_run(self, run_type):
         """
-        # RunList section.
+       'example_test.json' # RunList section.
 
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
@@ -84,7 +85,7 @@ class RunManager:
         """
         if run_type not in self.get_template_types()[0]:
             return None
-        run_type_copy = self.validated_runs["TemplateData"][run_type].copy()
+        run_type_copy = self.validated_runs["TemplateData"][run_type].deepcopy()
         new_args = dict()
 
         for arg in run_type_copy["args"]:
@@ -109,7 +110,7 @@ class RunManager:
         """
         if self.initialized():
             run = self.get_run_from_list(from_tag)
-            run_copy = run.copy()
+            run_copy = copy.deepcopy(run)
             if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
                 run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
@@ -175,15 +176,18 @@ class RunManager:
         :param action: str
         :return: dict
         """
+        print("TAG TO FIND: {}".format(tag_to_find))
         if self.initialized():
             if isinstance(tag_to_find, str):
-                for run in self.get_run_list():
+                for idx, run in enumerate(self.validated_runs["RunList"]):
                     if tag_to_find in run["args"]["Tag"]:
                         if action == "del":
-                            run_copy = run.copy()
-                            del run
+                            run_copy = copy.deepcopy(run)
+                            del self.validated_runs["RunList"][idx]
+                            # del run
+                            # self.validated_runs["RunList"].remove(run)
                             return run_copy
-                    return run
+                        return run
         return None
 
     def get_template_types(self):

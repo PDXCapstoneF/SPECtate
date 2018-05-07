@@ -198,8 +198,11 @@ class MainWindow(Frame):
         self.popup_menu.tk_popup(event.x_root, event.y_root)
 
     def delete_selected(self, selection):
-        for item in selection[::-1]:
-            # @todo: RunManager call here
+        # for item in selection[::-1]:
+        #     # @todo: RunManager call here
+        #     self.listbox.delete(item)
+        for item in selection:
+            removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(self.listbox.curselection()))
             self.listbox.delete(item)
 
     def duplicate_selected(self, selection):
@@ -254,6 +257,7 @@ class MainWindow(Frame):
         # self.run_manager.insert_into_config_list("RunList", run)
 
     def save_group(self):
+        # @todo: is this needed?
         # save stuff
         pass
 
