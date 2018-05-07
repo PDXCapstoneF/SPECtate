@@ -10,7 +10,7 @@ def is_stringy(v):
 
 TemplateSchema = Schema({
     "args": [is_stringy],
-    Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
+    Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed"]),
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
     Optional("default_props"): {
