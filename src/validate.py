@@ -26,10 +26,10 @@ ComponentSchema = Schema({
     Optional("count", default=1): int,
     Optional("options", default=[]): [is_stringy],
     Optional("jvm_opts", default=[]): [is_stringy],
-    Optional("hosts", default=[]): [{
-        "hostname": is_stringy,
-        Optional("per"): int,
-        }],
+    # hosts is a list of hostname:port that we can use to connect for
+    # this specific component. Hosts are assigned components in a
+    # round-robin fashion in a distributed run.
+    Optional("hosts", default=[]): [is_stringy],
     })
 
 TemplateSchema = Schema({
