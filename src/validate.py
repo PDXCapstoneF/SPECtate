@@ -35,10 +35,7 @@ TemplateSchema = Schema({
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
     Optional("port", default="50051"): is_stringy,
-    Optional("injector_hosts"): Or(int, ComponentSchema, [{
-            "host": is_stringy,
-            "per": And(int, lambda x: x > 0),
-            }],
+    Optional("injector_hosts"): Or(int, ComponentSchema),
     Optional("default_props"): {
         is_stringy: object,
     },
