@@ -95,8 +95,8 @@ def submit_run(meta, component):
     response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
     log.info("SPECtate client received: {}".format(response))
 
-def test():
-    with open('env/example.json', 'r') as f:
+def test(filename):
+    with open(filename, 'r') as f:
         l = f.read()
     example = json.loads(l)
     rg = run_generator.RunGenerator(**example)
