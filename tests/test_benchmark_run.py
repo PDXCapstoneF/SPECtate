@@ -12,7 +12,7 @@ class TestBenchmarkRun(unittest.TestCase):
             "backends": 2,
             "injectors": 4,
             "controller": {
-                "type": "multi",
+                "type": "multicontroller",
                 "options": ["arg1", "arg2"],
             },
             "java": "java",
@@ -55,7 +55,7 @@ class TestBenchmarkRun(unittest.TestCase):
             "backends": 2,
             "injectors": 4,
             "controller": {
-                "type": "multi",
+                "type": "multicontroller",
                 "options": ["arg1", "arg2"],
             },
             "java": "java",
