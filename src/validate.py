@@ -17,8 +17,8 @@ SpecJBBComponentTypes = [
     "backend",
     "txinjector",
     "composite",
-    "multi",
-    "distributed",
+    "multicontroller",
+    "distcontroller",
 ]
 
 ComponentSchema = Schema({
