@@ -25,7 +25,7 @@
 			  "T2" : "How many threads does Tier 2 have access to",
 			  "T3" : "How many threads does Tier 3 have access to"
 			},
-			"default_props": {
+			"prop_options": {
 				"specjbb.controller.type": "HBIR",
 				"specjbb.time.server": false,
 				"specjbb.comm.connect.client.pool.size": 192,
@@ -84,7 +84,7 @@
 			  "T2" : "How many threads does Tier 2 have access to",
 			  "T3" : "How many threads does Tier 3 have access to"
 			},
-			"default_props": {
+			"prop_options": {
 				"specjbb.controller.type": "HBIR_RT",
 				"specjbb.time.server": false,
 				"specjbb.comm.connect.client.pool.size": 192,
