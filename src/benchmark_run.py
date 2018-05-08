@@ -4,6 +4,7 @@ This module replaces `run.sh`.
 
 import os
 import shutil
+from itertools import cycle
 from multiprocessing import Pool
 from uuid import uuid4
 import logging
@@ -255,13 +256,13 @@ class SpecJBBRun:
         """
         if self.controller["type"] == "composite":
             return
-        if self.controller["type"] == "distcontroller":
-            self.log.info("DISTRIBUTED RUN: doing nothing")
-            return
 
         self.log.info(
             "generating {} groups, each with {} transaction injectors"
                 .format(self.backends["count"], self.injectors["count"]))
+
+        possible_backend_hosts = cycle(self.backends.get("hosts", []))
+        possible_txi_hosts = cycle(self.injectors.get("hosts", []))
 
         for _ in range(self.backends["count"]):
             group_id = uuid4().hex
@@ -273,6 +274,10 @@ class SpecJBBRun:
                         }
             self.log.debug("updating backends: {}".format(self.backends))
             backend_rest.update(self.backends)
+
+            if self.controller["type"] == "distcontroller":
+                backend_rest["host"] = next(possible_backend_hosts)
+
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
 
             self.log.debug(
@@ -287,6 +292,10 @@ class SpecJBBRun:
                             '-J': ti_jvm_id,
                     }
                 transation_injector_rest.update(self.injectors)
+
+                if self.controller["type"] == "distcontroller":
+                    transation_injector_rest["host"] = next(possible_txi_hosts)
+
                 yield SpecJBBComponentOptions("txinjector", rest=transation_injector_rest)
 
     def run(self):
