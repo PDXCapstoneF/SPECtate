@@ -47,22 +47,21 @@ def run_in_result_directory(f, name):
     log.debug("set logging directory to {}".format(results_directory))
 
     try:
-        log.debug(
-            "attempting to create results directory {}".format(results_directory))
+        log.debug("attempting to create results directory {}".format(
+            results_directory))
         try:
             os.mkdir(results_directory)
         except os.FileExistsError:
-            log.debug(
-                "run results directory already existed, continuing")
+            log.debug("run results directory already existed, continuing")
 
         f()
     except Exception as e:
-        log.error(
-            "exception: {}, removing results directory".format(e))
+        log.error("exception: {}, removing results directory".format(e))
         shutil.rmtree(results_directory)
     finally:
         os.chdir(pwd)
     return results_directory
+
 
 class JvmRunOptions:
     """
@@ -99,13 +98,11 @@ class JvmRunOptions:
 
             self.__dict__ = val
         elif val is None:
-            self.__dict__ = {
-                "path": "java",
-                "options": []
-            }
+            self.__dict__ = {"path": "java", "options": []}
         else:
             raise Exception(
-                "unrecognized type given to JvmRunOptions: {}".format(type(val)))
+                "unrecognized type given to JvmRunOptions: {}".format(
+                    type(val)))
 
     def __getitem__(self, name):
         """
@@ -118,7 +115,6 @@ class JvmRunOptions:
         Defined so that JvmRunOptions can be accessed via attr names.
         """
         return self.__dict__.__getitem__(name)
-
 
 
 class SpecJBBComponentOptions(dict):
@@ -136,10 +132,12 @@ class SpecJBBComponentOptions(dict):
             component_type = component_type.lower()
             if component_type not in SpecJBBComponentTypes:
                 raise Exception(
-                    "invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
+                    "invalid component type '{}' given to SpecJBBComponentOptions".
+                    format(component_type))
         else:
             raise Exception(
-                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(component_type)))
+                "Unrecognized type given to SpecJBBComponentOptions: {}".format(
+                    type(component_type)))
 
         if isinstance(rest, dict):
             if "count" not in rest:
@@ -168,7 +166,8 @@ class SpecJBBComponentOptions(dict):
             })
         else:
             raise Exception(
-                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
+                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".
+                format(rest))
 
     def __getattr__(self, name):
         """
@@ -235,8 +234,8 @@ class SpecJBBRun:
         if controller is None:
             self.controller = SpecJBBComponentOptions("composite")
         else:
-            self.controller = SpecJBBComponentOptions(
-                controller["type"], controller)
+            self.controller = SpecJBBComponentOptions(controller["type"],
+                                                      controller)
 
         self.backends = SpecJBBComponentOptions("backend", backends)
         self.injectors = SpecJBBComponentOptions("txinjector", injectors)
@@ -257,21 +256,21 @@ class SpecJBBRun:
         if self.controller["type"] == "composite":
             return
 
-        self.log.info(
-            "generating {} groups, each with {} transaction injectors"
-                .format(self.backends["count"], self.injectors["count"]))
+        self.log.info("generating {} groups, each with {} transaction injectors"
+                      .format(self.backends["count"], self.injectors["count"]))
 
         possible_backend_hosts = cycle(self.backends.get("hosts", []))
         possible_txi_hosts = cycle(self.injectors.get("hosts", []))
 
-        for _ in range(self.backends["count"]):
+        for x in range(self.backends["count"]):
             group_id = uuid4().hex
             backend_jvm_id = uuid4().hex
-            self.log.debug("constructing tasks for group {}".format(group_id))
+            self.log.info("constructing {}/{} tasks for group {}".format(
+                x, self.backends["count"], group_id))
             backend_rest = {
-                        '-G': group_id,
-                        '-J': backend_jvm_id,
-                        }
+                '-G': group_id,
+                '-J': backend_jvm_id,
+            }
             self.log.debug("updating backends: {}".format(self.backends))
             backend_rest.update(self.backends)
 
@@ -280,23 +279,24 @@ class SpecJBBRun:
 
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
 
-            self.log.debug(
+            self.log.info(
                 "constructing injector tasks for group {}".format(group_id))
 
-            for _ in range(self.injectors["count"]):
+            for y in range(self.injectors["count"]):
                 ti_jvm_id = uuid4().hex
-                self.log.debug(
-                    "preparing injector in group={} with jvmid={}".format(group_id, ti_jvm_id))
+                self.log.info("preparing {}/{} injector".format(y, self.injectors["count"]))
+                self.log.debug("group={} with jvmid={}".format(group_id, ti_jvm_id))
                 transation_injector_rest = {
-                            '-G': group_id,
-                            '-J': ti_jvm_id,
-                    }
+                    '-G': group_id,
+                    '-J': ti_jvm_id,
+                }
                 transation_injector_rest.update(self.injectors)
 
                 if self.controller["type"] == "distcontroller":
                     transation_injector_rest["host"] = next(possible_txi_hosts)
 
-                yield SpecJBBComponentOptions("txinjector", rest=transation_injector_rest)
+                yield SpecJBBComponentOptions(
+                    "txinjector", rest=transation_injector_rest)
 
     def run(self):
         run_in_result_directory(self._run, str(self.run_id))

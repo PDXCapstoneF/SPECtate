@@ -90,7 +90,7 @@ def to_run_configuration(meta, run):
 
 def submit_run(meta, component):
     """Submits a run to a listening SPECtate server."""
-    channel = grpc.insecure_channel('localhost:50051')
+    channel = grpc.insecure_channel(component["host"])
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
     response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
     log.info("SPECtate client received: {}".format(response))
@@ -104,4 +104,5 @@ def test(filename):
     for run in rg.runs:
         s = benchmark_run.SpecJBBRun(**run)
         for component in s.components_grouped():
+            log.debug("component: {}".format(component))
             submit_run(s, component)
