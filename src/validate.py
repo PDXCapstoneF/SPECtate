@@ -7,12 +7,38 @@ from six import text_type
 def is_stringy(v):
     return type(v) is text_type
 
+"""
+These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
+"""
+SpecJBBComponentTypes = [
+    "backend",
+    "txinjector",
+    "composite",
+    "multi",
+    "distributed",
+]
+
+ComponentSchema = Schema({
+    Optional("type"): And(is_stringy, lambda t: t.lower() in SpecJBBComponentTypes),
+    Optional("count", default=1): int,
+    Optional("options", default=[]): [is_stringy],
+    Optional("jvm_opts", default=[]): [is_stringy],
+    Optional("hosts", default=[]): [{
+        "hostname": is_stringy,
+        Optional("per"): int,
+        }],
+    })
 
 TemplateSchema = Schema({
     "args": [is_stringy],
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed"]),
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
+    Optional("port", default="50051"): is_stringy,
+    Optional("injector_hosts"): Or(int, ComponentSchema, [{
+            "host": is_stringy,
+            "per": And(int, lambda x: x > 0),
+            }],
     Optional("default_props"): {
         is_stringy: object,
     },

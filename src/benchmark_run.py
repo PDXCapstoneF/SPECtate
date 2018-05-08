@@ -10,6 +10,7 @@ import logging
 import configparser
 
 from src.task_runner import TaskRunner
+from src.validate import SpecJBBComponentTypes
 
 log = logging.getLogger(__name__)
 
@@ -120,17 +121,6 @@ class JvmRunOptions:
     def __repr__(self):
         return "{}".format(self.__dict__)
 
-
-"""
-These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
-"""
-SpecJBBComponentTypes = [
-    "backend",
-    "txinjector",
-    "composite",
-    "multi",
-    "distributed",
-]
 
 
 class SpecJBBComponentOptions(dict):
