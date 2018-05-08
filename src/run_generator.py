@@ -3,6 +3,9 @@ from src.validate import TemplateSchema, RunConfigSchema
 
 log = logging.getLogger(__name__)
 
+injectors_specjbb_property_name = "specjbb.txi.pergroups.count"
+backends_specjbb_property_name = "specjbb.group.count"
+
 class RunGenerator:
     def __init__(self, TemplateData=None, RunList=None):
         self.runs = []
@@ -30,15 +33,20 @@ class RunGenerator:
             if "injectors" in template or "backends" in template:
                 if "injectors" in template:
                     injectors = template["injectors"]
+                    template["default_props"][injectors_specjbb_property_name] = injectors["count"]
                 elif "backends" in template:
                     backends = template["backends"]
+                    template["default_props"][backends_specjbb_property_name] = backends["count"]
             elif "default_props" in template:
                 # and let's peek for injector count (specjbb.txi.pergroup.count)
                 injectors = template["default_props"].get(
-                    "specjbb.txi.pergroups.count", 1)
+                    injectors_specjbb_property_name, 1)
                 # and let's peek for backend count (specjbb.group.count)
                 backends = template["default_props"].get(
                     "specjbb.group.count", 1)
+            else:
+                template["default_props"][injectors_specjbb_property_name] = injectors
+                template["default_props"][backends_specjbb_property_name] = backends
 
             self.runs.append({
                 'controller': {
