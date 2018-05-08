@@ -267,6 +267,9 @@ class SpecJBBRun:
         """
         if self.controller["type"] == "composite":
             return
+        if self.controller["type"] == "distcontroller":
+            self.log.info("DISTRIBUTED RUN: doing nothing")
+            return
 
         self.log.info(
             "generating {} groups, each with {} transaction injectors"

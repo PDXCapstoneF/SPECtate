@@ -6,6 +6,14 @@ log = logging.getLogger(__name__)
 injectors_specjbb_property_name = "specjbb.txi.pergroups.count"
 backends_specjbb_property_name = "specjbb.group.count"
 
+def run_type_to_controller_type(rt):
+    return {
+        'distributed': 'distcontroller',
+        'composite': 'composite',
+        'multijvm': 'multicontroller',
+    }.get(rt)
+
+
 class RunGenerator:
     def __init__(self, TemplateData=None, RunList=None):
         self.runs = []
@@ -48,10 +56,14 @@ class RunGenerator:
                 template["default_props"][injectors_specjbb_property_name] = injectors
                 template["default_props"][backends_specjbb_property_name] = backends
 
+            controller = template.get("controller", dict())
+            controller.update({
+                    "type": run_type_to_controller_type(template["run_type"]),
+                    })
+
+
             self.runs.append({
-                'controller': {
-                    "type": template["run_type"],
-                },
+                'controller': controller,
                 'backends': backends,
                 'injectors': injectors,
                 'java': template["java"],
