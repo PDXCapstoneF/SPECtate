@@ -118,9 +118,6 @@ class JvmRunOptions:
         """
         return self.__dict__.__getitem__(name)
 
-    def __repr__(self):
-        return "{}".format(self.__dict__)
-
 
 
 class SpecJBBComponentOptions(dict):
@@ -153,39 +150,30 @@ class SpecJBBComponentOptions(dict):
 
             rest["type"] = component_type
 
-            self.__dict__ = rest
+            self.update(rest)
         elif isinstance(rest, int):
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": rest,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         elif rest is None:
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": 1,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         else:
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
-
-    def __getitem__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
 
     def __getattr__(self, name):
         """
         Defined so that SpecJBBComponentOptions can be accessed via attr names.
         """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
+        return self.__getitem__(name)
 
 
 class SpecJBBRun:
@@ -279,11 +267,13 @@ class SpecJBBRun:
             group_id = uuid4().hex
             backend_jvm_id = uuid4().hex
             self.log.debug("constructing tasks for group {}".format(group_id))
-            yield SpecJBBComponentOptions("backend",
-                    rest={
+            backend_rest = {
                         '-G': group_id,
                         '-J': backend_jvm_id,
-                        })
+                        }
+            self.log.debug("updating backends: {}".format(self.backends))
+            backend_rest.update(self.backends)
+            yield SpecJBBComponentOptions("backend", rest=backend_rest)
 
             self.log.debug(
                 "constructing injector tasks for group {}".format(group_id))
@@ -292,11 +282,12 @@ class SpecJBBRun:
                 ti_jvm_id = uuid4().hex
                 self.log.debug(
                     "preparing injector in group={} with jvmid={}".format(group_id, ti_jvm_id))
-                yield SpecJBBComponentOptions("txinjector",
-                        rest={
+                transation_injector_rest = {
                             '-G': group_id,
                             '-J': ti_jvm_id,
-                        })
+                    }
+                transation_injector_rest.update(self.injectors)
+                yield SpecJBBComponentOptions("txinjector", rest=transation_injector_rest)
 
     def run(self):
         run_in_result_directory(self._run, str(self.run_id))
