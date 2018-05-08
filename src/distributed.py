@@ -80,10 +80,10 @@ def to_run_configuration(meta, run):
     spec_options = ["-m", run["type"].upper()] + run.options + ["-G", run["-G"], "-J", run["-J"]]
     return spectate_pb2.RunConfiguration(
             java=meta.java.path,
-            jar='specjbb2015.jar', # TODO: this should be somewhere else
+            jar=meta.jar,
             java_options=meta.java.options,
             spec_options=spec_options,
-            props_file='specjbb2015.props', # TODO: this too
+            props_file=meta.props_file,
             props=proto_props,
         )
 
@@ -93,7 +93,7 @@ def submit_run(meta, component):
     channel = grpc.insecure_channel('localhost:50051')
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
     response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
-    print("SPECtate client received: {}".format(response))
+    log.info("SPECtate client received: {}".format(response))
 
 def test():
     with open('env/example.json', 'r') as f:
