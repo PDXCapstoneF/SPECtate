@@ -10,7 +10,7 @@ def run_type_to_controller_type(rt):
     return {
         'distributed': 'distcontroller',
         'composite': 'composite',
-        'multijvm': 'multicontroller',
+        'multi': 'multicontroller',
     }.get(rt)
 
 
