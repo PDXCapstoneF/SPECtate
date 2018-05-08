@@ -1,4 +1,7 @@
 from schema import Schema, And, Or, Optional
+import logging
+
+log = logging.getLogger(__name__)
 
 # used for python2 and python3 string types
 from six import text_type
@@ -35,7 +38,9 @@ TemplateSchema = Schema({
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
     Optional("port", default="50051"): is_stringy,
-    Optional("injector_hosts"): Or(int, ComponentSchema),
+    Optional("injectors"): Or(int, ComponentSchema),
+    Optional("backends"): Or(int, ComponentSchema),
+    Optional("controller"): ComponentSchema,
     Optional("default_props"): {
         is_stringy: object,
     },
@@ -69,6 +74,7 @@ SpectateConfig = Schema({
 
 
 def validate(unvalidated):
+    log.debug("validating {}".format(unvalidated))
     d = SpectateConfig.validate(unvalidated)
 
     # each of the args that appear in the RunList,
