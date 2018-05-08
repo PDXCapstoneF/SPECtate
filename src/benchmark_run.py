@@ -62,6 +62,13 @@ def run_in_result_directory(f, name):
         os.chdir(pwd)
     return results_directory
 
+def write_props_to_file(location, props):
+    """Writes a dictionary to INI file under a 'SPECtate' section."""
+    with open(location, 'w+') as props_file:
+        c = configparser.ConfigParser()
+        c.read_dict({'SPECtate': props})
+        c.write(props_file)
+    return location
 
 class JvmRunOptions:
     """
@@ -310,10 +317,7 @@ class SpecJBBRun:
         - emmitting "done" messages when finished
         """
         # write props file (or ensure it exists)
-        with open(self.props_file, 'w+') as props_file:
-            c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': self.props})
-            c.write(props_file)
+        write_props_to_file(self.props_file, self.props)
 
         # setup jvms
         # we first need to setup the controller

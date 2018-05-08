@@ -30,10 +30,7 @@ class SPECtateDistributedRunnerServicer(spectate_pb2_grpc.SPECtateDistributedRun
 
         # write props file
         def do_component():
-            with open(request.props_file, 'w+') as props_file:
-                c = configparser.ConfigParser()
-                c.read_dict({'SPECtate': props})
-                c.write(props_file)
+            benchmark_run.write_props_to_file(request.props_file, props)
 
             # run the given task
             t = task_runner.TaskRunner(request.java, "-jar", request.jar,
