@@ -1,5 +1,5 @@
 from os import path
-import yaml
+import json
 from boltons.cacheutils import cachedproperty
 import operator
 
@@ -148,12 +148,12 @@ def to_propitem(data_item):
 
 class DataLoader:
     """
-    Responsible for loading data from 'data.yml', which is a big
+    Responsible for loading data from 'data.json', which is a big
     list of annotations, constraints, help text and defaults for
     all of the options provided in specjbb2015.props.
     """
 
-    def __init__(self, data_file="data.yml"):
+    def __init__(self, data_file="data.json"):
         """
         Initializes this DataLoader.
 
@@ -173,7 +173,7 @@ class DataLoader:
         (See <http://boltons.readthedocs.io/en/latest/cacheutils.html#boltons.cacheutils.cachedproperty>)
         """
         with open(self.data_file_path) as dfp:
-            self.data = yaml.load(dfp)
+            self.data = json.load(dfp)
         return self.data
 
     @cachedproperty
@@ -193,6 +193,6 @@ class DataLoader:
     def defaults():
         """
         Returns the exact same thing as objects.defaults, but
-        using 'data.yml' rather than the definition in objects.
+        using 'data.json' rather than the definition in objects.
         """
         return DataLoader().as_propitem
