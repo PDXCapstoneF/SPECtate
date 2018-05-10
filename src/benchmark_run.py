@@ -63,6 +63,7 @@ def run_in_result_directory(f, name):
         os.chdir(pwd)
     return results_directory
 
+
 def write_props_to_file(location, props):
     """Writes a dictionary to INI file under a 'SPECtate' section."""
     with open(location, 'w+') as props_file:
@@ -70,6 +71,7 @@ def write_props_to_file(location, props):
         c.read_dict({'SPECtate': props})
         c.write(props_file)
     return location
+
 
 class JvmRunOptions:
     """
@@ -270,12 +272,16 @@ class SpecJBBRun:
                       .format(self.backends["count"], self.injectors["count"]))
 
         if "hosts" in self.backends:
-            self.log.info("hosts specified for backends: {}".format(self.backends))
+            self.log.info("hosts specified for backends: {}".format(
+                self.backends))
         if "hosts" in self.injectors:
-            self.log.info("hosts specified for injectors: {}".format(self.injectors))
+            self.log.info("hosts specified for injectors: {}".format(
+                self.injectors))
 
-        possible_backend_hosts = cycle(self.backends["hosts"]) if "hosts" in self.backends else []
-        possible_txi_hosts = cycle(self.injectors["hosts"]) if "hosts" in self.injectors else []
+        possible_backend_hosts = cycle(
+            self.backends["hosts"]) if "hosts" in self.backends else []
+        possible_txi_hosts = cycle(
+            self.injectors["hosts"]) if "hosts" in self.injectors else []
 
         for x in range(self.backends["count"]):
             group_id = uuid4().hex
@@ -299,8 +305,10 @@ class SpecJBBRun:
 
             for y in range(self.injectors["count"]):
                 ti_jvm_id = uuid4().hex
-                self.log.info("preparing {}/{} injector".format(y, self.injectors["count"]))
-                self.log.debug("group={} with jvmid={}".format(group_id, ti_jvm_id))
+                self.log.info("preparing {}/{} injector".format(
+                    y, self.injectors["count"]))
+                self.log.debug("group={} with jvmid={}".format(
+                    group_id, ti_jvm_id))
                 transation_injector_rest = {
                     '-G': group_id,
                     '-J': ti_jvm_id,
