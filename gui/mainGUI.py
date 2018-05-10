@@ -24,12 +24,8 @@ except FileNotFoundError:
 
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
-        theme = "light"
-        if theme == "dark":
-            self.colors = properties["main_window"]["themes"]["dark"]
-        else:
-            self.colors = properties["main_window"]["themes"]["light"]
-
+        self.THEME = "light"
+        self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
         self.form, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
