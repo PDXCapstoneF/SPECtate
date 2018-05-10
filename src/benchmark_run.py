@@ -268,8 +268,8 @@ class SpecJBBRun:
         self.log.info("generating {} groups, each with {} transaction injectors"
                       .format(self.backends["count"], self.injectors["count"]))
 
-        possible_backend_hosts = cycle(self.backends.get("hosts", []))
-        possible_txi_hosts = cycle(self.injectors.get("hosts", []))
+        possible_backend_hosts = cycle(self.backends["hosts"]) if "hosts" in self.backends else []
+        possible_txi_hosts = cycle(self.injectors["hosts"]) if "hosts" in self.injectors else []
 
         for x in range(self.backends["count"]):
             group_id = uuid4().hex
