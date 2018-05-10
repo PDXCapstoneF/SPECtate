@@ -13,7 +13,7 @@ TemplateSchema = Schema({
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
-    Optional("default_props"): {
+    Optional("prop_options"): {
         is_stringy: object,
     },
     Optional("annotations"): {
@@ -35,6 +35,7 @@ RunConfigSchema = Schema({
     Optional("props_extra"): {
         Optional(is_stringy): is_stringy,
     },
+    Optional("times", default=1): int,
 })
 
 SpectateConfig = Schema({
@@ -56,27 +57,27 @@ def validate(unvalidated):
         # they need to appear in the template
         for arg in run["args"]:
             if arg not in t["args"]:
-                return None
+                raise Exception("Argument '{}' was not in the template {}'s arguments: {}".format(arg, run["template_type"], t["args"]))
 
         # and if the arg isn't in the run,
         # it needs to have a default
         for arg in t["args"]:
-            if arg not in run["args"] and arg not in t["default_props"]:
-                return None
+            if arg not in run["args"] and arg not in t["prop_options"]:
+                raise Exception("Argument '{}' did not have a default from template {}".format(arg, run["template_type"]))
 
     # for each template,
-    for template in d["TemplateData"].values():
+    for name, template in d["TemplateData"].items():
         # all of the translations need to refer to
         # arguments specified by the user
         if "translations" in template:
             for translation in template["translations"]:
                 if translation not in template["args"]:
-                    return None
+                    raise Exception("Translation '{}' for template '{}' doesn't have an associated argument".format(translation, name))
         # all of the annotations need to refer to
         # arguments specified by the user
         if "annotations" in template:
             for annotation in template["annotations"]:
                 if annotation not in template["args"]:
-                    return None
+                    raise Exception("Annotation '{}' for template '{}' doesn't have an associated argument".format(annotation, name))
 
     return d
