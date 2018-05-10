@@ -24,18 +24,20 @@ except FileNotFoundError:
 
 class MainWindow(Frame):
     def __init__(self, *args, **kwargs):
-        self.colors = {'canvas': 'white',
-                       'label': 'white',
-                       'frame': 'white',
-                       'entry': 'white',
-                       'text': 'white'}
+        theme = "light"
+        if theme == "dark":
+            self.colors = properties["main_window"]["themes"]["dark"]
+        else:
+            self.colors = properties["main_window"]["themes"]["light"]
+
         self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
-        self.form, self.arg_label, self.tater, self.new_run_window, self.menu_bar = None, None, None, None, None
+        self.form, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
         self.master.title(properties["program_name"])
+
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
@@ -55,10 +57,10 @@ class MainWindow(Frame):
 
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
-                               selectmode=EXTENDED)
+                               selectmode=EXTENDED, bg=self.colors["text_bg"], fg=self.colors["text_fg"])  # bg=self.colors["listbox"], fg=self.colors['listbox']
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
-        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview)
+        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
@@ -91,6 +93,38 @@ class MainWindow(Frame):
         """
         pass
 
+    def theme_window(self):
+        """
+        create a new window for choosing a theme (copy-paste)
+        """
+        button_results = None
+        self.new_theme_window = Toplevel(self)
+        self.new_theme_window.title("Select Theme")
+        self.new_theme_window.minsize(width=25, height=20)
+        var = StringVar(value="0")
+        for idx, theme in enumerate(properties["main_window"]["themes"].keys()):
+            chk = Radiobutton(self.new_theme_window,
+                              text=theme,
+                              variable=var,
+                              value=theme)
+            chk.pack(anchor='w', padx=60)
+        button = Button(self.new_theme_window,
+                        text='Confirm',
+                        variable=button_results,
+                        command=lambda: self.set_theme(var))
+        button.pack(anchor='s')
+
+    def set_theme(self, theme):
+        theme = theme.get()
+        for key, val in properties["main_window"]["themes"].items():
+            if key == theme:
+                self.colors = properties["main_window"]["themes"][theme]
+                self.update()
+                self.new_theme_window.destroy()
+                return True
+            else:
+                return False
+
     def publish_menu(self):
         self.menu_bar = Menu(self.master)
 
@@ -114,6 +148,11 @@ class MainWindow(Frame):
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
 
+        # View Menu
+        edit_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=properties["commands"]["view"]["title"], menu=edit_menu)
+        edit_menu.add_command(label=properties["commands"]["view"]["items"]["theme"], command=lambda: self.theme_window())
+
         # Help Menu
         help_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["help"]["title"], menu=help_menu)
@@ -134,7 +173,8 @@ class MainWindow(Frame):
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,
-                                 bg=self.colors['canvas'],
+                                 bg=self.colors["canvas_bg"],
+                                 #bg=self.colors['canvas'],
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
@@ -142,6 +182,9 @@ class MainWindow(Frame):
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
                                    # relief=SUNKEN,
+                                   #bg="red",
+                                   #fg="red",
+                                   highlightbackground=self.colors["highlightcolorbg"],  # dark = black
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
@@ -152,10 +195,12 @@ class MainWindow(Frame):
                 self.form = Entry(self.canvas,
                                   insertofftime=500,
                                   font=("Calibri", 12),
-                                  bg=self.colors['text'],
                                   width=8,
-                                  relief=RIDGE, highlightcolor='black',
-                                  fg='black',
+                                  relief=RIDGE,
+                                  highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
+                                  highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
+                                  bg=self.colors["text_bg"],  # good
+                                  fg=self.colors['text_fg'],
                                   justify=CENTER)
                 self.form.insert(INSERT, "default")
                 entries[i] = self.form
@@ -167,6 +212,9 @@ class MainWindow(Frame):
                                        textvariable=var,
                                        relief=RAISED,
                                        font=("Calibri", 12),
+                                       # bg="black",
+                                       bg=self.colors["label_bg"],
+                                       fg=self.colors["label_fg"],
                                        width=64,
                                        justify=LEFT)
                 self.form.grid(row=idx, column=0, sticky=W)
@@ -235,18 +283,18 @@ class MainWindow(Frame):
         create a new window for choosing a runtype
         """
         button_results = None
-        self.new_run_window = Toplevel(self)
-        self.new_run_window.title("Choose Runtype")
-        self.new_run_window.minsize(width=25, height=20)
+        self.new_theme_window = Toplevel(self)
+        self.new_theme_window.title("Choose Runtype")
+        self.new_theme_window.minsize(width=25, height=20)
         runtypes = self.run_manager.get_template_types()[0]
         var = StringVar(value="0")
         for idx, runtype in enumerate(runtypes):
-            chk = Radiobutton(self.new_run_window,
+            chk = Radiobutton(self.new_theme_window,
                               text=runtype,
                               variable=var,
                               value=runtype)
             chk.pack(anchor='w', padx=60)
-        button = Button(self.new_run_window,
+        button = Button(self.new_theme_window,
                         text='Confirm',
                         variable=button_results,
                         command=lambda: self.add_new_run(var))
@@ -259,7 +307,7 @@ class MainWindow(Frame):
         """
         # @todo: create the run object. Then call self.run_man to add to list.
         runtype = runtype.get()
-        self.new_run_window.destroy()
+        self.new_theme_window.destroy()
         run = self.run_manager.create_run(runtype)
         self.listbox.insert(END, run)
         # self.run_manager.insert_into_config_list("RunList", run)
