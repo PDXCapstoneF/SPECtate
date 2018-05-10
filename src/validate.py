@@ -13,7 +13,7 @@ TemplateSchema = Schema({
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
-    Optional("default_props"): {
+    Optional("prop_options"): {
         is_stringy: object,
     },
     Optional("annotations"): {
@@ -62,7 +62,7 @@ def validate(unvalidated):
         # and if the arg isn't in the run,
         # it needs to have a default
         for arg in t["args"]:
-            if arg not in run["args"] and arg not in t["default_props"]:
+            if arg not in run["args"] and arg not in t["prop_options"]:
                 raise Exception("Argument '{}' did not have a default from template {}".format(arg, run["template_type"]))
 
     # for each template,
