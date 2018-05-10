@@ -283,7 +283,7 @@ class SpecJBBRun:
             self.log.debug("updating backends: {}".format(self.backends))
             backend_rest.update(self.backends)
 
-            if self.controller["type"] == "distcontroller":
+            if self.controller["type"] == "distcontroller" and possible_backend_hosts:
                 backend_rest["host"] = next(possible_backend_hosts)
 
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
@@ -301,7 +301,7 @@ class SpecJBBRun:
                 }
                 transation_injector_rest.update(self.injectors)
 
-                if self.controller["type"] == "distcontroller":
+                if self.controller["type"] == "distcontroller" and possible_txi_hosts:
                     transation_injector_rest["host"] = next(possible_txi_hosts)
 
                 yield SpecJBBComponentOptions(
