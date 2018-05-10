@@ -1,0 +1,47 @@
+{
+    "_type": "spec_config",
+    "runs": [
+        {
+            "tag": "tag-name",
+            "skip_report": false,
+            "jdk": "/usr/bin/java",
+            "report_level": 0,
+            "data_collection": "NONE",
+            "ignore_kit_validation": false,
+            "numa_nodes": 1,
+            "num_runs": 1,
+            "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+            "props": {
+                "modified": [
+                    {
+                        "prop": "specjbb.comm.connect.timeouts.connect",
+                        "value": "600001"
+                    }
+                ]
+            },
+            "verbose": false,
+            "run_type": "composite"
+        },
+        {
+            "tag": "tag-name12",
+            "skip_report": false,
+            "jdk": "/usr/bin/java",
+            "report_level": 0,
+            "data_collection": "NONE",
+            "ignore_kit_validation": false,
+            "numa_nodes": 1,
+            "num_runs": 1,
+            "jvm_options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+            "props": {
+                "modified": [
+                    {
+                        "prop": "specjbb.comm.connect.timeouts.connect",
+                        "value": "600001"
+                    }
+                ]
+            },
+            "verbose": false,
+            "run_type": "composite"
+        }
+    ]
+}
