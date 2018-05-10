@@ -26,8 +26,8 @@ class RunGenerator:
             template = TemplateSchema.validate(template)
             log.debug("run: {}".format(template))
 
-            # populate default_props
-            props = template.get("default_props", dict()).copy()
+            # populate prop_options
+            props = template.get("prop_options", dict()).copy()
             # populate arguments
             if "translations" in template:
                 props.update(
@@ -41,20 +41,20 @@ class RunGenerator:
             if "injectors" in template or "backends" in template:
                 if "injectors" in template:
                     injectors = template["injectors"]
-                    template["default_props"][injectors_specjbb_property_name] = injectors["count"]
+                    template["prop_options"][injectors_specjbb_property_name] = injectors["count"]
                 elif "backends" in template:
                     backends = template["backends"]
-                    template["default_props"][backends_specjbb_property_name] = backends["count"]
-            elif "default_props" in template:
+                    template["prop_options"][backends_specjbb_property_name] = backends["count"]
+            elif "prop_options" in template:
                 # and let's peek for injector count (specjbb.txi.pergroup.count)
-                injectors = template["default_props"].get(
+                injectors = template["prop_options"].get(
                     injectors_specjbb_property_name, 1)
                 # and let's peek for backend count (specjbb.group.count)
-                backends = template["default_props"].get(
+                backends = template["prop_options"].get(
                     "specjbb.group.count", 1)
             else:
-                template["default_props"][injectors_specjbb_property_name] = injectors
-                template["default_props"][backends_specjbb_property_name] = backends
+                template["prop_options"][injectors_specjbb_property_name] = injectors
+                template["prop_options"][backends_specjbb_property_name] = backends
 
             controller = template.get("controller", dict())
             controller.update({
@@ -68,6 +68,7 @@ class RunGenerator:
                 'injectors': injectors,
                 'java': template["java"],
                 'jar': template["jar"],
+                'times': run["times"],
                 'props': props,
                 'props_file': template.get("props_file", 'specjbb2015.props'),
             })

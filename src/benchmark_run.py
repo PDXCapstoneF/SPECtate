@@ -196,6 +196,7 @@ class SpecJBBRun:
                  injectors=None,
                  java=None,
                  jar=None,
+                 times=1,
                  props={},
                  props_file='specjbb2015.props'):
         """
@@ -214,6 +215,7 @@ class SpecJBBRun:
             raise InvalidRunConfigurationException
 
         self.jar = os.path.abspath(jar)
+        self.times = times
         self.props = props
         self.props_file = props_file
         self.run_id = uuid4().hex
