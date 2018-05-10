@@ -54,7 +54,7 @@ class MainWindow(Frame):
         self.right_frame.pack(side=RIGHT, fill=BOTH, expand=YES)
 
         # Create scroll list
-        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
+        self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font=("Arial", 14),
                                selectmode=EXTENDED)
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
