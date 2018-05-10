@@ -42,24 +42,23 @@
     },
     "RunList": [
         {
-          "template_type": "CURSES",
-          "args": {
-            "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-            "Run Type": "composite",
-            "Ignore Kit Validation": false,
-            "Report Level": 0,
-            "Tag": "tag-name",
             "template_type": "CURSES",
-            "Number of Runs": 1,
-            "Skip Report": false,
-            "Numa Nodes": 1,
-            "JDK": "/usr/bin/java",
-            "Data Collection": "NONE",
-            "Verbose": false,
+            "args": {
+                "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+                "Run Type": "composite",
+                "Ignore Kit Validation": false,
+                "Report Level": 0,
+                "Tag": "tag-name",
+                "Number of Runs": 1,
+                "Skip Report": false,
+                "Numa Nodes": 1,
+                "JDK": "/usr/bin/java",
+                "Data Collection": "NONE",
+                "Verbose": false
+            },
             "props_extra": {
-                    "specjbb.comm.connect.worker.pool.min": "12323"
-                }
-          }
+                "specjbb.comm.connect.worker.pool.min": "12323"
+            }
         }
     ]
 }
