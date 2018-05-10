@@ -123,7 +123,6 @@ class MainWindow(Frame):
                               command=lambda: webbrowser.open("https://github.com/PDXCapstoneF/SPECtate/wiki"))
         help_menu.add_command(label=properties["commands"]["help"]["items"]["issues"],
                               command=lambda: webbrowser.open("https://github.com/PDXCapstoneF/SPECtate/issues/new"))
-        help_menu.add_command(label=properties["commands"]["help"]["items"]["exit"], command='')
 
         # Publish Menu
         self.master.config(menu=self.menu_bar)
