@@ -42,6 +42,8 @@
     },
     "RunList": [
         {
+          "template_type": "CURSES",
+          "args": {
             "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
             "Run Type": "composite",
             "Ignore Kit Validation": false,
@@ -54,12 +56,10 @@
             "JDK": "/usr/bin/java",
             "Data Collection": "NONE",
             "Verbose": false,
-            "props_extra": [
-                {
-                    "prop": "specjbb.comm.connect.worker.pool.min",
-                    "value": "12323"
+            "props_extra": {
+                    "specjbb.comm.connect.worker.pool.min": "12323"
                 }
-            ]
+          }
         }
     ]
 }
