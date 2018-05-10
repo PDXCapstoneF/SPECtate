@@ -52,13 +52,14 @@ def run_in_result_directory(f, name):
         try:
             os.mkdir(results_directory)
         except os.FileExistsError:
-            log.debug("run results directory already existed, continuing")
+            log.warn("run results directory already existed, continuing")
 
         f()
     except Exception as e:
         log.error("exception: {}, removing results directory".format(e))
         shutil.rmtree(results_directory)
     finally:
+        log.debug("returning to {}".format(pwd))
         os.chdir(pwd)
     return results_directory
 
@@ -267,6 +268,11 @@ class SpecJBBRun:
 
         self.log.info("generating {} groups, each with {} transaction injectors"
                       .format(self.backends["count"], self.injectors["count"]))
+
+        if "hosts" in self.backends:
+            self.log.info("hosts specified for backends: {}".format(self.backends))
+        if "hosts" in self.injectors:
+            self.log.info("hosts specified for injectors: {}".format(self.injectors))
 
         possible_backend_hosts = cycle(self.backends["hosts"]) if "hosts" in self.backends else []
         possible_txi_hosts = cycle(self.injectors["hosts"]) if "hosts" in self.injectors else []
