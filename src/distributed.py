@@ -102,4 +102,7 @@ def test(filename):
         s = benchmark_run.SpecJBBRun(**run)
         for component in s.components_grouped():
             log.debug("component: {}".format(component))
-            submit_run(s, component)
+            if "host" in component:
+                submit_run(s, component)
+            else:
+                log.info("skipping: {}".format(component))
