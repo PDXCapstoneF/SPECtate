@@ -7,12 +7,10 @@ import json
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
-import uuid
 
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
-from src.validate import *
 
 try:
     with open("gui/properties.json") as properties_file:
@@ -35,7 +33,6 @@ class MainWindow(Frame):
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
-        self.master.title(properties["program_name"])
         self.master.protocol("WM_DELETE_WINDOW", self.on_close)
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
@@ -75,9 +72,13 @@ class MainWindow(Frame):
         self.canvas.config(scrollregion=(0, 0, 300, 650), highlightthickness=0)
         self.canvas.pack(side="right", expand=True, fill="both")
 
-        # Add items to the listbox
-        i = 0
+        # Update gui with contents from run manager
+        self.update()
 
+    def update(self):
+        self.master.title(properties["program_name"] + " - " + self.run_manager.RUN_CONFIG)
+        self.listbox.delete(0, END)
+        i = 0
         run_list = self.run_manager.get_run_list_tags()
         if run_list is not None:
             while i < len(run_list):
@@ -98,13 +99,13 @@ class MainWindow(Frame):
         file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
-                              command=lambda: self.create_new_run())
+                              command=self.create_new_run)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
-                              command=lambda: self.save_as)
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
+                              command=self.save)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
-                              command=lambda: self.import_runlist)
+                              command=self.import_runlist)
         file_menu.add_separator()
         file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
 
@@ -219,16 +220,29 @@ class MainWindow(Frame):
             if inserted is not None and isinstance(inserted, dict):
                 self.listbox.insert(END, inserted["args"]["Tag"])
 
-    def save_as(self):
+    def save(self):
         self.run_manager.write_to_file()
+
+    def save_as(self):
+        filepath = filedialog.asksaveasfilename(title="Select file",
+                                                filetypes=(("JSON file", "*.json"), ("All files", "*.*")),
+                                                defaultextension=".json")
+        if filepath:
+            if filepath == self.run_manager.RUN_CONFIG:
+                self.save()
+            else:
+                self.run_manager.write_to_file(filepath)
 
     def on_close(self):
         if messagebox.askyesno("Exit", "Are you sure to exit?"):
-            if messagebox.askyesno("Save", "Would you like to save before exiting?"):
-                self.save_as()
+            self.prompt_save()
             self.quit()
         else:
             return
+
+    def prompt_save(self):
+        if messagebox.askyesno("Save", "Would you like to save before exiting?"):
+            self.save()
 
     def create_new_run(self):
         """
@@ -269,21 +283,18 @@ class MainWindow(Frame):
         # save stuff
         pass
 
-    def load_group(self):
-        # @todo: is this needed?
-        file_tuples = filedialog.askopenfilenames(title="Select file",
-                                                  filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
-        # json file loaded
-        print("# @todo: I should do something with: " % file_tuples)
-
     def import_runlist(self):
         """
         load config file
         """
-        file_tuples = filedialog.askopenfilenames(title="Select file",
-                                                  filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
-        if file_tuples:
-            self.run_manager.RUN_CONFIG = file_tuples[0]
+        filepath = filedialog.askopenfilename(title="Select file",
+                                              filetypes=(("JSON file", "*.json"), ("All files", "*.*")),
+                                              defaultextension=".json")
+        if filepath:
+            if filepath != self.run_manager.RUN_CONFIG:
+                self.prompt_save()
+                self.run_manager = RunManager(config_file=filepath)
+                self.update()
 
 
 if __name__ == '__main__':
