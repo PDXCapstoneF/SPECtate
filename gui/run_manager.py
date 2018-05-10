@@ -12,7 +12,7 @@ from src.validate import *
 class RunManager:
     def __init__(self, config_file=None):
         self.current_run = None
-        self.template_fields = ["args", "annotations", "default_props", "types", "translations"]
+        self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
         self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
