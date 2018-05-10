@@ -62,6 +62,8 @@ class MainWindow(Frame):
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
+        self.listbox.bind("<ButtonPress-1>", self.on_item_press)
+        self.listbox.bind("<B1-Motion>", self.on_item_motion)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
@@ -92,10 +94,10 @@ class MainWindow(Frame):
                               command=lambda: self.create_new_run())
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
-                              command=lambda: self.create_new_run)
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
+                              command=self.create_new_run)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
-                              command=lambda: self.import_runlist)
+                              command=self.import_runlist)
         file_menu.add_separator()
         file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
 
@@ -263,6 +265,30 @@ class MainWindow(Frame):
                                                   filetypes=(("JSON file", "*.json"), ("All files", "*.*")))
         if file_tuples:
             self.run_manager.RUN_CONFIG = file_tuples[0]
+
+    def on_item_press(self, event):
+        self.curIndex = -1
+        widget = event.widget
+        index = widget.nearest(event.y)
+        # check if right click on blank space
+        _, yoffset, _, height = widget.bbox(index)
+        if event.y > height + yoffset + 5:
+            return
+        self.curIndex = self.listbox.nearest(event.y)
+
+    def on_item_motion(self, event):
+        if self.curIndex == -1:
+            return
+        i = self.listbox.nearest(event.y)
+        x = self.listbox.get(i)
+        self.listbox.delete(i)
+        if i < self.curIndex:
+            self.listbox.insert(i+1,x)
+        elif i > self.curIndex:
+            self.listbox.insert(i-1,x)
+
+    def on_item_release(self, event):
+        pass
 
 
 if __name__ == '__main__':
