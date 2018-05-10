@@ -29,6 +29,7 @@ class MainWindow(Frame):
                        'frame': 'white',
                        'entry': 'white',
                        'text': 'white'}
+        self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
         self.form, self.arg_label, self.tater, self.new_run_window, self.menu_bar = None, None, None, None, None
         self.run_manager = RunManager(config_file=None)
@@ -83,6 +84,13 @@ class MainWindow(Frame):
                 self.listbox.insert(i, run_list[i])
                 i += 1
 
+    def create_tag(self):
+        """
+        Will be a naming convention for creating a run tag.
+        :return:
+        """
+        pass
+
     def publish_menu(self):
         self.menu_bar = Menu(self.master)
 
@@ -93,7 +101,7 @@ class MainWindow(Frame):
                               command=lambda: self.create_new_run())
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
-                              command=lambda: self.create_new_run)
+                              command=lambda: self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
                               command=lambda: self.import_runlist)
@@ -200,13 +208,14 @@ class MainWindow(Frame):
         # for item in selection[::-1]:
         #     # @todo: RunManager call here
         #     self.listbox.delete(item)
-        for item in selection:
-            removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(self.listbox.curselection()))
+        # iterate from end to beginning, loop
+        for item in selection[::-1]:
+            removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(item))
             self.listbox.delete(item)
 
     def duplicate_selected(self, selection):
         for item in selection:
-            inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(self.listbox.curselection()))
+            inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(item))
             if inserted is not None and isinstance(inserted, dict):
                 self.listbox.insert(END, inserted["args"]["Tag"])
 

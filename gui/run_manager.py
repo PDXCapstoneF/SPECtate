@@ -185,6 +185,10 @@ class RunManager:
                         return run
         return None
 
+    #
+    # def reorder(self, from, to):
+    #     pass
+
     def get_template_types(self):
         """
         Returns available template types (e.g. ["HBIR", "HBIR_RT", ...]
