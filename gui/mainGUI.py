@@ -29,6 +29,7 @@ class MainWindow(Frame):
                        'frame': 'white',
                        'entry': 'white',
                        'text': 'white'}
+        self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
         self.form, self.arg_label, self.tater, self.new_run_window, self.menu_bar = None, None, None, None, None
         self.run_manager = RunManager(config_file=None)
@@ -78,9 +79,17 @@ class MainWindow(Frame):
         i = 0
 
         run_list = self.run_manager.get_run_list_tags()
-        while i < len(run_list):
-            self.listbox.insert(i, run_list[i])
-            i += 1
+        if run_list is not None:
+            while i < len(run_list):
+                self.listbox.insert(i, run_list[i])
+                i += 1
+
+    def create_tag(self):
+        """
+        Will be a naming convention for creating a run tag.
+        :return:
+        """
+        pass
 
     def publish_menu(self):
         self.menu_bar = Menu(self.master)
@@ -92,7 +101,7 @@ class MainWindow(Frame):
                               command=lambda: self.create_new_run())
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
-                              command=lambda: self.create_new_run)
+                              command=lambda: self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=lambda: self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
                               command=lambda: self.import_runlist)
@@ -118,7 +127,10 @@ class MainWindow(Frame):
         entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
-            self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
+            try:
+                self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
+            except:
+                self.tater = PhotoImage(file="gui/tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,
@@ -184,6 +196,7 @@ class MainWindow(Frame):
         _, yoffset, _, height = widget.bbox(index)
         if event.y > height + yoffset + 5:
             return
+
         selection = self.listbox.curselection()
         if index not in selection:
             self.listbox.selection_clear(0, END)
@@ -192,12 +205,19 @@ class MainWindow(Frame):
         self.popup_menu.tk_popup(event.x_root, event.y_root)
 
     def delete_selected(self, selection):
+        # for item in selection[::-1]:
+        #     # @todo: RunManager call here
+        #     self.listbox.delete(item)
+        # iterate from end to beginning, loop
         for item in selection[::-1]:
+            removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(item))
             self.listbox.delete(item)
 
     def duplicate_selected(self, selection):
         for item in selection:
-            self.listbox.insert(END, self.listbox.get(item))
+            inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(item))
+            if inserted is not None and isinstance(inserted, dict):
+                self.listbox.insert(END, inserted["args"]["Tag"])
 
     def save_as(self):
         self.run_manager.write_to_file()
@@ -245,6 +265,7 @@ class MainWindow(Frame):
         # self.run_manager.insert_into_config_list("RunList", run)
 
     def save_group(self):
+        # @todo: is this needed?
         # save stuff
         pass
 

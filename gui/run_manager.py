@@ -2,7 +2,9 @@
 import json
 import uuid
 import os
+from pathlib import Path
 import sys
+import copy
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
@@ -11,20 +13,27 @@ from src.validate import *
 
 class RunManager:
     def __init__(self, config_file=None):
-        self.current_run = None
+        self.current_run, self.validated_runs = None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
         self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
             self.RUN_CONFIG = config_file
-        try:
+
+        # if self.RUN_CONFIG
+
+        if Path(self.RUN_CONFIG).is_file():
             with open(self.RUN_CONFIG) as file:
                 parsed = json.load(file)
                 self.validated_runs = validate(parsed)
-                print(self.validated_runs)
-        except IOError:
-            print("Error: {} does not exist.\nPlease supply a valid onfiguration file.".format(self.RUN_CONFIG))
+        elif not Path(self.RUN_CONFIG).is_file():
+            if Path(os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json').is_file():
+                self.RUN_CONFIG = os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json'
+                with open(self.RUN_CONFIG) as file:
+                    parsed = json.load(file)
+                    self.validated_runs = validate(parsed)
+
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
 
@@ -61,14 +70,14 @@ class RunManager:
                 if key == "TemplateData":
                     self.validated_runs[key][data["RunType"]] = data
                 elif key == "RunList":
-                    self.validated_runs["RunList"].append(data)
+                    self.validated_runs[key].append(data)
                     return True
             except Exception:  # not a valid run
                 return None
 
     def create_run(self, run_type):
         """
-        # RunList section.
+       'example_test.json' # RunList section.
 
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
@@ -76,7 +85,7 @@ class RunManager:
         """
         if run_type not in self.get_template_types()[0]:
             return None
-        run_type_copy = self.validated_runs["TemplateData"][run_type].copy()
+        run_type_copy = copy.deepcopy(self.validated_runs["TemplateData"][run_type])
         new_args = dict()
 
         for arg in run_type_copy["args"]:
@@ -90,7 +99,7 @@ class RunManager:
         self.insert_into_config_list(key="RunList", data=run_type_copy)
         return run_type_copy["args"]["Tag"]
 
-    def duplicate_run(self, from_tag, new_tag_name):
+    def duplicate_run(self, from_tag):
         # @todo: test
         """
         Insert into run_list a copy of an existing run having the Tag `from_tag`.
@@ -101,9 +110,17 @@ class RunManager:
         """
         if self.initialized():
             run = self.get_run_from_list(from_tag)
-            if run is not None and isinstance(run, dict) and "Tag" in run:
-                run["Tag"] = new_tag_name
-                self.insert_into_config_list("RunList", run)
+            run_copy = copy.deepcopy(run)
+            if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
+                run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
+                if self.insert_into_config_list("RunList", run_copy):
+                    return run_copy
+                else:
+                    return None
+
+    def remove_run(self, tag_to_remove):
+        if self.initialized():
+            self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
 
     def get_template_fields(self):
         """
@@ -118,7 +135,7 @@ class RunManager:
         Returns runs from run list.
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return self.validated_runs["RunList"]
 
     def get_run_list_tags(self):
@@ -127,7 +144,7 @@ class RunManager:
         Returns the tags of all runs currently in the run list.
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return [(lambda x: x["args"]["Tag"])(x) for x in self.get_run_list()]
 
     def set_current_run(self, new_run_tag):
@@ -146,28 +163,38 @@ class RunManager:
         Used to track which run user is currently editing in the MainWindow.
         :return: string
         """
-        if self.initialized:
+        if self.initialized():
             return self.current_run
 
-    def get_run_from_list(self, tag_to_find):
+    def get_run_from_list(self, tag_to_find, action=None):
         # @todo: test
         """
         Search for run in run list by tag, having the key value `tag_to_find`.
         :param tag_to_find: a string (run tag) to look for
+        :param action: str
         :return: dict
         """
-        if self.initialized:
+        if self.initialized():
             if isinstance(tag_to_find, str):
-                for run in self.get_run_list():
+                for idx, run in enumerate(self.validated_runs["RunList"]):
                     if tag_to_find in run["args"]["Tag"]:
+                        if action == "del":
+                            run_copy = copy.deepcopy(run)
+                            del self.validated_runs["RunList"][idx]
+                            return run_copy
                         return run
+        return None
+
+    #
+    # def reorder(self, from, to):
+    #     pass
 
     def get_template_types(self):
         """
         Returns available template types (e.g. ["HBIR", "HBIR_RT", ...]
         :return: list
         """
-        if self.initialized:
+        if self.initialized():
             return [self.validated_runs["TemplateData"].keys()]
 
     def get_template_type_args(self, run_type):
@@ -177,7 +204,7 @@ class RunManager:
         :param run_type: dict or str
         :return: dict
         """
-        if self.initialized:
+        if self.initialized():
             if not run_type:
                 return None
             if isinstance(run_type, dict):
