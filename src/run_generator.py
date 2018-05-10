@@ -11,8 +11,8 @@ class RunGenerator:
             template = TemplateData.get(run["template_type"])
             template = TemplateSchema.validate(template)
 
-            # populate default_props
-            props = template.get("default_props", dict()).copy()
+            # populate prop_options
+            props = template.get("prop_options", dict()).copy()
             # populate arguments
             if "translations" in template:
                 props.update(
@@ -20,12 +20,12 @@ class RunGenerator:
             if "props_extra" in run:
                 props.update(run["props_extra"])
 
-            if "default_props" in template:
+            if "prop_options" in template:
                 # and let's peek for injector count (specjbb.txi.pergroup.count)
-                injectors = template["default_props"].get(
+                injectors = template["prop_options"].get(
                     "specjbb.txi.pergroups.count", 1)
                 # and let's peek for backend count (specjbb.group.count)
-                backends = template["default_props"].get(
+                backends = template["prop_options"].get(
                     "specjbb.group.count", 1)
             else:
                 injectors = 1

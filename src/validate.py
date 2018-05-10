@@ -62,7 +62,7 @@ def validate(unvalidated):
         # and if the arg isn't in the run,
         # it needs to have a default
         for arg in t["args"]:
-            if arg not in run["args"] and arg not in t["default_props"]:
+            if arg not in run["args"] and arg not in t["prop_options"]:
                 raise Exception("Argument '{}' did not have a default from template {}".format(arg, run["template_type"]))
 
     # for each template,

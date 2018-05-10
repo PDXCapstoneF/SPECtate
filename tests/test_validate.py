@@ -76,7 +76,7 @@ class TestSpectateConfigValidator(TestCase):
                         "translations": {
                             "arg1": "someValue",
                         },
-                        "default_props": {
+                        "prop_options": {
                             "arg1": "defaultvalue",
                         },
                     },
@@ -128,7 +128,7 @@ class TestSpectateConfigValidator(TestCase):
                             "JVM Options", "NUMA Nodes", "Data Collection",
                             "T1", "T2", "T3"
                         ],
-                        "default_props": {
+                        "prop_options": {
                             "specjbb.controller.type": "HBIR",
                             "specjbb.time.server": False,
                             "specjbb.comm.connect.client.pool.size": 192,
