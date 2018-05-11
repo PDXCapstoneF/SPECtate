@@ -10,6 +10,7 @@ import logging
 import configparser
 
 from src.task_runner import TaskRunner
+from src.data import DataLoader
 
 log = logging.getLogger(__name__)
 
@@ -173,6 +174,8 @@ class SpecJBBComponentOptions(dict):
     def __repr__(self):
         return "{}".format(self.__dict__)
 
+dataloader = DataLoader()
+default_props = { item.prop: item.def_value for item in dataloader.as_propitem }
 
 class SpecJBBRun:
     """
@@ -309,7 +312,9 @@ class SpecJBBRun:
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
             c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': self.props})
+            _props = default_props.copy()
+            _props.update(self.props)
+            c.read_dict({'SPECtate': _props})
             c.write(props_file)
 
         # setup jvms
