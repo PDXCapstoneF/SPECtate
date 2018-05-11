@@ -110,6 +110,7 @@ def submit_run(meta, component):
     log.info("distributed SPECtate component received: {}".format(response))
     return response
 
+
 def get_hostname(hostname_or_port):
     """
     Strips a port specification off of a hostname.
@@ -117,6 +118,7 @@ def get_hostname(hostname_or_port):
     if ":" not in hostname_or_port:
         return hostname_or_port
     return ('').join(hostname_or_port.split(":")[:-1])
+
 
 def collect_result(hostname, remote_path, local_path, delete=False):
     """
@@ -126,17 +128,20 @@ def collect_result(hostname, remote_path, local_path, delete=False):
     hostname = get_hostname(hostname)
     local_path = os.path.abspath(local_path)
 
-    scp = task_runner.TaskRunner("scp", "-r", "{}:{}".format(hostname, remote_path), local_path)
+    scp = task_runner.TaskRunner("scp", "-r", "{}:{}".format(
+        hostname, remote_path), local_path)
 
     and_remove = task_runner.TaskRunner("ssh", hostname,
-                            "rm -rf {}".format(remote_path))
+                                        "rm -rf {}".format(remote_path))
 
     scp.run()
 
     if delete:
         and_remove.run()
 
+
 class DistributedComponent(dict):
+
     def __init__(self, meta, component):
         if "host" not in component:
             raise Exception("Missing host for DistributedComponent")
@@ -147,12 +152,16 @@ class DistributedComponent(dict):
     def run(self):
         log.info("submitting distributed component: {}".format(self.component))
         results_path = submit_run(self.meta, self.component).results_path
-        log.info("collecting result from host {} to {}".format(self.component["host"], self.meta["results_directory"]))
-        log.info("host {}: results at {}".format(self.component["host"], results_path))
-        collect_result(hostname=self.component["host"], 
-                remote_path=results_path, 
-                local_path=self.meta["results_directory"],
-                delete=True)
+        log.info("collecting result from host {} to {}".format(
+            self.component["host"], self.meta["results_directory"]))
+        log.info("host {}: results at {}".format(self.component["host"],
+                                                 results_path))
+        collect_result(
+            hostname=self.component["host"],
+            remote_path=results_path,
+            local_path=self.meta["results_directory"],
+            delete=True)
+
 
 def test(filename):
     with open(filename, 'r') as f:

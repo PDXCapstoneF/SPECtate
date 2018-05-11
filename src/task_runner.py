@@ -62,6 +62,7 @@ class TaskRunner:
             log.warn("process already started")
             return
 
-        log.debug("starting task with following argument set: {}".format(" ".join(self.argument_list())))
+        log.debug("starting task with following argument set: {}".format(
+            " ".join(self.argument_list())))
 
         self.proc = subprocess.Popen(self.argument_list(), **self.kw)

@@ -57,7 +57,9 @@ def run_in_result_directory(f, name):
 
         f()
     except Exception as e:
-        log.error("exception was caught while attempting something, removing results directory")
+        log.error(
+            "exception was caught while attempting something, removing results directory"
+        )
         log.exception(e)
         shutil.rmtree(results_directory)
     finally:
@@ -115,6 +117,7 @@ class JvmRunOptions(dict):
             raise Exception(
                 "unrecognized type given to JvmRunOptions: {}".format(
                     type(val)))
+
 
 class SpecJBBComponentOptions(dict):
     """
@@ -181,6 +184,7 @@ class SpecJBBComponentOptions(dict):
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {} ({})".
                 format(rest, type(rest)))
+
 
 class SpecJBBRun:
     """
@@ -259,19 +263,17 @@ class SpecJBBRun:
             else:
                 yield TaskRunner(*self._full_options(component))
 
-
-
     def _meta(self):
         """
         Meta-fields required for DistributedComponent.
         """
         return {
-                'props': self.props,
-                'java': self.java,
-                'jar': self.jar,
-                'props_file': self.props_file,
-                'results_directory': self.results_directory(),
-                }
+            'props': self.props,
+            'java': self.java,
+            'jar': self.jar,
+            'props_file': self.props_file,
+            'results_directory': self.results_directory(),
+        }
 
     def components_grouped(self):
         """
@@ -302,10 +304,13 @@ class SpecJBBRun:
             self.log.info("constructing {}/{} tasks for group {}".format(
                 x, self.backends["count"], group_id))
             backend_rest = self.backends.copy()
-            backend_rest["options"] = self.backends["options"] + ['-G', group_id, '-J', backend_jvm_id ]
+            backend_rest["options"] = self.backends["options"] + [
+                '-G', group_id, '-J', backend_jvm_id
+            ]
 
             if self.controller["type"] == "distcontroller" and possible_backend_hosts:
-                self.log.debug("adding host for running backend on a remote machine")
+                self.log.debug(
+                    "adding host for running backend on a remote machine")
                 backend_rest["host"] = next(possible_backend_hosts)
 
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
@@ -320,7 +325,13 @@ class SpecJBBRun:
                 self.log.debug("group={} with jvmid={}".format(
                     group_id, ti_jvm_id))
                 transation_injector_rest = self.injectors.copy()
-                transation_injector_rest["options"] = self.injectors["options"] + ['-G', group_id, '-J', ti_jvm_id, ]
+                transation_injector_rest[
+                    "options"] = self.injectors["options"] + [
+                        '-G',
+                        group_id,
+                        '-J',
+                        ti_jvm_id,
+                    ]
 
                 if self.controller["type"] == "distcontroller" and possible_txi_hosts:
                     transation_injector_rest["host"] = next(possible_txi_hosts)

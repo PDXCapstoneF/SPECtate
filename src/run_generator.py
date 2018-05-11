@@ -42,8 +42,7 @@ class RunGenerator:
 
             log.info("reading injector and backend count from 'prop_options'")
             # and let's peek for injector count (specjbb.txi.pergroup.count)
-            injectors = props.get(
-                injectors_specjbb_property_name, 1)
+            injectors = props.get(injectors_specjbb_property_name, 1)
             # and let's peek for backend count (specjbb.group.count)
             backends = props.get(backends_specjbb_property_name, 1)
 
@@ -51,16 +50,16 @@ class RunGenerator:
                 log.info("template specifies injectors or backends")
                 if "injectors" in template:
                     injectors = self._ensure_count_is_accurate(
-                            key="injectors",
-                            prop_name=injectors_specjbb_property_name,
-                            template=template,
-                            props=props)
+                        key="injectors",
+                        prop_name=injectors_specjbb_property_name,
+                        template=template,
+                        props=props)
                 elif "backends" in template:
                     backends = self._ensure_count_is_accurate(
-                            key="backends",
-                            prop_name=backends_specjbb_property_name,
-                            template=template,
-                            props=props)
+                        key="backends",
+                        prop_name=backends_specjbb_property_name,
+                        template=template,
+                        props=props)
 
             controller = template.get("controller", dict())
             controller.update({
@@ -91,14 +90,18 @@ class RunGenerator:
         """
         Conditionally updates a component's count from props
         """
-        log.info("template specified {}, reading count from props we've already populated".format(key))
+        log.info(
+            "template specified {}, reading count from props we've already populated".
+            format(key))
         component = template[key]
 
         if prop_name in props:
             # we've already set the count
             # and we need to override it
             # in injectors
-            log.warn("overriding template provided count with populated {} count".format(key))
+            log.warn(
+                "overriding template provided count with populated {} count".
+                format(key))
             component["count"] = props.get[prop_name]
         else:
             # we've not yet set the count
