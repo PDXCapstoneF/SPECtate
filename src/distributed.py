@@ -96,10 +96,18 @@ def to_run_configuration(meta, run):
 
 def submit_run(meta, component):
     """Submits a run to a listening SPECtate server."""
+
+    log.debug("component opening channel to {}".format(component["host"]))
     channel = grpc.insecure_channel(component["host"])
+
+    log.debug("instantiating stub for SPECtateDistributedRunner")
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
-    response = stub.RunBenchmarkComponent(to_run_configuration(meta, component))
-    log.info("SPECtate client received: {}".format(response))
+
+    log.debug("running distributed benchmarking component")
+    run_configuration = to_run_configuration(meta, component)
+    response = stub.RunBenchmarkComponent(run_configuration)
+
+    log.info("distributed SPECtate component received: {}".format(response))
     return response
 
 
@@ -145,6 +153,6 @@ def test(filename):
         for component in s.components_grouped():
             log.debug("component: {}".format(component))
             if "host" in component:
-                submit_run(s, component)
+                submit_run(s._meta(), component)
             else:
                 log.info("skipping: {}".format(component))
