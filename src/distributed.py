@@ -134,7 +134,7 @@ def collect_result(hostname, remote_path, local_path, delete=False):
 
     scp.run()
 
-    if delete and hostname != "localhost":
+    if delete:
         and_remove.run()
 
 class DistributedComponent(dict):
@@ -148,10 +148,11 @@ class DistributedComponent(dict):
     def run(self):
         log.info("submitting distributed component: {}".format(self.component))
         results_path = submit_run(self.meta, self.component).results_path
-        log.info("collecting result from host {}".format(self.component["host"]))
+        log.info("collecting result from host {} to {}".format(self.component["host"], self.meta["results_directory"]))
+        log.info("host {}: results at {}".format(self.component["host"], results_path))
         collect_result(hostname=self.component["host"], 
                 remote_path=results_path, 
-                local_path=".",
+                local_path=self.meta["results_directory"],
                 delete=True)
 
 def test(filename):
