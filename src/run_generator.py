@@ -19,8 +19,8 @@ class RunGenerator:
 
     def __init__(self, TemplateData=None, RunList=None):
         self.runs = []
-        log.debug("recieved TemplateData: {}, RunList: {}".format(
-            TemplateData, RunList))
+        log.debug("recieved TemplateData: {}".format(TemplateData))
+        log.debug("recieved RunList: {}".format(RunList))
 
         # let's go ahead and populate everything
         for run in RunList:
