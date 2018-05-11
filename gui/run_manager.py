@@ -45,11 +45,10 @@ class RunManager:
         """
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
-    def write_to_file(self):
-        test = True
-        if test is True:
-            with open(self.test_file, 'w') as fh:
-                json.dump(self.validated_runs, fh, indent=4)
+    def write_to_file(self, filepath=None):
+        if filepath:
+            with open(filepath, 'w') as fh:
+                json.dump(self.validated_runs, fh)
         else:
             with open(self.RUN_CONFIG, 'w') as fh:
                 json.dump(self.validated_runs, fh)
