@@ -156,6 +156,20 @@ class SpecJBBComponentOptions(dict):
                 "options": [],
                 "jvm_opts": []
             })
+        elif isinstance(rest, str):
+            try:
+                count = int(rest)
+                self.update({
+                    "type": component_type,
+                    "count": count,
+                    "options": [],
+                    "jvm_opts": []
+                })
+            except Exception:
+                raise Exception(
+                    "Unrecognized 'rest' given to SpecJBBComponentOptions: {} ({})".
+                    format(rest, type(rest)))
+
         elif rest is None:
             self.update({
                 "type": component_type,
@@ -165,8 +179,8 @@ class SpecJBBComponentOptions(dict):
             })
         else:
             raise Exception(
-                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".
-                format(rest))
+                "Unrecognized 'rest' given to SpecJBBComponentOptions: {} ({})".
+                format(rest, type(rest)))
 
 class SpecJBBRun:
     """
@@ -288,9 +302,7 @@ class SpecJBBRun:
             self.log.info("constructing {}/{} tasks for group {}".format(
                 x, self.backends["count"], group_id))
             backend_rest = self.backends.copy()
-            backend_rest["options"] += ['-G', group_id, '-J', backend_jvm_id ]
-
-            backend_rest.update(self.backends)
+            backend_rest["options"] = self.backends["options"] + ['-G', group_id, '-J', backend_jvm_id ]
 
             if self.controller["type"] == "distcontroller" and possible_backend_hosts:
                 self.log.debug("adding host for running backend on a remote machine")
@@ -308,7 +320,7 @@ class SpecJBBRun:
                 self.log.debug("group={} with jvmid={}".format(
                     group_id, ti_jvm_id))
                 transation_injector_rest = self.injectors.copy()
-                transation_injector_rest["options"] += ['-G', group_id, '-J', ti_jvm_id, ]
+                transation_injector_rest["options"] = self.injectors["options"] + ['-G', group_id, '-J', ti_jvm_id, ]
 
                 if self.controller["type"] == "distcontroller" and possible_txi_hosts:
                     transation_injector_rest["host"] = next(possible_txi_hosts)
