@@ -287,14 +287,13 @@ class SpecJBBRun:
             backend_jvm_id = uuid4().hex
             self.log.info("constructing {}/{} tasks for group {}".format(
                 x, self.backends["count"], group_id))
-            backend_rest = {
-                '-G': group_id,
-                '-J': backend_jvm_id,
-            }
-            self.log.debug("updating backends: {}".format(self.backends))
+            backend_rest = self.backends.copy()
+            backend_rest["options"] += ['-G', group_id, '-J', backend_jvm_id ]
+
             backend_rest.update(self.backends)
 
             if self.controller["type"] == "distcontroller" and possible_backend_hosts:
+                self.log.debug("adding host for running backend on a remote machine")
                 backend_rest["host"] = next(possible_backend_hosts)
 
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
@@ -308,11 +307,8 @@ class SpecJBBRun:
                     y, self.injectors["count"]))
                 self.log.debug("group={} with jvmid={}".format(
                     group_id, ti_jvm_id))
-                transation_injector_rest = {
-                    '-G': group_id,
-                    '-J': ti_jvm_id,
-                }
-                transation_injector_rest.update(self.injectors)
+                transation_injector_rest = self.injectors.copy()
+                transation_injector_rest["options"] += ['-G', group_id, '-J', ti_jvm_id, ]
 
                 if self.controller["type"] == "distcontroller" and possible_txi_hosts:
                     transation_injector_rest["host"] = next(possible_txi_hosts)

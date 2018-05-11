@@ -83,8 +83,7 @@ def to_run_configuration(meta, run):
 
     proto_props = map(to_pair, meta["props"].items())
     log.info("run configured {}".format(run))
-    spec_options = ["-m", run["type"].upper()
-                   ] + run["options"] + ["-G", run["-G"], "-J", run["-J"]]
+    spec_options = ["-m", run["type"].upper()] + run["options"]
     return spectate_pb2.RunConfiguration(
         java=meta["java"]["path"],
         jar=meta["jar"],
