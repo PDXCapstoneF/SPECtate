@@ -1,5 +1,8 @@
 import subprocess
 import itertools
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class TaskRunner:
@@ -16,8 +19,8 @@ class TaskRunner:
 
         for opt in options:
             if not isinstance(opt, str):
-                raise Exception(
-                    "Option key was '{}':{}, not str".format(opt, type(opt)))
+                raise Exception("Option key was '{}':{}, not str".format(
+                    opt, type(opt)))
 
         self.options = options
         self.kw = popen_kw
@@ -25,7 +28,8 @@ class TaskRunner:
         self.proc = None
 
     def __str__(self):
-        return "TaskRunner(path={}, options={}, kw={})".format(self.path, self.options, self.kw)
+        return "TaskRunner(path={}, options={}, kw={})".format(
+            self.path, self.options, self.kw)
 
     def argument_list(self):
         return [self.path] + self.options
@@ -45,6 +49,7 @@ class TaskRunner:
         Stops this running task, if applicable.
         """
         if not self.proc:
+            log.debug("process already stopped")
             return
 
         return self.proc.terminate()
@@ -54,6 +59,10 @@ class TaskRunner:
         Starts a configured task, if not already running.
         """
         if self.proc:
+            log.warn("process already started")
             return
+
+        log.debug("starting task with following argument set: {}".format(
+            " ".join(self.argument_list())))
 
         self.proc = subprocess.Popen(self.argument_list(), **self.kw)

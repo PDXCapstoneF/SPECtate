@@ -4,12 +4,15 @@ This module replaces `run.sh`.
 
 import os
 import shutil
+from itertools import cycle
 from multiprocessing import Pool
 from uuid import uuid4
 import logging
 import configparser
 
 from src.task_runner import TaskRunner
+from src.validate import SpecJBBComponentTypes
+from src.distributed import DistributedComponent
 
 log = logging.getLogger(__name__)
 
@@ -34,11 +37,52 @@ def do(task):
     this function needs to be pickle-able for `Pool.map` to be able to use it.
     """
     log.debug("starting task {}".format(task))
-    task.run()
+    try:
+        task.run()
+    except Exception as e:
+        log.error("encountered error while running task {}".format(task))
+        log.exception(e)
+        task.stop()
     log.debug("finished task {}".format(task))
 
 
-class JvmRunOptions:
+def run_in_result_directory(f, name):
+    pwd = os.getcwd()
+    results_directory = os.path.abspath(name)
+
+    log.debug("set logging directory to {}".format(results_directory))
+
+    try:
+        log.debug("attempting to create results directory {}".format(
+            results_directory))
+        try:
+            os.mkdir(results_directory)
+        except os.FileExistsError:
+            log.warn("run results directory already existed, continuing")
+
+        f()
+    except Exception as e:
+        log.error(
+            "exception was caught while attempting something, removing results directory"
+        )
+        log.exception(e)
+        shutil.rmtree(results_directory)
+    finally:
+        log.debug("returning to {}".format(pwd))
+        os.chdir(pwd)
+    return results_directory
+
+
+def write_props_to_file(location, props):
+    """Writes a dictionary to INI file under a 'SPECtate' section."""
+    with open(location, 'w+') as props_file:
+        c = configparser.ConfigParser()
+        c.read_dict({'SPECtate': props})
+        c.write(props_file)
+    return location
+
+
+class JvmRunOptions(dict):
     """
     A helper class for SpecJBBRun, to provide defaults and a way
     for lists, dict etc to be coerced into something that SpecJBBRun can work with.
@@ -52,15 +96,15 @@ class JvmRunOptions:
         If dict: validate that the dict has the required keys, and set the internal dict to val.
         """
         if isinstance(val, str):
-            self.__dict__ = {
+            self.update({
                 "path": val,
                 "options": [],
-            }
+            })
         elif isinstance(val, list):
-            self.__dict__ = {
+            self.update({
                 "path": val[0],
                 "options": val[1:],
-            }
+            })
         elif isinstance(val, dict):
             if "path" not in val:
                 raise Exception("'path' not specified for JvmRunOptions")
@@ -71,42 +115,13 @@ class JvmRunOptions:
             elif not isinstance(val["options"], list):
                 raise Exception("'path' must be a string")
 
-            self.__dict__ = val
+            self.update(val)
         elif val is None:
-            self.__dict__ = {
-                "path": "java",
-                "options": []
-            }
+            self.update({"path": "java", "options": []})
         else:
             raise Exception(
-                "unrecognized type given to JvmRunOptions: {}".format(type(val)))
-
-    def __getitem__(self, name):
-        """
-        Defined so that JvmRunOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that JvmRunOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
-
-
-"""
-These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
-"""
-SpecJBBComponentTypes = [
-    "backend",
-    "txinjector",
-    "composite",
-    "multi",
-    "distributed",
-]
+                "unrecognized type given to JvmRunOptions: {}".format(
+                    type(val)))
 
 
 class SpecJBBComponentOptions(dict):
@@ -124,10 +139,12 @@ class SpecJBBComponentOptions(dict):
             component_type = component_type.lower()
             if component_type not in SpecJBBComponentTypes:
                 raise Exception(
-                    "invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
+                    "invalid component type '{}' given to SpecJBBComponentOptions".
+                    format(component_type))
         else:
             raise Exception(
-                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(component_type)))
+                "Unrecognized type given to SpecJBBComponentOptions: {}".format(
+                    type(component_type)))
 
         if isinstance(rest, dict):
             if "count" not in rest:
@@ -139,39 +156,39 @@ class SpecJBBComponentOptions(dict):
 
             rest["type"] = component_type
 
-            self.__dict__ = rest
+            self.update(rest)
         elif isinstance(rest, int):
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": rest,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
+        elif isinstance(rest, str):
+            try:
+                count = int(rest)
+                self.update({
+                    "type": component_type,
+                    "count": count,
+                    "options": [],
+                    "jvm_opts": []
+                })
+            except Exception:
+                raise Exception(
+                    "Unrecognized 'rest' given to SpecJBBComponentOptions: {} ({})".
+                    format(rest, type(rest)))
+
         elif rest is None:
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": 1,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         else:
             raise Exception(
-                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
-
-    def __getitem__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
+                "Unrecognized 'rest' given to SpecJBBComponentOptions: {} ({})".
+                format(rest, type(rest)))
 
 
 class SpecJBBRun:
@@ -205,7 +222,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
-        self.jar = os.path.abspath(jar)
+        self.jar = jar
         self.times = times
         self.props = props
         self.props_file = props_file
@@ -234,69 +251,107 @@ class SpecJBBRun:
         if controller is None:
             self.controller = SpecJBBComponentOptions("composite")
         else:
-            self.controller = SpecJBBComponentOptions(
-                controller["type"], controller)
+            self.controller = SpecJBBComponentOptions(controller["type"],
+                                                      controller)
 
         self.backends = SpecJBBComponentOptions("backend", backends)
         self.injectors = SpecJBBComponentOptions("txinjector", injectors)
 
-    def _generate_tasks(self):
+    def tasks(self):
         """
         Generator that yields TaskRunners for the backends and injectors
         with the correct JVM and SPECjbb2015 arguments for this particular run.
         """
+        for component in self.components_grouped():
+            if "host" in component:
+                yield DistributedComponent(self._meta(), component)
+            else:
+                yield TaskRunner(*self._full_options(component))
+
+    def _meta(self):
+        """
+        Meta-fields required for DistributedComponent.
+        """
+        return {
+            'props': self.props,
+            'java': self.java,
+            'jar': self.jar,
+            'props_file': self.props_file,
+            'results_directory': self.results_directory(),
+        }
+
+    def components_grouped(self):
+        """
+        Returns each of the SpecJBBComponentOptions with the proper group and
+        JVM ID assignments.
+        """
         if self.controller["type"] == "composite":
             return
 
-        self.log.info(
-            "generating {} groups, each with {} transaction injectors"
-                .format(self.backends["count"], self.injectors["count"]))
+        self.log.info("generating {} groups, each with {} transaction injectors"
+                      .format(self.backends["count"], self.injectors["count"]))
 
-        for _ in range(self.backends["count"]):
+        if "hosts" in self.backends:
+            self.log.info("hosts specified for backends: {}".format(
+                self.backends))
+        if "hosts" in self.injectors:
+            self.log.info("hosts specified for injectors: {}".format(
+                self.injectors))
+
+        possible_backend_hosts = cycle(
+            self.backends["hosts"]) if "hosts" in self.backends else []
+        possible_txi_hosts = cycle(
+            self.injectors["hosts"]) if "hosts" in self.injectors else []
+
+        for x in range(self.backends["count"]):
             group_id = uuid4().hex
             backend_jvm_id = uuid4().hex
-            self.log.debug("constructing group {}".format(group_id))
-            yield TaskRunner(*self.backend_run_args(),
-                             '-G={}'.format(group_id),
-                             '-J={}'.format(backend_jvm_id))
+            self.log.info("constructing {}/{} tasks for group {}".format(
+                x, self.backends["count"], group_id))
+            backend_rest = self.backends.copy()
+            backend_rest["options"] = self.backends["options"] + [
+                '-G', group_id, '-J', backend_jvm_id
+            ]
 
-            self.log.debug(
-                "constructing injectors for group {}".format(group_id))
-
-            for _ in range(self.injectors["count"]):
-                ti_jvm_id = uuid4().hex
+            if self.controller["type"] == "distcontroller" and possible_backend_hosts:
                 self.log.debug(
-                    "preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
-                yield TaskRunner(*self.injector_run_args(),
-                                 '-G={}'.format(group_id),
-                                 '-J={}'.format(ti_jvm_id))
+                    "adding host for running backend on a remote machine")
+                backend_rest["host"] = next(possible_backend_hosts)
+
+            yield SpecJBBComponentOptions("backend", rest=backend_rest)
+
+            self.log.info(
+                "constructing injector tasks for group {}".format(group_id))
+
+            for y in range(self.injectors["count"]):
+                ti_jvm_id = uuid4().hex
+                self.log.info("preparing {}/{} injector".format(
+                    y, self.injectors["count"]))
+                self.log.debug("group={} with jvmid={}".format(
+                    group_id, ti_jvm_id))
+                transation_injector_rest = self.injectors.copy()
+                transation_injector_rest[
+                    "options"] = self.injectors["options"] + [
+                        '-G',
+                        group_id,
+                        '-J',
+                        ti_jvm_id,
+                    ]
+
+                if self.controller["type"] == "distcontroller" and possible_txi_hosts:
+                    transation_injector_rest["host"] = next(possible_txi_hosts)
+
+                yield SpecJBBComponentOptions(
+                    "txinjector", rest=transation_injector_rest)
+
+    def results_directory(self):
+        """
+        Returns the results directory for this run.
+        """
+        return os.path.abspath(str(self.run_id))
 
     def run(self):
-        pwd = os.getcwd()
-        results_directory = os.path.abspath(str(self.run_id))
-
-        self.log.debug("set logging directory to {}".format(results_directory))
-
-        try:
-            self.log.debug(
-                "attempting to create results directory {}".format(results_directory))
-            try:
-                os.mkdir(results_directory)
-            except os.FileExistsError:
-                self.log.debug(
-                    "run results directory already existed, continuing")
-
-            for number_of_times in range(self.times):
-                self.log.debug(
-                        "beginning run {}/{}".format(number_of_times, self.times))
-                self._run()
-
-        except Exception as e:
-            self.log.error(
-                "exception: {}, removing results directory".format(e))
-            shutil.rmtree(results_directory)
-        finally:
-            os.chdir(pwd)
+        return run_in_result_directory(self._run, self.results_directory())
 
     def _run(self):
         """
@@ -307,14 +362,14 @@ class SpecJBBRun:
         - emmitting "done" messages when finished
         """
         # write props file (or ensure it exists)
-        with open(self.props_file, 'w+') as props_file:
-            c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': self.props})
-            c.write(props_file)
+        write_props_to_file(self.props_file, self.props)
 
         # setup jvms
         # we first need to setup the controller
-        c = TaskRunner(*self.controller_run_args())
+        if "host" in self.controller:
+            c = DistributedComponent(self._meta(), self.controller)
+        else:
+            c = TaskRunner(*self.controller_run_args())
         self.dump()
 
         if self.controller["type"] == "composite":
@@ -325,7 +380,7 @@ class SpecJBBRun:
 
         c.start()
 
-        tasks = [task for task in self._generate_tasks()]
+        tasks = [task for task in self.tasks()]
         pool = Pool(processes=len(tasks))
 
         self.dump()
@@ -334,7 +389,6 @@ class SpecJBBRun:
         self.log.info("begin benchmark")
 
         pool.map(do, tasks)
-        c.stop()
         self.log.info("done")
 
     def dump(self, level=logging.DEBUG):

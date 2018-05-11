@@ -12,7 +12,7 @@ class TestBenchmarkRun(unittest.TestCase):
             "backends": 2,
             "injectors": 4,
             "controller": {
-                "type": "multi",
+                "type": "multicontroller",
                 "options": ["arg1", "arg2"],
             },
             "java": "java",
@@ -55,7 +55,7 @@ class TestBenchmarkRun(unittest.TestCase):
             "backends": 2,
             "injectors": 4,
             "controller": {
-                "type": "multi",
+                "type": "multicontroller",
                 "options": ["arg1", "arg2"],
             },
             "java": "java",
@@ -88,18 +88,14 @@ class TestJvmRunOptions(unittest.TestCase):
         java_path = "java"
         j = JvmRunOptions(java_path)
 
-        self.assertEqual(j.path, java_path)
         self.assertEqual(j["path"], java_path)
-        self.assertEqual(j.options, [])
         self.assertEqual(j["options"], [])
 
     def test_given_list(self):
         java_list = ["java", "-jar", "example_jar"]
         j = JvmRunOptions(java_list)
 
-        self.assertEqual(j.path, java_list[0])
         self.assertEqual(j["path"], java_list[0])
-        self.assertEqual(j.options, java_list[1:])
         self.assertEqual(j["options"], java_list[1:])
 
     def test_given_dict(self):
@@ -110,9 +106,7 @@ class TestJvmRunOptions(unittest.TestCase):
 
         j = JvmRunOptions(valid)
 
-        self.assertEqual(j.path, valid["path"])
         self.assertEqual(j["path"], valid["path"])
-        self.assertEqual(j.options, valid["options"])
         self.assertEqual(j["options"], valid["options"])
 
     def test_with_dict_missing_options(self):
@@ -122,9 +116,7 @@ class TestJvmRunOptions(unittest.TestCase):
 
         j = JvmRunOptions(valid)
 
-        self.assertEqual(j.path, valid["path"])
         self.assertEqual(j["path"], valid["path"])
-        self.assertEqual(j.options, [])
         self.assertEqual(j["options"], [])
 
     def test_validates_dictionaries(self):

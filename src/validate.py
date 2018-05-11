@@ -1,4 +1,7 @@
 from schema import Schema, And, Or, Optional
+import logging
+
+log = logging.getLogger(__name__)
 
 # used for python2 and python3 string types
 from six import text_type
@@ -8,11 +11,47 @@ def is_stringy(v):
     return type(v) is text_type
 
 
+"""
+These are valid SpecJBB components (what you'd pass into the '-m' flag to specjbb2015.jar).
+"""
+SpecJBBComponentTypes = [
+    "backend",
+    "txinjector",
+    "composite",
+    "multicontroller",
+    "distcontroller",
+]
+
+ComponentSchema = Schema({
+    Optional("type"):
+    And(is_stringy, lambda t: t.lower() in SpecJBBComponentTypes),
+    Optional("count", default=1):
+    int,
+    Optional("options", default=[]): [is_stringy],
+    Optional("jvm_opts", default=[]): [is_stringy],
+    # hosts is a list of hostname:port that we can use to connect for
+    # this specific component. Hosts are assigned components in a
+    # round-robin fashion in a distributed run.
+    Optional("hosts", default=[]): [is_stringy],
+})
+
 TemplateSchema = Schema({
     "args": [is_stringy],
-    Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
-    Optional("java", default="java"): is_stringy,
-    Optional("jar", default="specjbb2015.jar"): is_stringy,
+    Optional("run_type", default="composite"):
+    And(is_stringy,
+        lambda rt: rt.lower() in ["multi", "composite", "distributed"]),
+    Optional("java", default="java"):
+    is_stringy,
+    Optional("jar", default="specjbb2015.jar"):
+    is_stringy,
+    Optional("port", default="50051"):
+    is_stringy,
+    Optional("injectors"):
+    Or(int, ComponentSchema),
+    Optional("backends"):
+    Or(int, ComponentSchema),
+    Optional("controller"):
+    ComponentSchema,
     Optional("prop_options"): {
         is_stringy: object,
     },
@@ -47,6 +86,7 @@ SpectateConfig = Schema({
 
 
 def validate(unvalidated):
+    log.debug("validating {}".format(unvalidated))
     d = SpectateConfig.validate(unvalidated)
 
     # each of the args that appear in the RunList,
@@ -57,13 +97,17 @@ def validate(unvalidated):
         # they need to appear in the template
         for arg in run["args"]:
             if arg not in t["args"]:
-                raise Exception("Argument '{}' was not in the template {}'s arguments: {}".format(arg, run["template_type"], t["args"]))
+                raise Exception(
+                    "Argument '{}' was not in the template {}'s arguments: {}".
+                    format(arg, run["template_type"], t["args"]))
 
         # and if the arg isn't in the run,
         # it needs to have a default
         for arg in t["args"]:
             if arg not in run["args"] and arg not in t["prop_options"]:
-                raise Exception("Argument '{}' did not have a default from template {}".format(arg, run["template_type"]))
+                raise Exception(
+                    "Argument '{}' did not have a default from template {}".
+                    format(arg, run["template_type"]))
 
     # for each template,
     for name, template in d["TemplateData"].items():
@@ -72,12 +116,16 @@ def validate(unvalidated):
         if "translations" in template:
             for translation in template["translations"]:
                 if translation not in template["args"]:
-                    raise Exception("Translation '{}' for template '{}' doesn't have an associated argument".format(translation, name))
+                    raise Exception(
+                        "Translation '{}' for template '{}' doesn't have an associated argument".
+                        format(translation, name))
         # all of the annotations need to refer to
         # arguments specified by the user
         if "annotations" in template:
             for annotation in template["annotations"]:
                 if annotation not in template["args"]:
-                    raise Exception("Annotation '{}' for template '{}' doesn't have an associated argument".format(annotation, name))
+                    raise Exception(
+                        "Annotation '{}' for template '{}' doesn't have an associated argument".
+                        format(annotation, name))
 
     return d

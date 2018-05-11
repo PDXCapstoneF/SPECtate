@@ -1,0 +1,34 @@
+syntax  = "proto3";
+
+package spectate;
+
+service SPECtateDistributedRunner {
+	rpc RunBenchmarkComponent(RunConfiguration) returns (BenchmarkResults) {}
+}
+
+message SPECjbbPair {
+	string prop_name = 1;
+	string value = 2;
+	string type = 3;
+}
+
+message RunConfiguration {
+	// Command to invoke the JVM on the target machine
+	string java = 1;
+	// Location of specjbb2015.jar on the target machine
+	string jar = 2;
+	// Options to provide to the JVM
+	repeated string java_options = 3;
+	// Options to provide to SPECjbb
+	repeated string spec_options = 4;
+	// The location to store the .props file locally
+	string props_file = 5;
+	// The props to write locally
+	repeated SPECjbbPair props = 6;
+}
+
+message BenchmarkResults {
+	// Relative path on this machine to retrieve results
+	// for this specific run.
+	string results_path = 1;
+}
