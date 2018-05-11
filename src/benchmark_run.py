@@ -366,7 +366,10 @@ class SpecJBBRun:
 
         # setup jvms
         # we first need to setup the controller
-        c = TaskRunner(*self.controller_run_args())
+        if "host" in self.controller:
+            c = DistributedComponent(self._meta(), self.controller)
+        else:
+            c = TaskRunner(*self.controller_run_args())
         self.dump()
 
         if self.controller["type"] == "composite":
