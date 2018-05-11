@@ -105,6 +105,8 @@ To get started with a run, setup a configuration that might look something like 
 
 This Tate config has one distributed run type that will have 2 groups (2 backends), each with the default of 1 injector per group, and injectors will be run on `baz:50051`.
 
+Assuming we've got ssh keys or agents setup on our current machine and those keys have been copied to `baz`, we can do the following:
+
 In one terminal:
 ```shell
 python mainCLI.py listen
