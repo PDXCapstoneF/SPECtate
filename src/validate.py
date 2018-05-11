@@ -16,12 +16,13 @@ DefaultJavaRunOptions = {
 
 JvmRunOptions = Schema(Or(
     And(None, Use(lambda _: DefaultJavaRunOptions)), 
+    And(is_stringy, Use(lambda s: { "path": s, "options": [] })), 
+    And([is_stringy], Use(lambda ss: { "path": ss[0], "options": ss[1:] })),
     And(dict, {
         "path": is_stringy,
-        "options": [is_stringy],
-        }), 
-    And(is_stringy, Use(lambda s: { "path": s, "options": [] })), 
-    And([is_stringy], Use(lambda ss: { "path": ss[0], "options": ss[1:] }))))
+        Optional("options", default=[]): [is_stringy],
+        })))
+
 
 TemplateSchema = Schema({
     "args": [is_stringy],
