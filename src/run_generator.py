@@ -52,11 +52,11 @@ class RunGenerator:
                 if "injectors" in template:
                     log.info("template specified injectors, reading count from props we've already populated")
                     injectors = template["injectors"]
-                    injectors["count"] = props[injectors_specjbb_property_name]
+                    injectors["count"] = props.get(injectors_specjbb_property_name, 1)
                 elif "backends" in template:
                     log.info("template specified backends, reading count from props we've already populated")
                     backends = template["backends"]
-                    backends["count"] = props[backends_specjbb_property_name]
+                    backends["count"] = props.get(backends_specjbb_property_name, 1)
 
             controller = template.get("controller", dict())
             controller.update({
