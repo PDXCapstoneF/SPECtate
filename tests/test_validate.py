@@ -170,6 +170,7 @@ class TestSpectateConfigValidator(TestCase):
         self.assertEqual(v["RunList"][0]["times"], 1)
         self.assertEqual(v["RunList"][1]["times"], 2)
 
+class TestJavaRunOptionsValidator(TestCase):
     def test_java_options_validates_strings(self):
         self.assertEqual(JvmRunOptions.validate("echo"), {
             "path": "echo",
