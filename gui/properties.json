@@ -2,7 +2,43 @@
   "program_name": "SPECtate",
   "main_window": {
     "width": 900,
-    "height": 600
+    "height": 600,
+    "themes": {
+      "dark": {
+        "canvas": "black",
+        "label": "gray",
+        "frame": "black",
+        "entry": "black",
+        "text_bg": "black",
+        "text_fg": "red",
+        "label_bg": "black",
+        "label_fg": "yellow",
+        "listbox_bg": "black",
+        "listbox_fg": "red",
+        "listbox_select_bg": "pink",
+        "canvas_bg": "black",
+        "scrollbar": "black",
+        "highlightcolor": "black",
+        "highlightcolorbg": "black"
+      },
+      "light": {
+        "canvas": "white",
+        "label": "blue",
+        "frame": "white",
+        "entry": "gray",
+        "text_bg": "white",
+        "text_fg": "black",
+        "label_bg": "white",
+        "label_fg": "black",
+        "listbox_bg": "white",
+        "listbox_fg": "black",
+        "listbox_select_bg": "pink",
+        "canvas_bg": "white",
+        "scrollbar": "white",
+        "highlightcolor": "white",
+        "highlightcolorbg": "white"
+      }
+    }
   },
   "group_window": {
     "width": 600,
@@ -27,10 +63,17 @@
         "redo": "Redo"
       }
     },
+    "view": {
+      "title": "View",
+      "items": {
+        "theme": "Themes"
+      }
+    },
     "help": {
       "title": "Help",
       "items": {
         "wiki": "Wiki",
+        "issues": "Report Issues",
         "exit": "Exit"
       }
     }
