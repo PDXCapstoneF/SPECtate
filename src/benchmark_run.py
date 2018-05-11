@@ -256,6 +256,7 @@ class SpecJBBRun:
                 'java': self.java,
                 'jar': self.jar,
                 'props_file': self.props_file,
+                'results_directory': self.results_directory(),
                 }
 
     def components_grouped(self):
@@ -319,8 +320,14 @@ class SpecJBBRun:
                 yield SpecJBBComponentOptions(
                     "txinjector", rest=transation_injector_rest)
 
+    def results_directory(self):
+        """
+        Returns the results directory for this run.
+        """
+        return os.path.abspath(str(self.run_id))
+
     def run(self):
-        run_in_result_directory(self._run, str(self.run_id))
+        return run_in_result_directory(self._run, self.results_directory())
 
     def _run(self):
         """
