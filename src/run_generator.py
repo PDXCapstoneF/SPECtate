@@ -40,19 +40,24 @@ class RunGenerator:
             if "props_extra" in run:
                 props.update(run["props_extra"])
 
+            log.info("inferring injector and backend count to be 1 each")
             injectors = 1
             backends = 1
 
             if "injectors" in template or "backends" in template:
+                log.info("template specifies injectors or backends")
                 if "injectors" in template:
+                    log.info("template specified injectors, reading count from template")
                     injectors = template["injectors"]
                     template["prop_options"][
                         injectors_specjbb_property_name] = injectors["count"]
                 elif "backends" in template:
+                    log.info("template specified backends, reading count from template")
                     backends = template["backends"]
                     template["prop_options"][
                         backends_specjbb_property_name] = backends["count"]
             elif "prop_options" in template:
+                log.info("reading injector and backend count from 'prop_options'")
                 # and let's peek for injector count (specjbb.txi.pergroup.count)
                 injectors = template["prop_options"].get(
                     injectors_specjbb_property_name, 1)
@@ -60,6 +65,7 @@ class RunGenerator:
                 backends = template["prop_options"].get("specjbb.group.count",
                                                         1)
             else:
+                log.info("could not find specified counts, using template defaults/ populated translations from arguments")
                 template["prop_options"][
                     injectors_specjbb_property_name] = injectors
                 template["prop_options"][
