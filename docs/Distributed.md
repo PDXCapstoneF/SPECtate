@@ -15,7 +15,7 @@ To set up your system(s) for a distributed run, you need:
 ### Configuration Keys
 
 | Name         | Type                                                       | Brief Description                                                                                                              |
-|--------------+------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------|
+|--------------|------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `run_type`   | str (one of either `multi`, `distributed`, or `composite`) | The run type                                                                                                                   |
 | `controller` | Component                                                  | SPECtate specific configuration options for the controller                                                                     |
 | `injectors`  | Component or int                                           | SPECtate specific configuration options for the injectors. If int is given, it is interpreted as the injector per group count. |
