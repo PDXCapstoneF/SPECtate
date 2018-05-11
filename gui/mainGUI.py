@@ -7,6 +7,8 @@ import json
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
+import webbrowser
+
 
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -118,8 +120,10 @@ class MainWindow(Frame):
         # Help Menu
         help_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["help"]["title"], menu=help_menu)
-        help_menu.add_command(label=properties["commands"]["help"]["items"]["wiki"], command='')
-        help_menu.add_command(label=properties["commands"]["help"]["items"]["exit"], command='')
+        help_menu.add_command(label=properties["commands"]["help"]["items"]["wiki"],
+                              command=lambda: webbrowser.open("https://github.com/PDXCapstoneF/SPECtate/wiki"))
+        help_menu.add_command(label=properties["commands"]["help"]["items"]["issues"],
+                              command=lambda: webbrowser.open("https://github.com/PDXCapstoneF/SPECtate/issues/new"))
 
         # Publish Menu
         self.master.config(menu=self.menu_bar)
