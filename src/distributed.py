@@ -80,16 +80,16 @@ def to_run_configuration(meta, run):
     """
     log.debug("(client) recieved run configuration")
 
-    proto_props = map(to_pair, meta.props.items())
+    proto_props = map(to_pair, meta["props"].items())
     log.info("run configured {}".format(run))
     spec_options = ["-m", run["type"].upper()
-                   ] + run.options + ["-G", run["-G"], "-J", run["-J"]]
+                   ] + run["options"] + ["-G", run["-G"], "-J", run["-J"]]
     return spectate_pb2.RunConfiguration(
-        java=meta.java.path,
-        jar=meta.jar,
-        java_options=meta.java.options,
+        java=meta["java"]["path"],
+        jar=meta["jar"],
+        java_options=meta["java"]["options"],
         spec_options=spec_options,
-        props_file=meta.props_file,
+        props_file=meta["props_file"],
         props=proto_props,
     )
 
@@ -120,7 +120,7 @@ def collect_result(hostname, remote_path, local_path, delete=False):
     if delete:
         and_remove.run()
 
-class DistributedComponent:
+class DistributedComponent(dict):
     def __init__(self, meta, component):
         if "host" not in component:
             raise Exception("Missing host for DistributedComponent")
