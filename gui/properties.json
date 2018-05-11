@@ -30,6 +30,7 @@
     "help": {
       "title": "Help",
       "items": {
+        "issues": "Issues",
         "wiki": "Wiki",
         "exit": "Exit"
       }

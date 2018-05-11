@@ -2,6 +2,7 @@
 
 from run_manager import RunManager
 import os
+import copy
 import sys
 import json
 from tkinter import *
