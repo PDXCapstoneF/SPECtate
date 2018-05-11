@@ -103,6 +103,24 @@ def submit_run(meta, component):
     return response
 
 
+def collect_result(hostname, remote_path, local_path, delete=False):
+    """
+    Collects a directory from 
+    a remote source to a local directory.
+    """
+    local_path = os.path.abspath(local_path)
+
+    scp = TaskRunner("scp", "{}:{}".format(hostname, remote_path), local_path)
+
+    and_remove = TaskRunner("ssh", hostname, "-c",
+                            "'rm -rf {}'".format(remote_path))
+
+    scp.run()
+
+    if delete:
+        and_remove.run()
+
+
 def test(filename):
     with open(filename, 'r') as f:
         l = f.read()
