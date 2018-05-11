@@ -14,8 +14,8 @@ class SPECtateDistributedRunnerStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.DoBenchmarkRun = channel.unary_unary(
-        '/spectate.SPECtateDistributedRunner/DoBenchmarkRun',
+    self.RunBenchmarkComponent = channel.unary_unary(
+        '/spectate.SPECtateDistributedRunner/RunBenchmarkComponent',
         request_serializer=spectate__pb2.RunConfiguration.SerializeToString,
         response_deserializer=spectate__pb2.BenchmarkResults.FromString,
         )
@@ -25,7 +25,7 @@ class SPECtateDistributedRunnerServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def DoBenchmarkRun(self, request, context):
+  def RunBenchmarkComponent(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -35,8 +35,8 @@ class SPECtateDistributedRunnerServicer(object):
 
 def add_SPECtateDistributedRunnerServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'DoBenchmarkRun': grpc.unary_unary_rpc_method_handler(
-          servicer.DoBenchmarkRun,
+      'RunBenchmarkComponent': grpc.unary_unary_rpc_method_handler(
+          servicer.RunBenchmarkComponent,
           request_deserializer=spectate__pb2.RunConfiguration.FromString,
           response_serializer=spectate__pb2.BenchmarkResults.SerializeToString,
       ),

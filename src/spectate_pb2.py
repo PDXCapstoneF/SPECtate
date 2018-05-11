@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='spectate.proto',
   package='spectate',
   syntax='proto3',
-  serialized_pb=_b('\n\x0espectate.proto\x12\x08spectate\"=\n\x0bSPECjbbPair\x12\x11\n\tprop_name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\"\x93\x01\n\x10RunConfiguration\x12\x0c\n\x04java\x18\x01 \x01(\t\x12\x0b\n\x03jar\x18\x02 \x01(\t\x12\x14\n\x0cjava_options\x18\x03 \x03(\t\x12\x14\n\x0cspec_options\x18\x04 \x03(\t\x12\x12\n\nprops_file\x18\x05 \x01(\t\x12$\n\x05props\x18\x06 \x03(\x0b\x32\x15.spectate.SPECjbbPair\"(\n\x10\x42\x65nchmarkResults\x12\x14\n\x0cresults_path\x18\x01 \x01(\t2g\n\x19SPECtateDistributedRunner\x12J\n\x0e\x44oBenchmarkRun\x12\x1a.spectate.RunConfiguration\x1a\x1a.spectate.BenchmarkResults\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0espectate.proto\x12\x08spectate\"=\n\x0bSPECjbbPair\x12\x11\n\tprop_name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\"\x93\x01\n\x10RunConfiguration\x12\x0c\n\x04java\x18\x01 \x01(\t\x12\x0b\n\x03jar\x18\x02 \x01(\t\x12\x14\n\x0cjava_options\x18\x03 \x03(\t\x12\x14\n\x0cspec_options\x18\x04 \x03(\t\x12\x12\n\nprops_file\x18\x05 \x01(\t\x12$\n\x05props\x18\x06 \x03(\x0b\x32\x15.spectate.SPECjbbPair\"(\n\x10\x42\x65nchmarkResults\x12\x14\n\x0cresults_path\x18\x01 \x01(\t2n\n\x19SPECtateDistributedRunner\x12Q\n\x15RunBenchmarkComponent\x12\x1a.spectate.RunConfiguration\x1a\x1a.spectate.BenchmarkResults\"\x00\x62\x06proto3')
 )
 
 
@@ -202,11 +202,11 @@ _SPECTATEDISTRIBUTEDRUNNER = _descriptor.ServiceDescriptor(
   index=0,
   options=None,
   serialized_start=283,
-  serialized_end=386,
+  serialized_end=393,
   methods=[
   _descriptor.MethodDescriptor(
-    name='DoBenchmarkRun',
-    full_name='spectate.SPECtateDistributedRunner.DoBenchmarkRun',
+    name='RunBenchmarkComponent',
+    full_name='spectate.SPECtateDistributedRunner.RunBenchmarkComponent',
     index=0,
     containing_service=None,
     input_type=_RUNCONFIGURATION,

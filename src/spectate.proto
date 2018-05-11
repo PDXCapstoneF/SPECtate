@@ -3,7 +3,7 @@ syntax  = "proto3";
 package spectate;
 
 service SPECtateDistributedRunner {
-	rpc DoBenchmarkRun(RunConfiguration) returns (BenchmarkResults) {}
+	rpc RunBenchmarkComponent(RunConfiguration) returns (BenchmarkResults) {}
 }
 
 message SPECjbbPair {

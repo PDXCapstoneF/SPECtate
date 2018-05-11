@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 class SPECtateDistributedRunnerServicer(
         spectate_pb2_grpc.SPECtateDistributedRunnerServicer):
 
-    def DoBenchmarkRun(self, request, context):
+    def RunBenchmarkComponent(self, request, context):
         log.debug("(server) recieved request")
 
         props = dict()
