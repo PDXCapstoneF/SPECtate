@@ -24,6 +24,11 @@ To get started with a run, save a configuration file that might look something l
 	"TemplateData": {
 		"HBIR": {
 			"run_type": "distributed",
+			"controller": {
+				"hosts": [ 
+					"foo:50051"
+				]
+			},
 			"injectors": {
 				"hosts": [
 					"baz:50051"
@@ -104,19 +109,20 @@ To get started with a run, save a configuration file that might look something l
 }
 ```
 
-This Tate config has one distributed run type that will have 2 groups (2 backends), each with the default of 1 injector per group, and injectors will be run on `baz:50051`.
+This Tate config has one distributed run type that will have 2 groups (2 backends), each with the default of 1 injector per group, and injectors will be run on `baz`.
+The controller will be run on `foo`.
 
-Make sure that we've got ssh keys or agents setup on our current machine and those keys have been copied to `baz`.
+Make sure that we've got ssh keys or agents setup on our current machine and those keys have been copied to `foo` and `baz`.
 
 #### Running a SPECjbb2015 Distributed Benchmark
 
-In one terminal:
+In one terminal, on `foo` and on `baz`:
 
 ```shell
 python mainCLI.py listen
 ```
 
-In another terminal, on `baz`:
+In another terminal, on the local machine:
 
 ```shell
 python mainCLI.py run example.json
