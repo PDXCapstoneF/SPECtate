@@ -36,9 +36,9 @@ def do(task):
     The reason this is defined outside of the context of `SpecJBBRun.run()` is because
     this function needs to be pickle-able for `Pool.map` to be able to use it.
     """
-    log.debug("starting task {}".format(task))
+    # log.debug("starting task {}".format(task))
     task.run()
-    log.debug("finished task {}".format(task))
+    # log.debug("finished task {}".format(task))
 
 
 def run_in_result_directory(f, name):

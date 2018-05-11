@@ -1,4 +1,5 @@
 from concurrent import futures
+import os
 import time
 import logging
 import json
@@ -110,17 +111,22 @@ def submit_run(meta, component):
     log.info("distributed SPECtate component received: {}".format(response))
     return response
 
+def get_hostname(hostname_or_port):
+    if ":" not in hostname_or_port:
+        return hostname_or_port
+    return hostname_or_port.split(":")[0]
 
 def collect_result(hostname, remote_path, local_path, delete=False):
     """
     Collects a directory from 
     a remote source to a local directory.
     """
+    hostname = get_hostname(hostname)
     local_path = os.path.abspath(local_path)
 
-    scp = TaskRunner("scp", "{}:{}".format(hostname, remote_path), local_path)
+    scp = task_runner.TaskRunner("scp", "-r", "{}:{}".format(hostname, remote_path), local_path)
 
-    and_remove = TaskRunner("ssh", hostname, "-c",
+    and_remove = task_runner.TaskRunner("ssh", hostname, "-C",
                             "'rm -rf {}'".format(remote_path))
 
     scp.run()
@@ -138,9 +144,12 @@ class DistributedComponent(dict):
 
     def run(self):
         log.info("submitting distributed component: {}".format(self.component))
-        results_path = submit_run(self.meta, self.component)
-        log.info("collecting result from host {}".format(self.component.host))
-        collect_result(self.component.host)
+        results_path = submit_run(self.meta, self.component).results_path
+        log.info("collecting result from host {}".format(self.component["host"]))
+        collect_result(hostname=self.component["host"], 
+                remote_path=results_path, 
+                local_path=".",
+                delete=True)
 
 def test(filename):
     with open(filename, 'r') as f:

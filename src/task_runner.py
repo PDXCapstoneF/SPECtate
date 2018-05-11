@@ -1,5 +1,8 @@
 import subprocess
 import itertools
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class TaskRunner:
@@ -46,6 +49,7 @@ class TaskRunner:
         Stops this running task, if applicable.
         """
         if not self.proc:
+            log.debug("process already stopped")
             return
 
         return self.proc.terminate()
@@ -55,6 +59,9 @@ class TaskRunner:
         Starts a configured task, if not already running.
         """
         if self.proc:
+            log.warn("process already started")
             return
+
+        log.debug("starting task with following argument set: {}".format(" ".join(self.argument_list())))
 
         self.proc = subprocess.Popen(self.argument_list(), **self.kw)
