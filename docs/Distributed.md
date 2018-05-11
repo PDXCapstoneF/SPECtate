@@ -108,11 +108,13 @@ This Tate config has one distributed run type that will have 2 groups (2 backend
 Assuming we've got ssh keys or agents setup on our current machine and those keys have been copied to `baz`, we can do the following:
 
 In one terminal:
+
 ```shell
 python mainCLI.py listen
 ```
 
 In another terminal, on `baz`:
+
 ```shell
 python mainCLI.py run example.json
 ```
