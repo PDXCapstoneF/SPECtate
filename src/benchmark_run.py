@@ -217,7 +217,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
-        self.jar = os.path.abspath(jar)
+        self.jar = jar
         self.times = times
         self.props = props
         self.props_file = props_file
