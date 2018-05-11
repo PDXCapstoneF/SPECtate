@@ -386,7 +386,6 @@ class SpecJBBRun:
         self.log.info("begin benchmark")
 
         pool.map(do, tasks)
-        c.stop()
         self.log.info("done")
 
     def dump(self, level=logging.DEBUG):
