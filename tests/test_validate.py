@@ -1,7 +1,7 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, TemplateSchema, JvmRunOptions
+from src.validate import validate, TemplateSchema, JvmRunOptions, DefaultJavaRunOptions
 
 
 class TestSpectateConfigValidator(TestCase):
@@ -177,10 +177,7 @@ class TestSpectateConfigValidator(TestCase):
             })
 
     def test_java_options_validates_none(self):
-        self.assertEqual(JvmRunOptions.validate(None), {
-            "path": "java",
-            "options": [],
-            })
+        self.assertEqual(JvmRunOptions.validate(None), DefaultJavaRunOptions)
 
     def test_java_options_validates_list_of_strings(self):
         arglist = ["java", "arg1", "arg2"]
