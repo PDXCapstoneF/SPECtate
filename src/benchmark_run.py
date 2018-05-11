@@ -37,7 +37,12 @@ def do(task):
     this function needs to be pickle-able for `Pool.map` to be able to use it.
     """
     log.debug("starting task {}".format(task))
-    task.run()
+    try:
+        task.run()
+    except Exception as e:
+        log.error("encountered error while running task {}".format(task))
+        log.exception(e)
+        task.stop()
     log.debug("finished task {}".format(task))
 
 
