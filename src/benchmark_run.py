@@ -12,6 +12,7 @@ import configparser
 
 from src.task_runner import TaskRunner
 from src.validate import SpecJBBComponentTypes
+from src.distributed import DistributedComponent
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,8 @@ def run_in_result_directory(f, name):
 
         f()
     except Exception as e:
-        log.error("exception: {}, removing results directory".format(e))
+        log.error("exception was caught while attempting something, removing results directory")
+        log.exception(e)
         shutil.rmtree(results_directory)
     finally:
         log.debug("returning to {}".format(pwd))
@@ -73,7 +75,7 @@ def write_props_to_file(location, props):
     return location
 
 
-class JvmRunOptions:
+class JvmRunOptions(dict):
     """
     A helper class for SpecJBBRun, to provide defaults and a way
     for lists, dict etc to be coerced into something that SpecJBBRun can work with.
@@ -87,15 +89,15 @@ class JvmRunOptions:
         If dict: validate that the dict has the required keys, and set the internal dict to val.
         """
         if isinstance(val, str):
-            self.__dict__ = {
+            self.update({
                 "path": val,
                 "options": [],
-            }
+            })
         elif isinstance(val, list):
-            self.__dict__ = {
+            self.update({
                 "path": val[0],
                 "options": val[1:],
-            }
+            })
         elif isinstance(val, dict):
             if "path" not in val:
                 raise Exception("'path' not specified for JvmRunOptions")
@@ -106,26 +108,13 @@ class JvmRunOptions:
             elif not isinstance(val["options"], list):
                 raise Exception("'path' must be a string")
 
-            self.__dict__ = val
+            self.update(val)
         elif val is None:
-            self.__dict__ = {"path": "java", "options": []}
+            self.update({"path": "java", "options": []})
         else:
             raise Exception(
                 "unrecognized type given to JvmRunOptions: {}".format(
                     type(val)))
-
-    def __getitem__(self, name):
-        """
-        Defined so that JvmRunOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that JvmRunOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
 
 class SpecJBBComponentOptions(dict):
     """
@@ -178,13 +167,6 @@ class SpecJBBComponentOptions(dict):
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".
                 format(rest))
-
-    def __getattr__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions can be accessed via attr names.
-        """
-        return self.__getitem__(name)
-
 
 class SpecJBBRun:
     """
@@ -259,9 +241,22 @@ class SpecJBBRun:
         """
         for component in self.components_grouped():
             if "host" in component:
-                yield DistributedComponent(self, component)
+                yield DistributedComponent(self._meta(), component)
             else:
                 yield TaskRunner(*self._full_options(component))
+
+
+
+    def _meta(self):
+        """
+        Meta-fields required for DistributedComponent.
+        """
+        return {
+                'props': self.props,
+                'java': self.java,
+                'jar': self.jar,
+                'props_file': self.props_file,
+                }
 
     def components_grouped(self):
         """
