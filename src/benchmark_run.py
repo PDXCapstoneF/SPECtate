@@ -258,7 +258,10 @@ class SpecJBBRun:
         with the correct JVM and SPECjbb2015 arguments for this particular run.
         """
         for component in self.components_grouped():
-            yield TaskRunner(*self._full_options(component))
+            if "host" in component:
+                yield DistributedComponent(self, component)
+            else:
+                yield TaskRunner(*self._full_options(component))
 
     def components_grouped(self):
         """
