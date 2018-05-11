@@ -98,7 +98,7 @@ def submit_run(meta, component):
     """Submits a run to a listening SPECtate server."""
     channel = grpc.insecure_channel(component["host"])
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
-    response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
+    response = stub.RunBenchmarkComponent(to_run_configuration(meta, component))
     log.info("SPECtate client received: {}".format(response))
     return response
 
@@ -120,6 +120,19 @@ def collect_result(hostname, remote_path, local_path, delete=False):
     if delete:
         and_remove.run()
 
+class DistributedComponent:
+    def __init__(self, meta, component):
+        if "host" not in component:
+            raise Exception("Missing host for DistributedComponent")
+
+        self.meta = meta
+        self.component = component
+
+    def run(self):
+        log.info("submitting distributed component: {}".format(self.component))
+        results_path = submit_run(self.meta, self.component)
+        log.info("collecting result from host {}".format(self.component.host))
+        collect_result(self.component.host)
 
 def test(filename):
     with open(filename, 'r') as f:
