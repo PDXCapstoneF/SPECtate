@@ -295,8 +295,11 @@ class SpecJBBRun:
             self.log.debug("updating backends: {}".format(self.backends))
             backend_rest.update(self.backends)
 
-            if self.controller["type"] == "distcontroller" and possible_backend_hosts:
-                backend_rest["host"] = next(possible_backend_hosts)
+            if self.controller["type"] == "distcontroller":
+                if possible_backend_hosts:
+                    backend_rest["host"] = next(possible_backend_hosts)
+                else:
+                    backend_rest["host"] = "localhost:50051" # TODO: make this configurable per run
 
             yield SpecJBBComponentOptions("backend", rest=backend_rest)
 
@@ -315,8 +318,11 @@ class SpecJBBRun:
                 }
                 transation_injector_rest.update(self.injectors)
 
-                if self.controller["type"] == "distcontroller" and possible_txi_hosts:
-                    transation_injector_rest["host"] = next(possible_txi_hosts)
+                if self.controller["type"] == "distcontroller":
+                    if possible_txi_hosts:
+                        transation_injector_rest["host"] = next(possible_txi_hosts)
+                    else:
+                        transation_injector_rest["host"] = "localhost:50051"
 
                 yield SpecJBBComponentOptions(
                     "txinjector", rest=transation_injector_rest)
