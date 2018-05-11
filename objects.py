@@ -8,33 +8,87 @@ import datetime
 
 from subprocess import Popen, PIPE, STDOUT
 
+import copy
+
 
 class spec_config():
     # runs contains a list of spec_run's
     def __init__(self, fromjson=None):
         self.runs = []
+        self.type = "spec_config"
         if not fromjson is None:
-            for r in fromjson['runs']:
+            for r in fromjson.get('runs', []):
                 self.runs.append(spec_run(r))
 
-    def tojson(self):
+    def switch_type(self):
+        if(self.type == "spec_config"):
+            self.type = "tate_config"
+        else:
+            self.type = "spec_config"
+
+    def _tojson(self):
         """Returns dictionary of json terms.  Should only be called internally"""
+        if(self.type == "spec_config"):
+            return {
+                "_type":"spec_config",
+                "runs": list(map(lambda x: x._tojson(), self.runs))
+            }
+        else:
+            return self._totateconfig()
+
+    def _totateconfig(self):
         return {
-            "_type": "spec_config",
-            "runs": list(map(lambda x: x.tojson(), self.runs))
-        }
+            "TemplateData": { "CURSES" : {
+                "args" : [
+                    "JDK",
+                    "JVM Options",
+                    "Run Type",
+                    "Tag",
+                    "Numa Nodes",
+                    "Verbose",
+                    "Report Level",
+                    "Skip Report",
+                    "Ignore Kit Validation",
+                    "Number of Runs",
+                    "Data Collection"
+                ],
+                "annotations" : {
+                    "JDK" : "The full path location of a java executable to be invoked",
+                    "JVM Options" : "A string of arguments to be passed to the JVM",
+                    "Run Type" : "The run type must be 'composite', 'distributed_ctrl_txl', 'distributed_sut', or 'multi'",
+                    "Tag" : "The name of this run",
+                    "Numa Nodes" : "The number of numa nodes to use when running multiple TXINJECTOR's or BACKEND's",
+                    "Verbose" : "Whether or not SPECjbb will produce verbose output during a run",
+                    "Skip Report" : "Whether or not SPECjbb will skip producing a report after completion",
+                    "Ignore Kit Validation" : "Whether or not SPECjbb will perform kit validation prior to running",
+                    "Number of Runs" : "The number of times this run will execute sequentially",
+                    "Data Collection" : "Currently unsupported"
+                },
+                "types" : {
+                    "JDK" : "string",
+                    "JVM Options" : "string",
+                    "Run Type" : "string",
+                    "Tag" : "string",
+                    "Numa Nodes" : "integer",
+                    "Verbose" : "boolean",
+                    "Skip Report" : "boolean",
+                    "Ignore Kit Validation" : "boolean",
+                    "Number of Runs" : "integer",
+                    "Data Collection" : "string"
+                }
+            }},
+            "RunList" : list(map(lambda x: x._totateconfig(), self.runs))
+            }
 
     def save(self, path):
         """Call this to save this config to a json file."""
         with open(path, 'w') as f:
             json.dump(self, f, indent=4, cls=spec_encoder)
 
-
 class spec_encoder(json.JSONEncoder):
     def default(self, obj):
-        if (isinstance(obj, spec_config) or isinstance(obj, spec_run) or isinstance(obj, props) or isinstance(obj,
-                                                                                                              propitem)):
-            return obj.tojson()
+        if (isinstance(obj, spec_config) or isinstance(obj, spec_run) or isinstance(obj, props) or isinstance(obj,                                                                                             propitem)):
+            return obj._tojson()
         return super(spec_encoder, self).default(obj)
 
 
@@ -44,12 +98,45 @@ class spec_decoder(json.JSONDecoder):
             self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, obj):
-        if '_type' not in obj:
-            return obj
-        type = obj['_type']
+        type = obj.get('_type', '')
         if type == 'spec_config':
             return spec_config(obj)
+        templates = obj.get('TemplateData', '')
+        if (templates != ''):
+            return self.decode_tate(obj, templates)
         return obj
+
+    def decode_tate(self, obj, templates):
+        runlist = obj.get('RunList', '')
+        if (runlist == ''):
+            raise AssertionError("Json file has no run lists")
+        #Run lists is a list, templates is a dict.
+        ret = spec_config()
+        ret.type = "tate_config"
+        for run in runlist:
+            r = spec_run()
+            template_type = run.get('template_type', '')
+            if(template_type == ''):
+                raise AssertionError("Run in RunList has no template type")
+            temp = templates.get(template_type, '')
+            if(temp == ''):
+                raise AssertionError("Template '{}' does not exist in TemplateData".format(temp))
+            translations = temp.get('translations', {})
+            for k, v in run.items():
+                if k in known_args:
+                    r._set_known_arg(k, v)
+                    continue
+                t = translations.get(k, '')
+                if(t != ''):
+                    r._set_by_translation(t, v)
+            extra = run.get('props_extra', [])
+            for d in extra:
+                name = d.get('prop', '')
+                value = d.get('value', '')
+                r.properties.set(name, value)
+            ret.runs.append(r)
+        return ret
+
 
 
 class spec_run:
@@ -69,25 +156,49 @@ class spec_run:
             self.skip_report = False
             self.ignore_kit_validation = False
         else:
-            self.jdk = fromjson['jdk']
-            self.jvm_options = fromjson['jvm_options']
-            self.data_collection = fromjson['data_collection']
-            self.num_runs = fromjson['num_runs']
-            self.tag = fromjson['tag']
-            self.run_type = fromjson['run_type']
-            self.properties = props(fromjson['props'])
-            self.verbose = fromjson['verbose']
-            self.numa_nodes = fromjson['numa_nodes']
-            self.report_level = fromjson['report_level']
-            self.skip_report = fromjson['skip_report']
-            self.ignore_kit_validation = fromjson['ignore_kit_validation']
+            self.jdk = fromjson.get('jdk', "/usr/bin/java")
+            self.jvm_options = fromjson.get('jvm_options', "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48")
+            self.data_collection = fromjson.get('data_collection',  "NONE")
+            self.num_runs = fromjson.get('num_runs', 1)
+            self.tag = fromjson.get('tag', "tag-name")
+            self.run_type = fromjson.get('run_type', 'composite')
+            self.properties = props(fromjson.get('props', {"modified" : []}))
+            self.verbose = fromjson.get('verbose', False)
+            self.numa_nodes = fromjson.get('numa_nodes', 1)
+            self.report_level = fromjson.get('report_level', 0)
+            self.skip_report = fromjson.get('skip_report', False)
+            self.ignore_kit_validation = fromjson.get('ignore_kit_validation', False)
 
     def set_runtype(self, arg):
         """Ensure that arg is a valid runtype before setting the runtype"""
         if (arg in run_types):
             self.run_type = arg
 
-    def tojson(self):
+
+    def _set_known_arg(self, key, value):
+        if(key == 'JDK'):
+            self.jdk = value
+        elif key == 'JVM Options': self.jvm_options = value
+        elif key == 'Run Type': self.run_type = value
+        elif key == 'Tag': self.tag = value
+        elif key == 'Verbose':
+            self.verbose = value
+        elif key == 'Numa Nodes':
+            self.numa_nodes = value
+        elif key == 'Skip Report':
+            self.skip_report = value
+        elif key == 'Ignore Kit Validatio':
+            self.ignore_kit_validation = value
+        elif key == 'Number of Runs':
+            self.num_runs = value
+        elif key == 'Data Collection':
+            self.data_collection = value
+
+    def _set_by_translation(self, trans, value):
+        self.properties.set(trans, value)
+
+
+    def _tojson(self):
         """Returns dictionary of json terms.  Should only be called internally"""
         return {
             "jdk": self.jdk,
@@ -101,7 +212,24 @@ class spec_run:
             "report_level": self.report_level,
             "skip_report": self.skip_report,
             "ignore_kit_validation": self.ignore_kit_validation,
-            "props": self.properties.tojson()
+            "props": self.properties._tojson()
+        }
+
+    def _totateconfig(self):
+        return {
+            "template_type" : "CURSES",
+            "JDK" : self.jdk,
+            "JVM Options" : self.jvm_options,
+            "Run Type" : self.run_type,
+            "Tag" : self.tag,
+            "Numa Nodes" : self.numa_nodes,
+            "Verbose" : self.verbose,
+            "Report Level" : self.report_level,
+            "Skip Report" : self.skip_report,
+            "Ignore Kit Validation" : self.ignore_kit_validation,
+            "Number of Runs" : self.num_runs,
+            "Data Collection" : self.data_collection,
+            "props_extra" : self.properties._totateconfig()
         }
 
     def _defHandle(msg):
@@ -110,7 +238,7 @@ class spec_run:
     # handle = Any function that takes a single string argument.
     # It can be used to intercept any output
     # If set to None, then output will only be logged
-    def run(self, path="", handle=_defHandle):
+    def run(self, path="", handle_out=_defHandle, handle_err=_defHandle):
         """
         Runs with the current settings.  Auto detects runtype, writes the config file, and executes all required processes
         :param path: The path to a directory containing 'specjbb2015.jar'
@@ -126,28 +254,28 @@ class spec_run:
         if (path == ""):
             path = os.getcwd()
         if (not os.path.exists(os.path.join(path, "specjbb2015.jar"))):
-            handle('Failed to locate "specjbb2015.jar" in "{}"'.format(path))
+            handle_err('Failed to locate "specjbb2015.jar" in "{}"'.format(path))
             return 2
         #       orig = os.getcwd()
         #        os.chdir(path)
         switch = {
-            'composite': self.run_composite,
-            'distributed_ctrl_txl': self.run_distributed_ctrl_txl,
-            'distributed_sut': self.distributed_sut,
-            'multi': self.run_multi
+            'composite': self._run_composite,
+            'distributed_ctrl_txl': self._run_distributed_ctrl_txl,
+            'distributed_sut': self._distributed_sut,
+            'multi': self._run_multi
         }
-        ret = switch[self.run_type](path, handle)
+        ret = switch[self.run_type](path, handle_out, handle_err)
         #      os.chdir(orig)
         return ret
 
-    def run_composite(self, path, handle):
+    def _run_composite(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         cmd = '{} {} -jar {}/specjbb2015.jar -m COMPOSITE {}'.format(
             self.jdk, self.jvm_options, path, self._spec_opts())
         for x in range(self.num_runs):
             result_dir = self._prerun(path)
-            handle('Starting run number {}.'.format(x))
-            handle('Using command: "{}"'.format(cmd))
+            handle_out('Starting run number {}.'.format(x))
+            handle_out('Using command: "{}"'.format(cmd))
             errout = open(os.path.join(result_dir, 'composite.out'), 'wb')
             stdout = open(os.path.join(result_dir, 'composite.log'), 'wb')
             p = Popen(shlex.split(cmd), cwd=path, stdout=PIPE, stderr=PIPE)
@@ -155,11 +283,11 @@ class spec_run:
                 e = p.stderr.readline()
                 if (e != ''):
                     errout.write(e)
-                    handle(e)
+                    handle_err(e)
                 o = p.stdout.readline()
                 if (o != ''):
                     stdout.write(o)
-                    handle(o)
+                    handle_out(o)
             errout.close()
             stdout.close()
             exitcode = p.wait()
@@ -168,7 +296,7 @@ class spec_run:
 
         return 0
 
-    def run_distributed_ctrl_txl(self, path, handle):
+    def _run_distributed_ctrl_txl(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
 
@@ -179,7 +307,7 @@ class spec_run:
         exitcode = ping.wait()
         FNULL.close()
         if (exitcode != 0):
-            handle(
+            handle_err(
                 'ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
             return 4
 
@@ -209,21 +337,21 @@ class spec_run:
             e = controller.stderr.readline()
             if (e != ''):
                 cont_err.write(e)
-                handle(e)
+                handle_err(e)
             o = controller.stdout.readline()
             if (o != ''):
                 cont_std.write(o)
-                handle(o)
+                handle_out(o)
             for p in tx_procs:
                 if (p[0].poll() is None):
                     e = p[0].stderr.readline()
                     if (e != ''):
                         p[2].write(e)
-                        handle(e)
+                        handle_err(e)
                     o = p[0].stdout.readline()
                     if (o != ''):
                         p[1].write(o)
-                        handle(o)
+                        handle_out(o)
         cont_err.close()
         cont_std.close()
         exitcode = controller.wait()
@@ -235,7 +363,7 @@ class spec_run:
             return -1
         return 0
 
-    def distributed_sut(self, path, handle):
+    def _distributed_sut(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         ctrl_ip = self.properties.root['specjbb.controller.host'].value
         # Check if ip responds here
@@ -245,7 +373,7 @@ class spec_run:
         exitcode = ping.wait()
         FNULL.close()
         if (exitcode != 0):
-            handle(
+            handle_err(
                 'ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
             return 4
         opts = self._tx_opts()
@@ -266,7 +394,7 @@ class spec_run:
                     dead = False
                     o = p[0].stdout.readline()
                     if (o != ''):
-                        handle(o)
+                        handle_out(o)
                         p[1].write(o)
         for p in procs:
             p[0].wait()
@@ -275,7 +403,7 @@ class spec_run:
         # Each process will continue until manually terminated.
         return 0
 
-    def run_multi(self, path, handle):
+    def _run_multi(self, path, handle_out, handle_err):
         """Called internally only by this.run()"""
         result_dir = self._prerun(path)
         opts = self._spec_opts()
@@ -329,31 +457,31 @@ class spec_run:
                 e = controller.stderr.readline()
                 if (e != ''):
                     cont_err.write(e)
-                    handle(e)
+                    handle_err(e)
                 o = controller.stdout.readline()
                 if (o != ''):
                     cont_std.write(o)
-                    handle(o)
+                    handle_out(o)
                 for p in tx_procs:
                     if (p[0].poll() is None):
                         e = p[0].stderr.readline()
                         if (e != ''):
                             p[2].write(e)
-                            handle(e)
+                            handle_err(e)
                         o = p[0].stdout.readline()
                         if (o != ''):
                             p[1].write(o)
-                            handle(o)
+                            handle_out(o)
                 for p in be_procs:
                     if (p[0].poll() is None):
                         e = p[0].stderr.readline()
                         if (e != ''):
                             p[2].write(e)
-                            handle(e)
+                            handle_err(e)
                         o = p[0].stdout.readline()
                         if (o != ''):
                             p[1].write(o)
-                            handle(o)
+                            handle_out(o)
             cont_err.close()
             cont_std.close()
             exitcode = controller.wait()
@@ -428,7 +556,7 @@ class propitem:
             self.valid_opts = valid_opts
         self.value = def_value
 
-    def write(self, f):
+    def _write(self, f):
         """Called internally only.  Writes to a config file if different than the default value"""
         if (self.value != self.def_value):
             f.write("{} = {}".format(self.prop, self.value))
@@ -442,13 +570,27 @@ class propitem:
         """Resets this property to the default value"""
         self.value = self.def_value
 
-    def tojson(self):
+    def _totateconfig(self):return self._tojson()
+
+    def _tojson(self):
         """Called internally only.  Returns dictionary of json values"""
         return {
             "prop": self.prop,
             "value": self.value
         }
 
+known_args = [
+    'JDK',
+    'JVM Options',
+    'Run Type',
+    'Tag',
+    'Numa Nodes',
+    'Verbose',
+    'Skip Report',
+    'Ignore Kit Validation',
+    'Number of Runs',
+    'Data Collection'
+]
 
 run_types = [
     'composite',
@@ -622,9 +764,9 @@ defaults = [
 
 class props:
     def __init__(self, fromjson=None):
-        self.root = {a.prop: a for a in defaults}
+        self.root = {a.prop: copy.deepcopy(a) for a in defaults}
         if (not fromjson is None):
-            for p in fromjson['modified']:
+            for p in fromjson.get('modified', []):
                 self.root.update({p['prop']: p['value']})
 
     def set(self, key, value):
@@ -646,10 +788,13 @@ class props:
             f.write("#SPECjbb config")
             for p in self.root.values():
                 if (isinstance(p, propitem)):
-                    p.write(f)
+                    p._write(f)
 
-    def tojson(self):
+    def _tojson(self):
         """Called internally only.  Returns dictionary of json values"""
         return {
-            "modified": list(map(lambda x: x.tojson(), self.get_modified()))
+            "modified": list(map(lambda x: x._tojson(), self.get_modified()))
         }
+
+    def _totateconfig(self):
+        return list(map(lambda x: x._tojson(), self.get_modified()))
