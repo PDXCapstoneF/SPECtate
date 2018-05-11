@@ -112,9 +112,12 @@ def submit_run(meta, component):
     return response
 
 def get_hostname(hostname_or_port):
+    """
+    Strips a port specification off of a hostname.
+    """
     if ":" not in hostname_or_port:
         return hostname_or_port
-    return hostname_or_port.split(":")[0]
+    return ('').join(hostname_or_port.split(":")[:-1])
 
 def collect_result(hostname, remote_path, local_path, delete=False):
     """
@@ -126,12 +129,12 @@ def collect_result(hostname, remote_path, local_path, delete=False):
 
     scp = task_runner.TaskRunner("scp", "-r", "{}:{}".format(hostname, remote_path), local_path)
 
-    and_remove = task_runner.TaskRunner("ssh", hostname, "-C",
-                            "'rm -rf {}'".format(remote_path))
+    and_remove = task_runner.TaskRunner("ssh", hostname,
+                            "rm -rf {}".format(remote_path))
 
     scp.run()
 
-    if delete:
+    if delete and hostname != "localhost":
         and_remove.run()
 
 class DistributedComponent(dict):
