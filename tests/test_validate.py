@@ -1,7 +1,7 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, TemplateSchema
+from src.validate import validate, TemplateSchema, JvmRunOptions
 
 
 class TestSpectateConfigValidator(TestCase):
@@ -169,3 +169,30 @@ class TestSpectateConfigValidator(TestCase):
 
         self.assertEqual(v["RunList"][0]["times"], 1)
         self.assertEqual(v["RunList"][1]["times"], 2)
+
+    def test_java_options_validates_strings(self):
+        self.assertEqual(JvmRunOptions.validate("echo"), {
+            "path": "echo",
+            "options": [],
+            })
+
+    def test_java_options_validates_none(self):
+        self.assertEqual(JvmRunOptions.validate(None), {
+            "path": "java",
+            "options": [],
+            })
+
+    def test_java_options_validates_list_of_strings(self):
+        arglist = ["java", "arg1", "arg2"]
+        self.assertEqual(JvmRunOptions.validate(arglist), {
+            "path": arglist[0],
+            "options": arglist[1:],
+            })
+
+    def test_java_options_validates_dict_with_exact_keys(self):
+        valid = {
+                "path": "java",
+                "options": ["arg1", "arg2"],
+                }
+
+        self.assertEqual(JvmRunOptions.validate(valid), valid)
