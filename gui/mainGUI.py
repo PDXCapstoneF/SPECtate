@@ -53,7 +53,7 @@ class MainWindow(Frame):
 
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
-                               selectmode=EXTENDED, bg=self.colors["text_bg"], fg=self.colors["text_fg"])  # bg=self.colors["listbox"], fg=self.colors['listbox']
+                               selectmode=EXTENDED, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])  # bg=self.colors["listbox"], fg=self.colors['listbox']
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
         self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
@@ -109,17 +109,21 @@ class MainWindow(Frame):
                         variable=button_results,
                         command=lambda: self.set_theme(var))
         button.pack(anchor='s')
+        # self.update()
 
     def set_theme(self, theme):
         theme = theme.get()
         for key, val in properties["main_window"]["themes"].items():
             if key == theme:
                 self.colors = properties["main_window"]["themes"][theme]
-                self.update()
                 self.new_theme_window.destroy()
+                self.update()
+                self.listbox.configure(bg=properties["main_window"]["themes"][theme]["listbox_bg"],
+                                       fg=properties["main_window"]["themes"][theme]["listbox_fg"],
+                                       selectbackground=properties["main_window"]["themes"][theme]["listbox_select_bg"])
                 return True
-            else:
-                return False
+        else:
+            return False
 
     def publish_menu(self):
         self.menu_bar = Menu(self.master)
