@@ -12,7 +12,9 @@ To set up your system(s) for a distributed run, you need:
 - SSH access to each system using a non-interactive authentication method.
 - Port `50051` open on each machine, to enable SPECtate to configure and manage its own instances.
 
-### Configuration Keys
+### Template Configuration Keys
+
+More details on each of the templates can be found in the documentation for `src.validate`.
 
 | Name         | Type                                                       | Brief Description                                                                                                              |
 |--------------|------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
@@ -22,3 +24,13 @@ To set up your system(s) for a distributed run, you need:
 | `backends`   | Component or int                                           | SPECtate specific configuration options for the backends. If int is given, it is interpreted as the backend count.             |
 | `java`       | str                                                        | String to invoke the JVM on the local machine (also used as default if `java` isn't specified for any of the other components  |
 | `port`       | str                                                        | Port to communicate to other SPECtate instances through                                                                        |
+
+### Component Configuration Keys
+
+| Name       | Type                                       | Description                                                          |
+| ------     | ------                                     | -------------                                                        |
+| `type`     | str (one of either of the component types) | The type of the component (passed to SPECjbb as `-m COMPONENT_TYPE`) |
+| `count`    | int                                        | The number of instances (ignored for controllers)                    |
+| `options`  | [str]                                      | A list of options to pass to SPECjbb                                 |
+| `jvm_opts` | [str]                                      | A list of options to pass the the JVM for this component type        |
+| `hosts`    | [str]                                      | A list of hostnames to use as hosts for these components             |
