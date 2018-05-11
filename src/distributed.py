@@ -40,21 +40,23 @@ class SPECtateDistributedRunnerServicer(
                 request.java, "-jar", request.jar, *request.java_options,
                 *request.spec_options, "-p", request.props_file)
 
-            # run it in a results directory and return the path
             t.run()
 
+        # run it in a results directory and return the path
         path = benchmark_run.run_in_result_directory(do_component, uuid4().hex)
 
         return spectate_pb2.BenchmarkResults(results_path=path)
 
 
-def listen():
+def listen(port="[::]:50051"):
     """Starts a server listening for SPECtate actions."""
+    log.info("starting a SPECtate server listening on {}".format(port))
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     spectate_pb2_grpc.add_SPECtateDistributedRunnerServicer_to_server(
         SPECtateDistributedRunnerServicer(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port(port)
     server.start()
+    log.info("started server successfully, awaiting requests...")
     try:
         while True:
             time.sleep(60 * 24 * 24)
@@ -98,6 +100,7 @@ def submit_run(meta, component):
     stub = spectate_pb2_grpc.SPECtateDistributedRunnerStub(channel)
     response = stub.DoBenchmarkRun(to_run_configuration(meta, component))
     log.info("SPECtate client received: {}".format(response))
+    return response
 
 
 def test(filename):
