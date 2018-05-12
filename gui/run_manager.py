@@ -9,8 +9,6 @@ import copy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
-from src.benchmark_run import SpecJBBRun
-from src.run_generator import RunGenerator
 
 
 class RunManager:
@@ -121,6 +119,7 @@ class RunManager:
             run_copy = copy.deepcopy(run)
             if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
                 run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
+                # repetitions = run_copy["args"]["Tag"].count("(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
                     return run_copy
                 else:
@@ -266,8 +265,3 @@ class RunManager:
                 return a == b["args"]["Tag"]
             if isinstance(b, str):
                 return a == b
-
-
-if __name__ == "__main__":
-    run_manager = RunManager(config_file = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json')
-    print(run_manager.set_run_index(run_tag="TAG", to_index=2))
