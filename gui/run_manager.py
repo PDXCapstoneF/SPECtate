@@ -9,9 +9,15 @@ import copy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
+from src.benchmark_run import SpecJBBRun
+from src.run_generator import RunGenerator
 
 
 class RunManager:
+    """
+    Object used by `mainGUI.py` to structure TemplateData and RunLists in memory,
+    allowing some useful operations to isolate run management from the GUI.
+    """
     def __init__(self, config_file=None):
         self.current_run, self.validated_runs = None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
@@ -22,7 +28,6 @@ class RunManager:
             self.RUN_CONFIG = config_file
 
         # if self.RUN_CONFIG
-
         if Path(self.RUN_CONFIG).is_file():
             with open(self.RUN_CONFIG) as file:
                 parsed = json.load(file)
@@ -46,7 +51,12 @@ class RunManager:
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
     def write_to_file(self, filepath=None):
-        if filepath:
+        """
+        Dumps validated_runs to default or specified file.
+        :param filepath:
+        :return:
+        """
+        if filepath is not None:
             with open(filepath, 'w') as fh:
                 json.dump(self.validated_runs, fh)
         else:
@@ -64,7 +74,7 @@ class RunManager:
         """
         if key not in ["TemplateData", "RunList"] or data is None or not isinstance(data, dict):
             return None
-        if self.initialized:
+        if self.initialized():
             try:
                 if key == "TemplateData":
                     self.validated_runs[key][data["RunType"]] = data
@@ -77,7 +87,6 @@ class RunManager:
     def create_run(self, run_type):
         """
        'example_test.json' # RunList section.
-
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
         :return: str
@@ -118,6 +127,12 @@ class RunManager:
                     return None
 
     def remove_run(self, tag_to_remove):
+        """
+        Used to remove run from list. This method is a wrapper for get_run_from_list,
+        which passes a delete operation to perform when the run is found.
+        :param tag_to_remove:
+        :return:
+        """
         if self.initialized():
             self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
 
@@ -156,6 +171,26 @@ class RunManager:
         self.current_run = new_run_tag
         return self.current_run
 
+    def set_run_index(self, run_tag, to_index):
+        """
+        Used for reordering runs in RunList.
+        :param run_tag: str
+        :param to_index: int
+        :return: bool
+        """
+        print("Before: {}".format(self.validated_runs["RunList"]))
+        if to_index > len(self.validated_runs["RunList"]) or to_index < 0:
+            print("Index out of range.")
+            return None
+        for idx, item in enumerate(self.validated_runs["RunList"]):
+            if item["args"]["Tag"] == run_tag:
+                # old_idx = self.validated_runs["RunList"].index(item)
+                self.validated_runs["RunList"][to_index], self.validated_runs["RunList"][idx] = \
+                    self.validated_runs["RunList"][idx], self.validated_runs["RunList"][to_index]
+                return True
+        return False
+
+
     def get_current_run(self):
         # @todo: test
         """
@@ -183,10 +218,6 @@ class RunManager:
                             return run_copy
                         return run
         return None
-
-    #
-    # def reorder(self, from, to):
-    #     pass
 
     def get_template_types(self):
         """
@@ -235,3 +266,8 @@ class RunManager:
                 return a == b["args"]["Tag"]
             if isinstance(b, str):
                 return a == b
+
+
+if __name__ == "__main__":
+    run_manager = RunManager(config_file = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json')
+    print(run_manager.set_run_index(run_tag="TAG", to_index=2))
