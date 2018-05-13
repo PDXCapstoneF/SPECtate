@@ -275,7 +275,7 @@ class SpecJBBRun:
         pwd = os.getcwd()
         results_directory = os.path.abspath(str(self.run_id))
 
-        self.log.debug("set logging directory to {}".format(results_directory))
+        self.log.debug("set run directory to {}".format(results_directory))
 
         try:
             self.log.debug(
@@ -285,6 +285,8 @@ class SpecJBBRun:
             except os.FileExistsError:
                 self.log.debug(
                     "run results directory already existed, continuing")
+
+            os.chdir(results_directory)
 
             for number_of_times in range(self.times):
                 self.log.debug(
