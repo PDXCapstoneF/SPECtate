@@ -54,7 +54,7 @@ class RunGenerator:
                         prop_name=injectors_specjbb_property_name,
                         template=template,
                         props=props)
-                elif "backends" in template:
+                if "backends" in template:
                     backends = self._ensure_count_is_accurate(
                         key="backends",
                         prop_name=backends_specjbb_property_name,
