@@ -1,3 +1,4 @@
+import os
 from src.validate import TemplateSchema, RunConfigSchema
 
 
@@ -37,6 +38,7 @@ class RunGenerator:
                 },
                 'backends': backends,
                 'injectors': injectors,
+                'cwd': template["cwd"] if "cwd" in template else os.getcwd(),
                 'java': template["java"],
                 'jar': template["jar"],
                 'times': run["times"],
