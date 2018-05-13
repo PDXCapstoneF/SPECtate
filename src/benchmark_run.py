@@ -185,6 +185,7 @@ class SpecJBBRun:
                  controller=None,
                  backends=None,
                  injectors=None,
+                 cwd=None,
                  java=None,
                  jar=None,
                  times=1,
@@ -205,6 +206,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
+        self.cwd = os.path.abspath(cwd) if cwd else os.getcwd()
         self.jar = os.path.abspath(jar)
         self.times = times
         self.props = props
@@ -272,8 +274,7 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
-        pwd = os.getcwd()
-        results_directory = os.path.abspath(str(self.run_id))
+        results_directory = os.path.join(self.cwd, str(self.run_id))
 
         self.log.debug("set logging directory to {}".format(results_directory))
 
@@ -283,8 +284,10 @@ class SpecJBBRun:
             try:
                 os.mkdir(results_directory)
             except os.FileExistsError:
-                self.log.debug(
+                self.log.error(
                     "run results directory already existed, continuing")
+
+            os.chdir(results_directory)
 
             for number_of_times in range(self.times):
                 self.log.debug(
@@ -296,7 +299,8 @@ class SpecJBBRun:
                 "exception: {}, removing results directory".format(e))
             shutil.rmtree(results_directory)
         finally:
-            os.chdir(pwd)
+            self.log.info("returning to {}".format(self.cwd))
+            os.chdir(self.cwd)
 
     def _run(self):
         """
