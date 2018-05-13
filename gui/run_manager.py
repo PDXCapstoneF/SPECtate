@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+import pathlib
 from pathlib import Path
 import sys
 import copy
@@ -9,30 +10,21 @@ import copy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
+from src.benchmark_run import SpecJBBRun
+from src.run_generator import RunGenerator
+import mainCLI
 
 
 class RunManager:
-    def __init__(self, config_file=None):
-        self.current_run, self.validated_runs = None, None
+    def __init__(self, config_file=None, jar=None):
+        self.current_run, self.validated_runs, self.jar = None, None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
         self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
             self.RUN_CONFIG = config_file
-
-        # if self.RUN_CONFIG
-
-        if Path(self.RUN_CONFIG).is_file():
-            with open(self.RUN_CONFIG) as file:
-                parsed = json.load(file)
-                self.validated_runs = validate(parsed)
-        elif not Path(self.RUN_CONFIG).is_file():
-            if Path(os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json').is_file():
-                self.RUN_CONFIG = os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json'
-                with open(self.RUN_CONFIG) as file:
-                    parsed = json.load(file)
-                    self.validated_runs = validate(parsed)
+        self.load_config()
 
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
@@ -45,13 +37,72 @@ class RunManager:
         """
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
+    def set_config(self, filepath, type):
+        """
+        Sets the configuration filepath for run_list and for SPECjbb jar files.
+        Caller of `load_config()` (when Type=="RunList") to update configurations stored in memory.
+        :param filepath:
+        :param type:
+        :return:
+        """
+        if (filepath or type) is None:
+            return None
+        extension = pathlib.Path(filepath).suffix
+        if "json" in extension and type == "RunList":
+            if filepath != self.RUN_CONFIG:
+                if Path(filepath).is_file():  # todo: test
+                    self.RUN_CONFIG = filepath
+                    self.load_config()  # update memory with new data
+        elif "jar" in extension and type == "SPECjbb":
+            if Path(filepath).is_file():  # todo: test
+                self.jar = filepath
+
+    def load_config(self):
+        """
+        Loads and validates run configurations.
+        :return:
+        """
+        if Path(self.RUN_CONFIG).is_file():
+            with open(self.RUN_CONFIG) as file:
+                parsed = json.load(file)
+                self.validated_runs = validate(parsed)
+
+    def do_run(self, tag=None):
+        """
+        Based on `do_run()` in `mainCLI`, this method also does a run in the root directory.
+        Ideally `mainCLI` would be extensible in `mainGUI`, but there are some compatibility issues.
+        :return:
+        """
+        print("Inside do_run")
+        with open(self.RUN_CONFIG) as f:
+            args = json.loads(f.read())
+        rs = RunGenerator(**args)
+        os.chdir("..")  # directories made by `SPECjbbRun` will be placed in root.
+
+        if tag is not None:  # run specific
+            for r in rs.runs:
+                if r["tag"] == tag:
+                    s = SpecJBBRun(**r)
+                    return s.run()  # @todo: uncomment before push
+
+        else:  # run all
+            for r in rs.runs:
+                s = SpecJBBRun(**r)
+                s.run()  # @todo: uncomment before push
+        os.chdir("gui/")  # set cwd back to /gui/ when done.
+
     def write_to_file(self, filepath=None):
+        test = True
+        if test is True:
+            with open(self.test_file, 'w') as fh:
+                json.dump(self.validated_runs, fh, indent=4)
+
         if filepath:
             with open(filepath, 'w') as fh:
-                json.dump(self.validated_runs, fh)
+                json.dump(self.validated_runs, fh, indent=4)
         else:
             with open(self.RUN_CONFIG, 'w') as fh:
-                json.dump(self.validated_runs, fh)
+                json.dump(self.validated_runs, fh, indent=4)
 
     def insert_into_config_list(self, key, data):
         # @todo: test
@@ -71,7 +122,7 @@ class RunManager:
                 elif key == "RunList":
                     self.validated_runs[key].append(data)
                     return True
-            except Exception:  # not a valid run
+            except:  # not a valid run
                 return None
 
     def create_run(self, run_type):
@@ -184,10 +235,6 @@ class RunManager:
                         return run
         return None
 
-    #
-    # def reorder(self, from, to):
-    #     pass
-
     def get_template_types(self):
         """
         Returns available template types (e.g. ["HBIR", "HBIR_RT", ...]
@@ -235,3 +282,8 @@ class RunManager:
                 return a == b["args"]["Tag"]
             if isinstance(b, str):
                 return a == b
+
+
+if __name__ == "__main__":
+    run_manager = RunManager(config_file=os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json')
+    run_manager.do_run(tag="TAG")

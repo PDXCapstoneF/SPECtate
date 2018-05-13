@@ -187,6 +187,7 @@ class SpecJBBRun:
                  injectors=None,
                  java=None,
                  jar=None,
+                 tag=None,
                  times=1,
                  props={},
                  props_file='specjbb2015.props'):

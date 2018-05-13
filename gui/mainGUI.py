@@ -2,6 +2,7 @@
 
 from run_manager import RunManager
 import os
+import pathlib
 import sys
 import json
 from tkinter import *
@@ -13,6 +14,8 @@ import webbrowser
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
+from src.benchmark_run import SpecJBBRun
+from src.run_generator import RunGenerator
 
 try:
     with open("gui/properties.json") as properties_file:
@@ -67,6 +70,8 @@ class MainWindow(Frame):
         self.popup_menu.add_command(label='Delete', command=lambda: self.delete_selected(self.listbox.curselection()))
         self.popup_menu.add_command(label='Duplicate',
                                     command=lambda: self.duplicate_selected(self.listbox.curselection()))
+        self.popup_menu.add_command(label='Run',
+                                    command=lambda: self.do_runs(self.listbox.curselection()))
 
         # Create canvas
         self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
@@ -77,6 +82,10 @@ class MainWindow(Frame):
         self.update()
 
     def update(self):
+        """
+        Updates listbox.
+        :return: none
+        """
         self.master.title(properties["program_name"] + " - " + self.run_manager.RUN_CONFIG)
         self.listbox.delete(0, END)
         i = 0
@@ -88,10 +97,15 @@ class MainWindow(Frame):
 
     def create_tag(self):
         """
+        # @todo
         Will be a naming convention for creating a run tag.
         :return:
         """
         pass
+
+    def do_runs(self, selection):
+        for item in selection:
+            run = self.run_manager.do_run(tag=self.listbox.get(item))
 
     def theme_window(self):
         """
@@ -137,12 +151,14 @@ class MainWindow(Frame):
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
                               command=self.create_new_run)
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')  # @todo
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
                               command=self.save)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
-                              command=self.import_runlist)
+                              command=lambda: self.load_file(type="RunList"))
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["import_jar"],
+                              command=lambda: self.load_file(type="SPECjbb"))
         file_menu.add_separator()
         file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
 
@@ -151,6 +167,12 @@ class MainWindow(Frame):
         self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
+
+        # Benchmark Menu
+        benchmark_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=properties["commands"]["benchmark"]["title"], menu=benchmark_menu)
+        benchmark_menu.add_command(label=properties["commands"]["benchmark"]["items"]["run_all"],
+                                   command=self.run_manager.do_run)
 
         # View Menu
         edit_menu = Menu(self.menu_bar, tearoff=0)
@@ -336,18 +358,25 @@ class MainWindow(Frame):
         # save stuff
         pass
 
-    def import_runlist(self):
+    def load_file(self, type=None):
         """
-        load config file
+        Import either the path to a SPECjbb jar file, or run configuration file.
+        :param type:
+        :return:
         """
         filepath = filedialog.askopenfilename(title="Select file",
-                                              filetypes=(("JSON file", "*.json"), ("All files", "*.*")),
-                                              defaultextension=".json")
+                                              filetypes=(("JSON file", "*.json"),
+                                                         ("Java jar file", "*.jar"),
+                                                         ("All files", "*.*"),))
         if filepath:
-            if filepath != self.run_manager.RUN_CONFIG:
-                self.prompt_save()
-                self.run_manager = RunManager(config_file=filepath)
-                self.update()
+            extension = pathlib.Path(filepath).suffix
+            print("Extension: {}".format(extension))
+            if "json" in extension and type == "RunList":
+                self.run_manager.set_config(filepath, "RunList")
+            if "jar" in extension and type == "SPECjbb":
+                self.run_manager.set_config(filepath, "SPECjbb")
+            self.prompt_save()
+            self.update()
 
 
 if __name__ == '__main__':

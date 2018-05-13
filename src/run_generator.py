@@ -39,6 +39,7 @@ class RunGenerator:
                 'injectors': injectors,
                 'java': template["java"],
                 'jar': template["jar"],
+                'tag': run["args"]["Tag"],
                 'times': run["times"],
                 'props': props,
                 'props_file': template.get("props_file", 'specjbb2015.props'),
