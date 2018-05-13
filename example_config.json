@@ -27,7 +27,7 @@
 			  "T3" : "How many threads does Tier 3 have access to"
 			},
 			"prop_options": {
-				"specjbb.controller.type": "HBIR_RT",
+				"specjbb.controller.type": "HBIR",
 				"specjbb.time.server": false,
 				"specjbb.comm.connect.client.pool.size": 192,
 				"specjbb.comm.connect.selector.runner.count": 4,
