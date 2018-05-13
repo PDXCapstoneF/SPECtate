@@ -12,10 +12,13 @@ sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
 from src.benchmark_run import SpecJBBRun
 from src.run_generator import RunGenerator
-import mainCLI
 
 
 class RunManager:
+    """
+    Object used by `mainGUI.py` to structure TemplateData and RunLists in memory,
+    allowing some useful operations to isolate run management from the GUI.
+    """
     def __init__(self, config_file=None, jar=None):
         self.current_run, self.validated_runs, self.jar = None, None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
@@ -26,6 +29,16 @@ class RunManager:
             self.RUN_CONFIG = config_file
         self.load_config()
 
+        if Path(self.RUN_CONFIG).is_file():
+            with open(self.RUN_CONFIG) as file:
+                parsed = json.load(file)
+                self.validated_runs = validate(parsed)
+        elif not Path(self.RUN_CONFIG).is_file():
+            if Path(os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json').is_file():
+                self.RUN_CONFIG = os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json'
+                with open(self.RUN_CONFIG) as file:
+                    parsed = json.load(file)
+                    self.validated_runs = validate(parsed)
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
 
@@ -99,6 +112,11 @@ class RunManager:
         os.chdir("gui/")  # set cwd back to /gui/ when done.
 
     def write_to_file(self, filepath=None):
+        """
+        Dumps validated_runs to default or specified file.
+        :param filepath:
+        :return:
+        """
         test = True
         if test is True:
             with open(self.test_file, 'w') as fh:
@@ -122,7 +140,7 @@ class RunManager:
         """
         if key not in ["TemplateData", "RunList"] or data is None or not isinstance(data, dict):
             return None
-        if self.initialized:
+        if self.initialized():
             try:
                 if key == "TemplateData":
                     self.validated_runs[key][data["RunType"]] = data
@@ -135,7 +153,6 @@ class RunManager:
     def create_run(self, run_type):
         """
        'example_test.json' # RunList section.
-
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
         :return: str
@@ -170,12 +187,19 @@ class RunManager:
             run_copy = copy.deepcopy(run)
             if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
                 run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
+                # repetitions = run_copy["args"]["Tag"].count("(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
                     return run_copy
                 else:
                     return None
 
     def remove_run(self, tag_to_remove):
+        """
+        Used to remove run from list. This method is a wrapper for get_run_from_list,
+        which passes a delete operation to perform when the run is found.
+        :param tag_to_remove:
+        :return:
+        """
         if self.initialized():
             self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
 
@@ -213,6 +237,25 @@ class RunManager:
         """
         self.current_run = new_run_tag
         return self.current_run
+
+    def set_run_index(self, run_tag, to_index):
+        """
+        Used for reordering runs in RunList.
+        :param run_tag: str
+        :param to_index: int
+        :return: bool
+        """
+        print("Before: {}".format(self.validated_runs["RunList"]))
+        if to_index > len(self.validated_runs["RunList"]) or to_index < 0:
+            print("Index out of range.")
+            return None
+        for idx, item in enumerate(self.validated_runs["RunList"]):
+            if item["args"]["Tag"] == run_tag:
+                # old_idx = self.validated_runs["RunList"].index(item)
+                self.validated_runs["RunList"][to_index], self.validated_runs["RunList"][idx] = \
+                    self.validated_runs["RunList"][idx], self.validated_runs["RunList"][to_index]
+                return True
+        return False
 
     def get_current_run(self):
         # @todo: test
@@ -289,8 +332,3 @@ class RunManager:
                 return a == b["args"]["Tag"]
             if isinstance(b, str):
                 return a == b
-
-
-if __name__ == "__main__":
-    run_manager = RunManager(config_file=os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json')
-    run_manager.do_run(tag="TAG")
