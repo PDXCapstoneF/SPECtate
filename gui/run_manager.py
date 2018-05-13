@@ -56,16 +56,23 @@ class RunManager:
         elif "jar" in extension and type == "SPECjbb":
             if Path(filepath).is_file():  # todo: test
                 self.jar = filepath
+                self.load_config()  # update memory with new data
 
     def load_config(self):
         """
-        Loads and validates run configurations.
+        Loads and validates run configurations, and inserts path to SPECjbb
+        jar file into template types so the user can do a run.
         :return:
         """
-        if Path(self.RUN_CONFIG).is_file():
-            with open(self.RUN_CONFIG) as file:
-                parsed = json.load(file)
-                self.validated_runs = validate(parsed)
+        if self.RUN_CONFIG is not None:
+            if Path(self.RUN_CONFIG).is_file():
+                with open(self.RUN_CONFIG) as file:
+                    parsed = json.load(file)
+                    self.validated_runs = validate(parsed)
+        if self.jar is not None:
+            if Path(self.jar).is_file():
+                for template in self.validated_runs["TemplateData"].keys():
+                    self.validated_runs["TemplateData"][template]["jar"] = str(self.jar)
 
     def do_run(self, tag=None):
         """

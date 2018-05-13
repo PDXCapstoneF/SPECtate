@@ -316,7 +316,7 @@ class MainWindow(Frame):
             return
 
     def prompt_save(self):
-        if messagebox.askyesno("Save", "Would you like to save before exiting?"):
+        if messagebox.askyesno("Save", "Would you like to save?"):
             self.save()
 
     def create_new_run(self):
