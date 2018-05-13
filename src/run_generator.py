@@ -5,6 +5,7 @@ log = logging.getLogger(__name__)
 
 injectors_specjbb_property_name = "specjbb.txi.pergroup.count"
 backends_specjbb_property_name = "specjbb.group.count"
+controller_distributed_property_name = "specjbb.controller.host"
 
 
 def run_type_to_controller_type(rt):
@@ -64,6 +65,9 @@ class RunGenerator:
                 "type":
                 run_type_to_controller_type(template["run_type"]),
             })
+
+            if template["run_type"] == "distributed" and controller_distributed_property_name not in props:
+                raise Exception("Controller IP not specified for a distributed run: define value or argument with translation for '{}'".format(controller_distributed_property_name))
 
             self.runs.append({
                 'controller':
