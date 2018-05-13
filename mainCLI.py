@@ -5,7 +5,6 @@ Usage:
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py listen [options]
-    mainCLI.py shout <fn> [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
 
@@ -145,9 +144,6 @@ def do_run(arguments):
 def do_listen(arguments):
     distributed.listen()
 
-def do_shout(arguments):
-    distributed.test(arguments["<fn>"])
-
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
@@ -156,7 +152,6 @@ do = {
     'validate': do_validate,
     'dialogue': do_dialogue,
     'listen': do_listen,
-    'shout': do_shout,
 }
 
 if __name__ == "__main__":
