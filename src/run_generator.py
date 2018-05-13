@@ -46,20 +46,18 @@ class RunGenerator:
             # and let's peek for backend count (specjbb.group.count)
             backends = props.get(backends_specjbb_property_name, 1)
 
-            if "injectors" in template or "backends" in template:
-                log.info("template specifies injectors or backends")
-                if "injectors" in template:
-                    injectors = self._ensure_count_is_accurate(
-                        key="injectors",
-                        prop_name=injectors_specjbb_property_name,
-                        template=template,
-                        props=props)
-                if "backends" in template:
-                    backends = self._ensure_count_is_accurate(
-                        key="backends",
-                        prop_name=backends_specjbb_property_name,
-                        template=template,
-                        props=props)
+            if "injectors" in template:
+                injectors = self._ensure_count_is_accurate(
+                    key="injectors",
+                    prop_name=injectors_specjbb_property_name,
+                    template=template,
+                    props=props)
+            if "backends" in template:
+                backends = self._ensure_count_is_accurate(
+                    key="backends",
+                    prop_name=backends_specjbb_property_name,
+                    template=template,
+                    props=props)
 
             controller = template.get("controller", dict())
             controller.update({
