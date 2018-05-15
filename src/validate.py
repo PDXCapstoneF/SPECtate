@@ -1,4 +1,4 @@
-from schema import Schema, And, Or, Optional
+from schema import Schema, And, Or, Optional, Use
 
 # used for python2 and python3 string types
 from six import text_type
@@ -7,11 +7,27 @@ from six import text_type
 def is_stringy(v):
     return type(v) is text_type
 
+ValidRunTypes = ["multi", "composite", "distributed"]
+
+DefaultJavaRunOptions = {
+        "path": "java",
+        "options": []
+        }
+
+JvmRunOptions = Schema(Or(
+    And(None, Use(lambda _: DefaultJavaRunOptions)), 
+    And(is_stringy, Use(lambda s: { "path": s, "options": [] })), 
+    And([is_stringy], Use(lambda ss: { "path": ss[0], "options": ss[1:] })),
+    And(dict, {
+        "path": is_stringy,
+        Optional("options", default=[]): [is_stringy],
+        })))
+
 
 TemplateSchema = Schema({
     "args": [is_stringy],
-    Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
-    Optional("java", default="java"): is_stringy,
+    Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ValidRunTypes),
+    Optional("java", default="java"): JvmRunOptions,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
     Optional("prop_options"): {
         is_stringy: object,

@@ -10,6 +10,7 @@ import logging
 import configparser
 
 from src.task_runner import TaskRunner
+from src.validate import JvmRunOptions
 
 log = logging.getLogger(__name__)
 
@@ -36,65 +37,6 @@ def do(task):
     log.debug("starting task {}".format(task))
     task.run()
     log.debug("finished task {}".format(task))
-
-
-class JvmRunOptions:
-    """
-    A helper class for SpecJBBRun, to provide defaults and a way
-    for lists, dict etc to be coerced into something that SpecJBBRun can work with.
-    """
-
-    def __init__(self, val=None):
-        """
-        Initialize JvmRunOptions based on the type of val.
-        If str: set path to val.
-        If list: set path to val[0], and val[1:] as the options.
-        If dict: validate that the dict has the required keys, and set the internal dict to val.
-        """
-        if isinstance(val, str):
-            self.__dict__ = {
-                "path": val,
-                "options": [],
-            }
-        elif isinstance(val, list):
-            self.__dict__ = {
-                "path": val[0],
-                "options": val[1:],
-            }
-        elif isinstance(val, dict):
-            if "path" not in val:
-                raise Exception("'path' not specified for JvmRunOptions")
-            if not isinstance(val["path"], str):
-                raise Exception("'path' must be a string")
-            if "options" not in val:
-                val["options"] = []
-            elif not isinstance(val["options"], list):
-                raise Exception("'path' must be a string")
-
-            self.__dict__ = val
-        elif val is None:
-            self.__dict__ = {
-                "path": "java",
-                "options": []
-            }
-        else:
-            raise Exception(
-                "unrecognized type given to JvmRunOptions: {}".format(type(val)))
-
-    def __getitem__(self, name):
-        """
-        Defined so that JvmRunOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that JvmRunOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
 
 
 """
@@ -212,7 +154,7 @@ class SpecJBBRun:
         self.run_id = uuid4().hex
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
-        self.java = JvmRunOptions(java)
+        self.java = JvmRunOptions.validate(java)
         self.__set_topology__(controller, backends, injectors)
 
     def __set_topology__(self, controller, backends, injectors):

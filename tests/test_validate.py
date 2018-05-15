@@ -1,7 +1,7 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, TemplateSchema
+from src.validate import validate, TemplateSchema, JvmRunOptions, DefaultJavaRunOptions
 
 
 class TestSpectateConfigValidator(TestCase):
@@ -176,3 +176,82 @@ class TestSpectateConfigValidator(TestCase):
 
         self.assertEqual(v["RunList"][0]["times"], 1)
         self.assertEqual(v["RunList"][1]["times"], 2)
+
+class TestJavaRunOptionsValidator(TestCase):
+    def test_java_options_validates_strings(self):
+        self.assertEqual(JvmRunOptions.validate("echo"), {
+            "path": "echo",
+            "options": [],
+            })
+
+    def test_java_options_validates_none(self):
+        self.assertEqual(JvmRunOptions.validate(None), DefaultJavaRunOptions)
+
+    def test_java_options_validates_list_of_strings(self):
+        arglist = ["java", "arg1", "arg2"]
+        self.assertEqual(JvmRunOptions.validate(arglist), {
+            "path": arglist[0],
+            "options": arglist[1:],
+            })
+
+    def test_java_options_validates_dict_with_exact_keys(self):
+        valid = {
+                "path": "java",
+                "options": ["arg1", "arg2"],
+                }
+
+        self.assertEqual(JvmRunOptions.validate(valid), valid)
+
+    def test_given_none_will_fill_defaults(self):
+        self.assertTrue(JvmRunOptions.validate(None))
+
+    def test_given_str(self):
+        java_path = "java"
+        j = JvmRunOptions.validate(java_path)
+
+        self.assertEqual(j["path"], java_path)
+        self.assertEqual(j["options"], [])
+
+    def test_given_list(self):
+        java_list = ["java", "-jar", "example_jar"]
+        j = JvmRunOptions.validate(java_list)
+
+        self.assertEqual(j["path"], java_list[0])
+        self.assertEqual(j["options"], java_list[1:])
+
+    def test_given_dict(self):
+        valid = {
+            "path": "java",
+            "options": ["-jar", "example_jar"],
+        }
+
+        j = JvmRunOptions.validate(valid)
+
+        self.assertEqual(j["path"], valid["path"])
+        self.assertEqual(j["options"], valid["options"])
+
+    def test_with_dict_missing_options(self):
+        valid = {
+            "path": "java",
+        }
+
+        j = JvmRunOptions.validate(valid)
+
+        self.assertEqual(j["path"], valid["path"])
+        self.assertEqual(j["options"], [])
+
+    def test_validates_dictionaries(self):
+        invalid_missing_path = {
+            "options": []
+        }
+
+        with self.assertRaises(Exception):
+            JvmRunOptions.validate(invalid_missing_path)
+
+        invalid_types = {
+            "path": 2,
+            "options": {}
+        }
+
+        with self.assertRaises(Exception):
+            JvmRunOptions(invalid_types)
