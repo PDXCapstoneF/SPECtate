@@ -1,120 +1,171 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, validate_blackbox, TemplateSchema
+from src.validate import validate, TemplateSchema
 
-class TestBlackboxConfigValidator(TestCase):
-    def test_empty_config_does_not_validate(self):
-        with self.assertRaises(SchemaError):
-            validate({})
+
+class TestSpectateConfigValidator(TestCase):
 
     def test_example_config_does_validate(self):
         with open('example_config.json') as f:
             j = json.loads(f.read())
-            self.assertTrue(validate_blackbox(j))
+            self.assertTrue(validate(j))
 
     def test_invalid_config_does_not_validate(self):
-        with self.assertRaises(SchemaError):
+        with self.assertRaises(Exception):
             with open('tests/fixtures/sample_config_invalid.json') as f:
                 j = json.loads(f.read())
                 self.assertFalse(validate(j))
 
-class TestSpectateConfigValidator(TestCase):
-    def test_example_spectate_config_does_validate(self):
-        with open('example_spectate_config.json') as f:
-            j = json.loads(f.read())
-            self.assertTrue(validate(j))
-
-    def test_invalid_spectate_config_does_not_validate(self):
+    def test_TemplateData_with_extra_translations_dont_validate(self):
         with self.assertRaises(Exception):
-            with open('tests/fixtures/sample_spectate_config_invalid.json') as f:
-                j = json.loads(f.read())
-                self.assertFalse(validate(j))
-
-    def test_templates_with_extra_translations_dont_validate(self):
-        self.assertFalse(validate({
-            "templates": {
-                "example": {
-                    "args": [],
-                    "translations": { 
-                        "arg1": "someValue",
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [],
+                        "translations": {
+                            "arg1": "someValue",
                         },
                     },
                 },
-            "runs": [],
-            }))
+                "RunList": [],
+            })
 
-    def test_there_should_be_templates_if_there_are_runs(self):
+    def test_there_should_be_TemplateData_if_there_are_RunList(self):
         with self.assertRaises(Exception):
-            self.assertFalse(validate({
-                "templates": {},
-                "runs": [
-                    {
-                        "template_name": "NONE",
-                        "args": { "a": "b" },
-                        }
-                    ],
+            self.assertFalse(
+                validate({
+                    "TemplateData": {},
+                    "RunList": [{
+                        "template_type": "NONE",
+                        "args": {
+                            "a": "b"
+                        },
+                    }],
                 }))
 
-    def test_runs_with_extra_args_fail_to_validate(self):
-        self.assertFalse(validate({
-            "templates": {
-                "example": {
-                    "args": [],
-                    "translations": { 
-                        "arg1": "someValue",
+    def test_RunList_with_extra_args_fail_to_validate(self):
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [],
+                        "translations": {
+                            "arg1": "someValue",
                         },
                     },
                 },
-            "runs": [
-                {
-                    "template_name": "example",
+                "RunList": [{
+                    "template_type": "example",
                     "args": {
                         "a": "b",
                         "arg1": 5,
-                        },
-                    }
-                ],
-            }))
+                    },
+                }],
+            })
 
-    def test_runs_with_ommitted_with_no_defaults_fail_to_validate(self):
-        self.assertFalse(validate({
-            "templates": {
-                "example": {
-                    "args": [
-                        "arg1",
-                        "noDefaults",
+    def test_RunList_with_ommitted_with_no_defaults_fail_to_validate(self):
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [
+                            "arg1",
+                            "noDefaults",
                         ],
-                    "translations": { 
-                        "arg1": "someValue",
+                        "translations": {
+                            "arg1": "someValue",
                         },
-                "default_props": {
-                    "arg1": "defaultvalue",
+                        "prop_options": {
+                            "arg1": "defaultvalue",
+                        },
                     },
                 },
-            },
-            "runs": [
-                {
-                    "template_name": "example",
+                "RunList": [{
+                    "template_type": "example",
                     "args": {
                         "arg1": 5,
-                        },
-                    }
-                ],
-            }))
+                    },
+                }],
+            })
 
-    def test_runs_with_extra_annotations_fail_to_validate(self):
-        self.assertFalse(validate({
-            "templates": {
-                "example": {
-                    "args": [
-                        "arg1",
+    def test_RunList_with_extra_annotations_fail_to_validate(self):
+        with self.assertRaises(Exception):
+            validate({
+                "TemplateData": {
+                    "example": {
+                        "args": [
+                            "arg1",
                         ],
-                    "annotations": { 
-                        "arg1": "someValue",
-                        "extraAnnotation": "someValue",
+                        "annotations": {
+                            "arg1": "someValue",
+                            "extraAnnotation": "someValue",
                         },
+                    },
                 },
-            },
-            "runs": []
-            }))
+                "RunList": []
+            })
+
+    def test_RunList_with_times_validates(self):
+        sample_args = {
+            "Tag": "sample Tag",
+            "Kit Version": "kitVer",
+            "JDK": "jdk1.9",
+            "RTSTART": 2,
+            "JVM Options": "",
+            "NUMA Nodes": 4,
+            "Data Collection": "",
+            "T1": 1,
+            "T2": 2,
+            "T3": 3,
+        }
+
+        v = validate({
+                "TemplateData": {
+                    "HBIR": {
+                        "args": [
+                            "Tag", "Kit Version", "JDK", "RTSTART",
+                            "JVM Options", "NUMA Nodes", "Data Collection",
+                            "T1", "T2", "T3"
+                        ],
+                        "prop_options": {
+                            "specjbb.controller.type": "HBIR",
+                            "specjbb.time.server": False,
+                            "specjbb.comm.connect.client.pool.size": 192,
+                            "specjbb.comm.connect.selector.runner.count": 4,
+                            "specjbb.comm.connect.timeouts.connect": 650000,
+                            "specjbb.comm.connect.timeouts.read": 650000,
+                            "specjbb.comm.connect.timeouts.write": 650000,
+                            "specjbb.comm.connect.worker.pool.max": 320,
+                            "specjbb.customerDriver.threads": 64,
+                            "specjbb.customerDriver.threads.saturate": 144,
+                            "specjbb.customerDriver.threads.probe": 96,
+                            "specjbb.mapreducer.pool.size": 27
+                        },
+                        "translations": {
+                            "RTSTART": "specjbb.controller.rtcurve.start",
+                            "T1": "specjbb.forkjoin.workers.Tier1",
+                            "T2": "specjbb.forkjoin.workers.Tier2",
+                            "T3": "specjbb.forkjoin.workers.Tier3",
+                            "NUMA Nodes": "specjbb.group.count"
+                        }
+                    },
+                },
+                "RunList": [
+                    {
+                        "template_type": "HBIR",
+                        "args": sample_args,
+                    },
+                    {
+                        "template_type": "HBIR",
+                        "args": sample_args,
+                        "times": 2,
+                    },
+                ]
+            })
+
+        for run in v["RunList"]:
+            self.assertEqual(sample_args, run["args"])
+
+        self.assertEqual(v["RunList"][0]["times"], 1)
+        self.assertEqual(v["RunList"][1]["times"], 2)

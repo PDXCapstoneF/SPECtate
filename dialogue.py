@@ -18,6 +18,7 @@ TEMPLATE_TYPES = 'types'
 TEMPLATE_TRANS = 'translations'
 TEMPLATE_DEFAULT = 'default_props' 
 
+
 def write_json(filename, python_dict):
     """ 
     Serialize python_dict (dictionary) to filename (text file).
@@ -37,8 +38,17 @@ def read_json(filename):
         return json.load(f)
 
 def print_dict(d):
-    for key, value in sorted(d.items(), key=lambda x : x[0]):
+    for key, value in sorted(d.items(), key=lambda x: x[0]):
         print("{}: {}".format(key, value))
+
+# Level-one layer of dialogue.
+# All functions take run_dict, runtype_dict as arguments so that they can be
+# called homogenously from a dictionary in `dialogue`.
+
+def print_all_runs(run_dict, runtype_dict):
+    for k, v in sorted(run_dict.items(), key=lambda x: x[0]):
+        print('\nTag {}\n'.format(k))
+        print_dict(v)
 
 def tag_in_runlist(tag, run_list):
     """
@@ -381,7 +391,7 @@ def dialogue():
     as JSON objects.
     """
 
-    default_json = 'example_config2.json'
+    default_json = 'example_config.json'
 
     json_filename = input('Input TateConfig filename. Default = {} '\
                           .format(default_json))
