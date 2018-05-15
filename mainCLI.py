@@ -4,7 +4,7 @@ Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
-    mainCLI.py rollup [options] <script> [ARG ...]
+    mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
@@ -143,11 +143,11 @@ def do_run(arguments):
 
         s.run()
 
-def do_rollup(arguments):
-    call(["perl", "scripts/" + arguments["<script>"]] + arguments["ARG"])
+def do_script(arguments):
+    call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
 
 def do_scripts(arguments):
-    log.info("These are the scripts available to run using 'rollup':")
+    log.info("These are the scripts available to run using 'script':")
     log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
 
 
@@ -158,7 +158,7 @@ do = {
     'run': do_run,
     'validate': do_validate,
     'dialogue': do_dialogue,
-    'rollup': do_rollup,
+    'script': do_script,
     'scripts': do_scripts,
 }
 
