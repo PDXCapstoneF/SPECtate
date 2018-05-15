@@ -5,11 +5,18 @@ from src.validate import validate, TemplateSchema
 
 
 class TestSpectateConfigValidator(TestCase):
+    examples = [
+            'example_config.json',
+            'examples/example_curses_template.json',
+            'examples/example_basic_config.json',
+            'examples/example_config.json',
+            ]
 
     def test_example_config_does_validate(self):
-        with open('example_config.json') as f:
-            j = json.loads(f.read())
-            self.assertTrue(validate(j))
+        for example in self.examples:
+            with open(example) as f:
+                j = json.loads(f.read())
+                self.assertTrue(validate(j))
 
     def test_invalid_config_does_not_validate(self):
         with self.assertRaises(Exception):
