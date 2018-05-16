@@ -6,8 +6,8 @@ import json
 import os.path
 
 
-import objects
-from objects import spec_decoder, spec_encoder, spec_config, spec_run
+import src.objects
+from src.objects import spec_decoder, spec_encoder, spec_config, spec_run
 
 #KEY_ENTER = 343, but my ENTER key registers as 10 =/
 KEY_ENTER = 10
