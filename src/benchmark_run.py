@@ -12,6 +12,7 @@ import logging
 import configparser
 
 from src.task_runner import TaskRunner
+from src.validate import random_run_id
 
 log = logging.getLogger(__name__)
 
@@ -189,6 +190,7 @@ class SpecJBBRun:
                  injectors=None,
                  java=None,
                  jar=None,
+                 tag=None,
                  times=1,
                  props={},
                  props_file='specjbb2015.props'):
@@ -211,7 +213,7 @@ class SpecJBBRun:
         self.times = times
         self.props = props
         self.props_file = props_file
-        self.run_id = uuid4().hex
+        self.run_id = tag if tag else random_run_id()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
         self.java = JvmRunOptions(java)
@@ -281,7 +283,7 @@ class SpecJBBRun:
         pwd = os.getcwd()
         results_directory = os.path.abspath(str(self.run_id))
 
-        self.log.debug("set logging directory to {}".format(results_directory))
+        self.log.debug("set run directory to {}".format(results_directory))
 
         try:
             self.log.debug(
@@ -291,6 +293,8 @@ class SpecJBBRun:
             except os.FileExistsError:
                 self.log.debug(
                     "run results directory already existed, continuing")
+
+            os.chdir(results_directory)
 
             for number_of_times in range(self.times):
                 self.log.debug(

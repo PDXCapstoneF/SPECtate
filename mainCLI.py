@@ -4,6 +4,8 @@ Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
+    mainCLI.py script [options] <script> [ARG ...]
+    mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
 
@@ -13,6 +15,7 @@ Options:
 # library imports
 import json
 import os
+from os.path import dirname, join
 import logging
 import sys
 from subprocess import call
@@ -27,6 +30,7 @@ from src import validate
 from src import run_generator
 from src import benchmark_run
 
+log = logging.getLogger(__name__)
 
 def to_list(s):
     if s["run_type"].lower() in ["hbir", "hbir_rt"]:
@@ -139,6 +143,13 @@ def do_run(arguments):
 
         s.run()
 
+def do_script(arguments):
+    call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
+
+def do_scripts(arguments):
+    log.info("These are the scripts available to run using 'script':")
+    log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
+
 
 # dictionary of runnables
 # these are functions that take arguments from the
@@ -147,6 +158,8 @@ do = {
     'run': do_run,
     'validate': do_validate,
     'dialogue': do_dialogue,
+    'script': do_script,
+    'scripts': do_scripts,
 }
 
 if __name__ == "__main__":
