@@ -5,6 +5,8 @@ Usage:
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py listen [options]
+    mainCLI.py script [options] <script> [ARG ...]
+    mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
     mainCLI.py --version
 
@@ -14,6 +16,7 @@ Options:
 # library imports
 import json
 import os
+from os.path import dirname, join
 import logging
 import sys
 from subprocess import call
@@ -29,6 +32,7 @@ from src import run_generator
 from src import benchmark_run
 from src import distributed
 
+log = logging.getLogger(__name__)
 
 def to_list(s):
     if s["run_type"].lower() in ["hbir", "hbir_rt"]:
@@ -144,6 +148,15 @@ def do_run(arguments):
 def do_listen(arguments):
     distributed.listen()
 
+
+def do_script(arguments):
+    call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
+
+def do_scripts(arguments):
+    log.info("These are the scripts available to run using 'script':")
+    log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
+
+
 # dictionary of runnables
 # these are functions that take arguments from the
 # command line and do something with them.
@@ -152,6 +165,8 @@ do = {
     'validate': do_validate,
     'dialogue': do_dialogue,
     'listen': do_listen,
+    'script': do_script,
+    'scripts': do_scripts,
 }
 
 if __name__ == "__main__":
