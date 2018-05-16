@@ -37,8 +37,6 @@ def read_json(filename):
     with open(filename) as f:
         return json.load(f)
 
-
-# Utility functions.
 def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x: x[0]):
         print("{}: {}".format(key, value))
