@@ -86,7 +86,7 @@ class RunManager:
                 for template in self.validated_runs["TemplateData"].keys():
                     self.validated_runs["TemplateData"][template]["jar"] = str(self.jar)
 
-    def do_run(self, tag=None, list=None):
+    def do_run(self, tag=None, runs_list=None):
         """
         Based on `do_run()` in `mainCLI`, this method also does a run in the root directory.
         Ideally `mainCLI` would be extensible in `mainGUI`, but there are some compatibility issues.
@@ -98,9 +98,9 @@ class RunManager:
         rs = RunGenerator(**args)
         os.chdir("..")  # directories made by `SPECjbbRun` will be placed in root.
 
-        if list is not None:  # run list of runs
+        if runs_list is not None:  # run list of runs
             for r in rs.runs:
-                for i in list:
+                for i in runs_list:
                     if r["tag"] == i["tag"]:
                         s = SpecJBBRun(**r)
                         return s.run()
