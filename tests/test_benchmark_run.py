@@ -124,7 +124,7 @@ class TestBenchmarkRun(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             r = SpecJBBRun(**{  # multijvm run with arguments
                     "controller": {
-                        "type": "multi",
+                        "type": "multicontroller",
                         "options": ["arg1", "arg2"],
                     },
                     "java": "java",
