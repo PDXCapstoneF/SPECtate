@@ -1,3 +1,4 @@
+import uuid
 from schema import Schema, And, Or, Optional
 
 # used for python2 and python3 string types
@@ -7,8 +8,14 @@ from six import text_type
 def is_stringy(v):
     return type(v) is text_type
 
+def random_run_id():
+    """
+    Returns a value that will be a default, non-repeated
+    run ID used for a RunConfiguration object.
+    """
+    return uuid.uuid4().hex
 
-TemplateSchema = Schema({
+TemplateDataSchema = Schema({
     "args": [is_stringy],
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
     Optional("java", default="java"): is_stringy,
@@ -37,11 +44,12 @@ RunConfigSchema = Schema({
         Optional(is_stringy): is_stringy,
     },
     Optional("times", default=1): int,
+    Optional("tag"): is_stringy,
 })
 
 SpectateConfig = Schema({
     "TemplateData": {
-        is_stringy: TemplateSchema,
+        is_stringy: TemplateDataSchema,
     },
     "RunList": [RunConfigSchema],
 })
@@ -49,6 +57,18 @@ SpectateConfig = Schema({
 
 def validate(unvalidated):
     d = SpectateConfig.validate(unvalidated)
+
+    # each run needs a unique run id
+    custom_run_ids = list(map(lambda run: run["tag"], 
+        filter(lambda run: "tag" in run, d["RunList"])))
+
+    if custom_run_ids and len(set(custom_run_ids)) != len(custom_run_ids):
+        duplicates = [_id for _id in custom_run_ids if custom_run_ids.count(_id) > 1 ]
+        raise Exception("Duplicate custom run IDs provided to different configured runs: {}".format(duplicates))
+
+    # generate IDs for each unspecified run
+    for run in list(filter(lambda run: "tag" not in run, d["RunList"])):
+        run["tag"] = random_run_id()
 
     # each of the args that appear in the RunList,
     for run in d["RunList"]:
