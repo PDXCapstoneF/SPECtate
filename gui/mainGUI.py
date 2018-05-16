@@ -305,7 +305,7 @@ class MainWindow(Frame):
         for item in selection:
             inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(item))
             if inserted is not None and isinstance(inserted, dict):
-                self.listbox.insert(END, inserted["args"]["Tag"])
+                self.listbox.insert(END, inserted["tag"])
 
     def save(self):
         self.run_manager.write_to_file()
