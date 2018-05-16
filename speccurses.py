@@ -22,6 +22,7 @@ run_types = ['composite', 'distributed_ctrl_txl', 'distributed_sut', 'multi']
 cur_config = None
 cur_path = ""
 
+
 def _remove_control_chars(s):
     if isinstance(s, str):
         return ''.join([i if ord(i) < 128 else '' for i in s])
@@ -43,7 +44,8 @@ def display_run(stdscr, runinfo, y=STARTY + 2):
             stdscr.addstr(y, xoffset, name)
         else:
             stdscr.addstr(y, xoffset, "{}:".format(name))
-            stdscr.addstr(y, xoffset + valueoffset, str(getattr(runinfo, name)))
+            stdscr.addstr(y, xoffset + valueoffset,
+                          str(getattr(runinfo, name)))
         y += 1
     return y, valueoffset
 
@@ -179,7 +181,8 @@ def input_text(stdscr, x, y, value, validator, redraw):
             #   o X
             #               I
             # I - ((W - o) - (W - X))
-            pad.refresh(0, idx - ((width - 1 - x) - (width - 1 - cursorx)), y, x, y, width - 1)
+            pad.refresh(0, idx - ((width - 1 - x) -
+                                  (width - 1 - cursorx)), y, x, y, width - 1)
         else:
             pad.refresh(0, 0, y, x, y, width - 1)
         k = stdscr.getch()
@@ -230,13 +233,15 @@ def draw_edit_props(stdscr, p):
             if cury < height - 5:
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if cury > starty:
                 cury -= 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == KEY_ENTER:
             if p[index].valid_opts:
                 value = select_from(stdscr, xoffset + startx, cury, p[index].value, p[index].valid_opts, _resize)
@@ -584,7 +589,6 @@ def run_config(stdscr):
     # maxindex = len(log)
 
     pad = curses.newpad(height, width - 1 - xoffset)
-
     result = cur_config.run(context.handle_out, lambda x: x)
     if result == 2:
         cur_config.set_spec_dir(draw_get_path(stdscr))
@@ -615,9 +619,9 @@ def create_config(stdscr):
     stdscr.clear()
     stdscr.refresh()
     y = _resize(stdscr)
-
     path = input_text(stdscr, xoffset + len("Enter config name:") + 1, y, "", lambda x: True, _resize).strip()
     if path.isspace() or path == "":
+
         draw_show_message(stdscr, "Config name cannot be blank")
         return True
     if os.path.isfile(path):
@@ -625,6 +629,7 @@ def create_config(stdscr):
         stdscr.refresh()
         y = draw_title(stdscr)
         curses_safe_addstr(stdscr, y, xoffset, "Warning: file {} already exists, overwrite? (y/N)".format(path))
+
         k = stdscr.getch()
         while k == curses.KEY_RESIZE:
             stdscr.erase()
@@ -715,7 +720,8 @@ def draw_view_props(stdscr, p):
             if cury < height - 5:
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty,
+                            xoffset, height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if cury > starty:
@@ -751,7 +757,8 @@ def draw_view_run(stdscr, runinfo):
         stdscr.clear()
         stdscr.refresh()
         ey, ex = display_run(stdscr, runinfo, draw_title(stdscr))
-        draw_status_bar(stdscr, "Press 'q' to exit or 'ENTER' to view run properties")
+        draw_status_bar(
+            stdscr, "Press 'q' to exit or 'ENTER' to view run properties")
 
         return ey, ex
 
@@ -780,7 +787,6 @@ def view_runs(stdscr):
         pd.refresh(idx - (py - sy), 0, sy, xoffset, h - 2, w - xoffset - 1)
         stdr.refresh()
         return h, w, sy
-
 
     k = 0
     cury = STARTY + 2

@@ -164,7 +164,8 @@ class spec_encoder(json.JSONEncoder):
 
 class spec_decoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
-        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+        json.JSONDecoder.__init__(
+            self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, obj):
         type = obj.get('_type', '')
@@ -219,7 +220,8 @@ class spec_run:
             self.num_runs = 1
             self.numa_nodes = 1
             self.tag = "tag-name"
-            self.run_type = 'composite'  # must be 'multi, 'distributed_ctrl_txl', 'distributed_sut', 'multi'
+            # must be 'multi, 'distributed_ctrl_txl', 'distributed_sut', 'multi'
+            self.run_type = 'composite'
             self.verbose = False
             self.report_level = 0  # must be between 0-3
             self.skip_report = False
@@ -437,6 +439,7 @@ class spec_run:
         FNULL.close()
         if exitcode != 0:
             handle_err('ERROR: Failed to ping Controller host (specjbb.controller.host): {}'.format(ctrl_ip))
+
             return 4
         handle_out(os.linesep)
         handle_out(os.linesep)
@@ -558,7 +561,6 @@ class spec_run:
         tx_opts = self._tx_opts()
         has_numa = self._check_numa() and self.numa_nodes > 1
         numa_cmd = 'numactl --cpunodebind={} --localalloc'
-
         for x in range(int(self.num_runs)):
             handle_out(os.linesep)
             result_dir = self._prerun(result_parent)
@@ -825,9 +827,16 @@ con_types = [
 
 must_be_positive = "Value must be greater than 0"
 
-number_validator = lambda x: int(x) <= ord('9') and int(x) >= ord('0')
-float_validator = lambda x: (x <= ord('9') and x >= ord('0')) or x == ord('.')
-default_validator = lambda x: True
+
+def number_validator(x): return int(x) <= ord('9') and int(x) >= ord('0')
+
+
+def float_validator(x): return (
+    x <= ord('9') and x >= ord('0')) or x == ord('.')
+
+
+def default_validator(x): return True
+
 
 defaults = [
     propitem('specjbb.controller.type', 'HBIR_RT', 'Controls phases being controlled by Controller.', default_validator,
@@ -891,10 +900,12 @@ defaults = [
              help_text="Value must be a decimal greater than 0 and less than or equal to 1"),
 
     propitem('specjbb.controller.settle.time.min', 3000,
-             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(x) > 0,
+             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(
+                 x) > 0,
              help_text=must_be_positive),
     propitem('specjbb.controller.settle.time.max', 30000,
-             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(x) > 0,
+             'Sets duration of settle period of RT step level in milliseconds', number_validator, lambda x: int(
+                 x) > 0,
              help_text=must_be_positive),
 
     # propitem('specjbb.customerDriver.threads', 64, 'Maximum number of threads in ThreadPoolExecutor for all three probe/saturate/service requests on the TxInjector side.', lambda x: isinstance(x, int) and x >= 64,help_text=must_be_positive)
@@ -946,7 +957,8 @@ defaults = [
     propitem('specjbb.input.number_products', 100000, ' Number of products in each Supermarket', number_validator,
              lambda x: int(x) > 0, help_text=must_be_positive),
 
-    propitem('specjbb.logLevel', 'INFO', 'Log level output', default_validator, lambda x: x in loglevels, loglevels),
+    propitem('specjbb.logLevel', 'INFO', 'Log level output',
+             default_validator, lambda x: x in loglevels, loglevels),
 
     propitem('specjbb.time.check.interval', 10000,
              'Time interval (in milliseconds) for periodic time check from Time Server', number_validator,
