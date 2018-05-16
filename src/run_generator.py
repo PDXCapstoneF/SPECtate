@@ -9,7 +9,7 @@ The intention is that you pass a Tate Config into the
 RunGenerator, and it updates itself to have a list of
 all the runs present in that configuration.
 """
-from src.validate import TemplateSchema, RunConfigSchema, random_run_id
+from src.validate import TemplateDataSchema, RunConfigSchema, random_run_id
 
 
 
