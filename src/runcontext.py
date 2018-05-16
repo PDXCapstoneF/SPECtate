@@ -17,11 +17,14 @@ class runcontext:
         self.thread = None
 
     def _resize(self, stdscr):
+        self.stdscr.clear()
+        self.stdscr.refresh()
         h, self.width = stdscr.getmaxyx()
-        y = self.draw(stdscr)
+        self.starty = self.draw(stdscr)
+        self.stdscr.refresh()
         self.height = h
-        self.maxy = self.height - y
-        self.logmax = self.maxy - y
+        self.maxy = self.height - self.starty
+        self.logmax = self.maxy - self.starty
         if self.index > 0:
             self._refresh(self.index % self.logmax)
 

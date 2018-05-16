@@ -852,6 +852,7 @@ menunames = [
 "4. View a config"
 ]
 def draw_menu(stdscr):
+    global cur_config
     k = 0
     cursor_y = STARTY + 2
 
@@ -870,7 +871,7 @@ def draw_menu(stdscr):
 
 
     while k != ord('q'):
-
+        cur_config = None
         # Initialization
         if k == KEY_ENTER:
             resize_wrapper(stdscr, opts[cursor_y - (STARTY + 2)])

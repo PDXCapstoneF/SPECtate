@@ -69,7 +69,7 @@ class spec_config:
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         rollscript = os.path.abspath(os.path.join(__file__, os.pardir))
-        rollscript = os.path.join(rollscript, "rollup", "Rollup.pl")
+        rollscript = os.path.join(rollscript, "scripts", "Rollup.pl")
         if not os.path.exists(rollscript):
             raise FileNotFoundError(rollscript)
         perlbin = '/usr/bin/perl'
@@ -419,7 +419,8 @@ class spec_run:
                 handle_out(os.linesep)
                 handle_out(os.linesep)
                 handle_out("Canceling benchmark...")
-                exitcode = p.kill()
+                exitcode = 0
+                p.kill()
             for pf in data:
                 pf.kill()
             if exitcode != 0 and spec_run._running:
@@ -494,7 +495,8 @@ class spec_run:
         else:
             handle_out(os.linesep)
             handle_out("Ending benchmark...")
-            exitcode = controller.kill()
+            exitcode = 0
+            controller.kill()
         for p in tx_procs:
             p[3].close()
             p[4].close()
@@ -658,7 +660,8 @@ class spec_run:
                 handle_out(os.linesep)
                 handle_out("Canceling benchmark...")
                 handle_out(os.linesep)
-                exitcode = controller.kill()
+                exitcode = 0
+                controller.kill()
             for p in tx_procs:
                 p[3].close()
                 p[4].close()
