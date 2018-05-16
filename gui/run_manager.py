@@ -169,9 +169,9 @@ class RunManager:
                 new_args[arg] = 0
         run_type_copy["args"] = new_args
         run_type_copy["template_type"] = str(run_type)
-        run_type_copy["args"]["Tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
+        run_type_copy["tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
         self.insert_into_config_list(key="RunList", data=run_type_copy)
-        return run_type_copy["args"]["Tag"]
+        return run_type_copy["tag"]
 
     def duplicate_run(self, from_tag):
         # @todo: test
@@ -186,8 +186,8 @@ class RunManager:
             run = self.get_run_from_list(from_tag)
             run_copy = copy.deepcopy(run)
             if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
-                run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
-                # repetitions = run_copy["args"]["Tag"].count("(copy)")
+                run_copy["tag"] = "{}-{}".format(run["tag"], "(copy)")
+                # repetitions = run_copy["tag"].count("(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
                     return run_copy
                 else:
@@ -226,7 +226,7 @@ class RunManager:
         :return: list
         """
         if self.initialized():
-            return [(lambda x: x["args"]["Tag"])(x) for x in self.get_run_list()]
+            return [(lambda x: x["tag"])(x) for x in self.get_run_list()]
 
     def set_current_run(self, new_run_tag):
         # @todo: test
@@ -250,7 +250,7 @@ class RunManager:
             print("Index out of range.")
             return None
         for idx, item in enumerate(self.validated_runs["RunList"]):
-            if item["args"]["Tag"] == run_tag:
+            if item["tag"] == run_tag:
                 # old_idx = self.validated_runs["RunList"].index(item)
                 self.validated_runs["RunList"][to_index], self.validated_runs["RunList"][idx] = \
                     self.validated_runs["RunList"][idx], self.validated_runs["RunList"][to_index]
@@ -277,7 +277,7 @@ class RunManager:
         if self.initialized():
             if isinstance(tag_to_find, str):
                 for idx, run in enumerate(self.validated_runs["RunList"]):
-                    if tag_to_find in run["args"]["Tag"]:
+                    if tag_to_find in run["tag"]:
                         if action == "del":
                             run_copy = copy.deepcopy(run)
                             del self.validated_runs["RunList"][idx]
@@ -324,11 +324,11 @@ class RunManager:
             return False
         if isinstance(a, dict):
             if isinstance(b, dict):
-                return a["args"]["Tag"] == b["args"]["Tag"]
+                return a["tag"] == b["args"]["Tag"]
             elif isinstance(b, str):
-                return a["args"]["Tag"] == b
+                return a["tag"] == b
         elif isinstance(a, str):
             if isinstance(b, dict):
-                return a == b["args"]["Tag"]
+                return a == b["tag"]
             if isinstance(b, str):
                 return a == b

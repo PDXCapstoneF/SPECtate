@@ -1,9 +1,8 @@
 {
 	"TemplateData": {
 		"HBIR": {
-            "jar": "UPDATE ME",
+            "jar": "temp",
 			"args": [
-				"Tag",
 				"Kit Version",
 				"JDK",
 				"RTSTART",
@@ -15,7 +14,6 @@
 				"T3"
 			],
 			"annotations" : {
-			  "Tag" : "Name of the run",
 			  "Kit Version" : "Version of SpecJBB",
 			  "JDK" : "Version of the JVM that will run SpecJBB",
 			  "RTSTART" : "What percentage of total output will we start at",
@@ -38,7 +36,6 @@
 				"specjbb.mapreducer.pool.size": 27
 			},
 			"types": {
-				"Tag": "string",
 				"Kit Version": "string",
 				"JDK": "string",
 				"RTSTART": "integer",
@@ -58,9 +55,8 @@
 			}
 		},
 		"HBIR_RT": {
-            "jar": "UPDATE ME",
+            "jar": "temp",
 			"args": [
-				"Tag",
 				"Kit Version",
 				"JDK",
 				"RTSTART",
@@ -72,7 +68,6 @@
 				"T3"
 			],
 			"annotations" : {
-			  "Tag" : "Name of the run",
 			  "Kit Version" : "Version of SpecJBB",
 			  "JDK" : "Version of the JVM that will run SpecJBB",
 			  "RTSTART" : "What percentage of total output will we start at",
@@ -95,7 +90,6 @@
 				"specjbb.mapreducer.pool.size": 27
 			},
 			"types": {
-				"Tag": "string",
 				"Kit Version": "string",
 				"JDK": "string",
 				"RTSTART": "integer",
@@ -116,9 +110,9 @@
 		}
 	},
 	"RunList": [{
+            "tag": "TAG",
 			"template_type": "HBIR",
 			"args": {
-				"Tag": "TAG",
 				"Kit Version": "15",
 				"JDK": 7,
 				"RTSTART": "4",
@@ -131,9 +125,9 @@
 			}
 		},
 		{
+            "tag": "SPECjbb",
 			"template_type": "HBIR_RT",
 			"args": {
-				  "Tag" : "specjbb",
 				  "Kit Version": "RC3",
 				  "RTSTART" : 30,
 				  "JDK": "jdk.8-u121",
