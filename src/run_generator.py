@@ -1,4 +1,4 @@
-from src.validate import TemplateSchema, RunConfigSchema
+from src.validate import TemplateSchema, RunConfigSchema, random_run_id
 
 
 class RunGenerator:
@@ -39,7 +39,7 @@ class RunGenerator:
                 'injectors': injectors,
                 'java': template["java"],
                 'jar': template["jar"],
-                'tag': run["args"]["Tag"],
+                'tag': run["tag"] if "tag" in run else random_run_id(),
                 'times': run["times"],
                 'props': props,
                 'props_file': template.get("props_file", 'specjbb2015.props'),
