@@ -1,5 +1,17 @@
+"""
+This module defines a RunGenerator that:
+    - is (partially) responsible for validating templates and runs given in a Tate config
+    - is responsible for populating arguments, props etc
+    - is responsible for generating the specific run's .props file
+    - is responsible for giving the right arguments to a benchmark_run.SpecJBBRun so that it can do its thing
+
+The intention is that you pass a Tate Config into the
+RunGenerator, and it updates itself to have a list of
+all the runs present in that configuration.
+"""
 import logging
-from src.validate import TemplateSchema, RunConfigSchema
+from src.validate import TemplateDataSchema, RunConfigSchema, random_run_id
+
 
 log = logging.getLogger(__name__)
 
@@ -16,8 +28,24 @@ def run_type_to_controller_type(rt):
 
 
 class RunGenerator:
+    """
+    This class is responsible for taking a Tate config and
+    updating self.runs with a list of validated runs that
+    you can then pass to benchmark_run.SpecJBBRun for a successful
+    benchmarking run.
+
+    The accompanying test module contains examples for how
+    this should and shouldn't work.
+    """
 
     def __init__(self, TemplateData=None, RunList=None):
+        """
+        Initializes this instance to hold all the validated runs in the
+        provided configuration.
+
+        :param TemplateData: A TemplateData object. (See src.validate.TemplateDataSchema)
+        :param RunList: A list of RunConfig objects. (See src.validate.RunConfigSchema)
+        """
         self.runs = []
         log.debug("recieved TemplateData: {}".format(TemplateData))
         log.debug("recieved RunList: {}".format(RunList))
@@ -26,7 +54,7 @@ class RunGenerator:
         for run in RunList:
             run = RunConfigSchema.validate(run)
             template = TemplateData.get(run["template_type"])
-            template = TemplateSchema.validate(template)
+            template = TemplateDataSchema.validate(template)
             log.debug("run: {}".format(template))
 
             # populate prop_options
@@ -78,6 +106,8 @@ class RunGenerator:
                 template["java"],
                 'jar':
                 template["jar"],
+                'tag':
+                run["tag"] if "tag" in run else random_run_id(),
                 'times':
                 run["times"],
                 'props':

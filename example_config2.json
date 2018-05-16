@@ -1,0 +1,291 @@
+{
+  "TemplateData" : {
+    "HBIR": {
+      "args" : [
+        "Tag",
+        "Kit Version",
+        "JDK",
+        "RTSTART",
+        "JVM Options",
+        "NUMA Nodes",
+        "Data Collection",
+        "T1",
+        "T2",
+        "T3"
+      ],
+  
+      "annotations" : {
+        "Tag" : "Name of the run",
+        "Kit Version" : "Version of SpecJBB",
+        "JDK" : "Version of the JVM that will run SpecJBB",
+        "RTSTART" : "What percentage of total output will we start at",
+        "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+        "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+        "Data Collection" : "What data collection process will monitor while running SpecJBB",
+        "T1" : "How many threads does Tier 1 have access to",
+        "T2" : "How many threads does Tier 2 have access to",
+        "T3" : "How many threads does Tier 3 have access to"
+      },
+  
+      "types" : {
+        "Tag" : "string",
+        "Kit Version" : "string",
+        "JDK" : "string",
+        "RTSTART" : "integer",
+        "JVM Options" : "string",
+        "NUMA Nodes" : "integer",
+        "Data Collection" : "string",
+        "T1" : "integer",
+        "T2" : "integer",
+        "T3" : "integer"
+      },
+  
+      "translations" : {
+        "RTSTART" : "specjbb.controller.rtcurve.start",
+        "T1" : "specjbb.forkjoin.workers.Tier1",
+        "T2" : "specjbb.forkjoin.workers.Tier2",
+        "T3" : "specjbb.forkjoin.workers.Tier3",
+        "NUMA Nodes" : "specjbb.group.count"
+      },
+  
+      "default_props" : {
+        "specjbb.controller.type" : "HBIR",
+        "specjbb.time.server" : false,
+        "specjbb.comm.connect.client.pool.size" : 192,
+        "specjbb.comm.connect.selector.runner.count" : 4,
+        "specjbb.comm.connect.timeouts.connect" : 650000,
+        "specjbb.comm.connect.timeouts.read" : 650000,
+        "specjbb.comm.connect.timeouts.write" : 650000,
+        "specjbb.comm.connect.worker.pool.max" : 320,
+        "specjbb.customerDriver.threads" : 64,
+        "specjbb.customerDriver.threads.saturate" : 144,
+        "specjbb.customerDriver.threads.probe" : 96,
+        "specjbb.mapreducer.pool.size" : 27
+      }
+    },
+  
+    "HBIR_RT": {
+      "args" : [
+        "Tag",
+        "Kit Version",
+        "JDK",
+        "RTSTART",
+        "JVM Options",
+        "NUMA Nodes",
+        "Data Collection",
+        "T1",
+        "T2",
+        "T3"
+      ],
+  
+      "annotations" : {
+        "Tag" : "Name of the run",
+        "Kit Version" : "Version of SpecJBB",
+        "JDK" : "Version of the JVM that will run SpecJBB",
+        "RTSTART" : "What percentage of total output will we start at",
+        "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+        "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+        "Data Collection" : "What data collection process will monitor while running SpecJBB",
+        "T1" : "How many threads does Tier 1 have access to",
+        "T2" : "How many threads does Tier 2 have access to",
+        "T3" : "How many threads does Tier 3 have access to"
+      },
+  
+      "types" : {
+        "Tag" : "string",
+        "Kit Version" : "string",
+        "JDK" : "string",
+        "RTSTART" : "integer",
+        "JVM Options" : "string",
+        "NUMA Nodes" : "integer",
+        "Data Collection" : "string",
+        "T1" : "integer",
+        "T2" : "integer",
+        "T3" : "integer"
+      },
+  
+      "translations" : {
+        "RTSTART" : "specjbb.controller.rtcurve.start",
+        "T1" : "specjbb.forkjoin.workers.Tier1",
+        "T2" : "specjbb.forkjoin.workers.Tier2",
+        "T3" : "specjbb.forkjoin.workers.Tier3",
+        "NUMA Nodes" : "specjbb.group.count"
+      },
+  
+      "default_props" : {
+        "specjbb.controller.type" : "HBIR_RT",
+        "specjbb.time.server" : false,
+        "specjbb.comm.connect.client.pool.size" : 192,
+        "specjbb.comm.connect.selector.runner.count" : 4,
+        "specjbb.comm.connect.timeouts.connect" : 650000,
+        "specjbb.comm.connect.timeouts.read" : 650000,
+        "specjbb.comm.connect.timeouts.write" : 650000,
+        "specjbb.comm.connect.worker.pool.max" : 320,
+        "specjbb.customerDriver.threads" : 64,
+        "specjbb.customerDriver.threads.saturate" : 144,
+        "specjbb.customerDriver.threads.probe" : 96,
+        "specjbb.mapreducer.pool.size" : 27
+      }
+    },
+  
+    "PRESET": {
+      "args" : [
+        "Tag",
+        "Kit Version",
+        "JDK",
+        "TXrate",
+        "Duration",
+        "JVM Options",
+        "NUMA Nodes",
+        "Data Collection",
+        "T1",
+        "T2",
+        "T3"
+      ],
+  
+      "annotations" : {
+        "Tag" : "Name of the run",
+        "Kit Version" : "Version of SpecJBB",
+        "JDK" : "Version of the JVM that will run SpecJBB",
+        "TXrate" : "Rate of transmissions... GET HELP FROM MIKE JONES",
+        "Duration" : "Length of time... GET HELP FROM MIKE JONES",
+        "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+        "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+        "Data Collection" : "What data collection process will monitor while running SpecJBB",
+        "T1" : "How many threads does Tier 1 have access to",
+        "T2" : "How many threads does Tier 2 have access to",
+        "T3" : "How many threads does Tier 3 have access to"
+      },
+  
+      "types" : {
+        "Tag" : "string",
+        "Kit Version" : "string",
+        "JDK" : "string",
+        "TXrate" : "integer",
+        "JVM Options" : "string",
+        "NUMA Nodes" : "integer",
+        "Data Collection" : "string",
+        "T1" : "integer",
+        "T2" : "integer",
+        "T3" : "integer"
+      },
+  
+      "translations" : {
+        "TXrate" : "specjbb.controller.preset.ir",
+        "Duration" : "specjbb.controller.preset.duration",
+        "T1" : "specjbb.forkjoin.workers.Tier1",
+        "T2" : "specjbb.forkjoin.workers.Tier2",
+        "T3" : "specjbb.forkjoin.workers.Tier3",
+        "NUMA Nodes" : "specjbb.group.count"
+      },
+  
+      "default_props" : {
+        "specjbb.controller.type" : "PRESET",
+        "specjbb.comm.connect.client.pool.size" : 192,
+        "specjbb.comm.connect.selector.runner.count" : 4,
+        "specjbb.comm.connect.timeouts.connect" : 650000,
+        "specjbb.comm.connect.timeouts.read" : 650000,
+        "specjbb.comm.connect.timeouts.write" : 650000,
+        "specjbb.comm.connect.worker.pool.max" : 320,
+        "specjbb.customerDriver.threads" : 64,
+        "specjbb.customerDriver.threads.saturate" : 144,
+        "specjbb.customerDriver.threads.probe" : 96,
+        "specjbb.mapreducer.pool.size" : 27
+      }
+    },
+  
+    "LOADLEVEL": {
+      "args" : [
+        "Tag",
+        "Kit Version",
+        "JDK",
+        "RTSTART",
+        "Duration Min",
+        "Duration Max",
+        "JVM Options",
+        "NUMA Nodes",
+        "Data Collection",
+        "T1",
+        "T2",
+        "T3"
+      ],
+  
+      "annotations" : {
+        "Tag" : "Name of the run",
+        "Kit Version" : "Version of SpecJBB",
+        "JDK" : "Version of the JVM that will run SpecJBB",
+        "RTSTART" : "What percentage of total output will we start at",
+        "Duration Min" : "Duration of something... GET HELP FROM MIKE JONES",
+        "Duration Max" : "Duration of something... GET HELP FROM MIKE JONES",
+        "JVM Options" : "What additional arguments, if any, will be passed to the JVM",
+        "NUMA Nodes" : "How many NUMA nodes will SpecJBB use",
+        "Data Collection" : "What data collection process will monitor while running SpecJBB",
+        "T1" : "How many threads does Tier 1 have access to",
+        "T2" : "How many threads does Tier 2 have access to",
+        "T3" : "How many threads does Tier 3 have access to"
+      },
+  
+      "types" : {
+        "Tag" : "string",
+        "Kit Version" : "string",
+        "JDK" : "string",
+        "RTSTART" : "integer",
+        "Duration Min" : "integer",
+        "Duration Max" : "integer",
+        "JVM Options" : "string",
+        "NUMA Nodes" : "integer",
+        "Data Collection" : "string",
+        "T1" : "integer",
+        "T2" : "integer",
+        "T3" : "integer"
+      },
+  
+      "translations" : {
+        "Duration Min" : "specjbb.controller.loadlevel.duration.min",
+        "Duration Max" : "specjbb.controller.loadlevel.duration.max",
+        "RTSTART" : "specjbb.controller.rtcurve.start",
+        "T1" : "specjbb.forkjoin.workers.Tier1",
+        "T2" : "specjbb.forkjoin.workers.Tier2",
+        "T3" : "specjbb.forkjoin.workers.Tier3",
+        "NUMA Nodes" : "specjbb.group.count"
+      },
+  
+      "default_props" : {
+        "specjbb.controller.type" : "HBIR_RT_LOADLEVELS",
+        "specjbb.controller.loadlevel.start" : 0.95,
+        "specjbb.controller.loadlevel.step" : 1 ,
+        "specjbb.time.server" : false,
+        "specjbb.comm.connect.client.pool.size" : 192,
+        "specjbb.comm.connect.selector.runner.count" : 4,
+        "specjbb.comm.connect.timeouts.connect" : 650000,
+        "specjbb.comm.connect.timeouts.read" : 650000,
+        "specjbb.comm.connect.timeouts.write" : 650000,
+        "specjbb.comm.connect.worker.pool.max" : 320,
+        "specjbb.customerDriver.threads" : 64,
+        "specjbb.customerDriver.threads.saturate" : 144,
+        "specjbb.customerDriver.threads.probe" : 96,
+        "specjbb.mapreducer.pool.size" : 27
+      }
+    }
+  },
+
+  "RunList" : [
+    {
+      "template_type" : "LOADLEVEL",
+      "args" : {
+        "Tag" : "specjbb",
+        "Kit Version": "RC3",
+        "RTSTART" : 30,
+        "JDK": "jdk.8-u121",
+        "Duration Min" : 30,
+        "Duration Max" : 70,
+        "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+        "NUMA Nodes": 4,
+        "Data Collection": "NONE",
+        "T1" : 154,
+        "T2" :  45,
+        "T3" :  23
+      }
+    }
+  ]
+}

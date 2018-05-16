@@ -34,9 +34,6 @@
 				"specjbb.comm.connect.timeouts.read": 650000,
 				"specjbb.comm.connect.timeouts.write": 650000,
 				"specjbb.comm.connect.worker.pool.max": 320,
-				"specjbb.customerDriver.threads": 64,
-				"specjbb.customerDriver.threads.saturate": 144,
-				"specjbb.customerDriver.threads.probe": 96,
 				"specjbb.mapreducer.pool.size": 27
 			},
 			"types": {
