@@ -5,6 +5,7 @@ from tooltip import Tooltip
 import os
 import pathlib
 import sys
+import copy
 import json
 from tkinter import *
 from tkinter import filedialog
@@ -65,6 +66,8 @@ class MainWindow(Frame):
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
+        self.listbox.bind("<ButtonPress-1>", self.on_run_press)
+        self.listbox.bind("<B1-Motion>", self.on_run_motion)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
@@ -389,6 +392,37 @@ class MainWindow(Frame):
                 self.run_manager.set_config(filepath, "SPECjbb")
             self.prompt_save()
             self.update()
+
+    def on_run_press(self, event):
+        """
+        Select the index when pressing the left mouse
+        """
+        self.curIndex = -1
+        widget = event.widget
+        index = widget.nearest(event.y)
+        # check if the click on blank space
+        _, yoffset, _, height = widget.bbox(index)
+        if event.y > height + yoffset + 5:
+            return
+        self.curIndex = self.listbox.nearest(event.y)
+
+    def on_run_motion(self, event):
+        """
+        move the selected item to the new mouse position
+        """
+        if self.curIndex == -1:
+            return
+        i = self.listbox.nearest(event.y)
+        if i < self.curIndex:
+            x = copy.deepcopy(self.listbox.get(i))
+            self.listbox.delete(i)
+            self.listbox.insert(i+1,x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i+1)
+        elif i > self.curIndex:
+            x = copy.deepcopy(self.listbox.get(i))
+            self.listbox.delete(i)
+            self.listbox.insert(i-1,x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i-1)
 
 
 if __name__ == '__main__':

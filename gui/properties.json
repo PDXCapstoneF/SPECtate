@@ -79,6 +79,7 @@
     "help": {
       "title": "Help",
       "items": {
+        "issues": "Issues",
         "wiki": "Wiki",
         "issues": "Report Issues",
         "exit": "Exit"
