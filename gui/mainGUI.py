@@ -56,7 +56,7 @@ class MainWindow(Frame):
 
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
-                               selectmode=EXTENDED, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])  # bg=self.colors["listbox"], fg=self.colors['listbox']
+                               selectmode=EXTENDED, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
         self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
@@ -150,21 +150,25 @@ class MainWindow(Frame):
         file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
-                              command=self.create_new_run)
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"], command='')  # @todo
+                              command=lambda: self.create_new_run(),  accelerator="Ctrl+n")
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"],
+                              command='', accelerator="Ctrl+t")  # @todo
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
-                              command=self.save)
+                              command=self.save, accelerator="Ctrl+s")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_config"],
                               command=lambda: self.load_file(type="RunList"))
         file_menu.add_command(label=properties["commands"]["file"]["items"]["import_jar"],
                               command=lambda: self.load_file(type="SPECjbb"))
         file_menu.add_separator()
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close)
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close,
+                              accelerator="Ctrl+q")
 
         # Edit Menu
         edit_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
+
+        # @todo: implement or remove.
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
         edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
 
@@ -172,12 +176,14 @@ class MainWindow(Frame):
         benchmark_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["benchmark"]["title"], menu=benchmark_menu)
         benchmark_menu.add_command(label=properties["commands"]["benchmark"]["items"]["run_all"],
-                                   command=self.run_manager.do_run)
+                                   command=lambda: self.run_manager.do_run(list=list(self.listbox.get(0, END))),
+                                   accelerator="Ctrl+r")
 
         # View Menu
         edit_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["view"]["title"], menu=edit_menu)
-        edit_menu.add_command(label=properties["commands"]["view"]["items"]["theme"], command=lambda: self.theme_window())
+        edit_menu.add_command(label=properties["commands"]["view"]["items"]["theme"],
+                              command=lambda: self.theme_window())
 
         # Help Menu
         help_menu = Menu(self.menu_bar, tearoff=0)
@@ -189,6 +195,12 @@ class MainWindow(Frame):
 
         # Publish Menu
         self.master.config(menu=self.menu_bar)
+
+        # Shortcut commands
+        self.master.bind('<Control-n>', lambda event: self.create_new_run())
+        self.master.bind('<Control-s>', lambda event: self.save())
+        self.master.bind('<Control-r>', lambda event: self.run_manager.do_run())
+        self.master.bind('<Control-q>', lambda event: self.on_close())
 
     def make_arg_form(self, fields):
         entries = {}
