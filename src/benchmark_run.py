@@ -1,5 +1,7 @@
 """
-This module replaces `run.sh`.
+This module adds the necessary machinery to do
+SPECjbb2015 runs without much additional configuration,
+with logging and error handling included.
 """
 
 import os
@@ -11,6 +13,7 @@ import configparser
 
 from src.task_runner import TaskRunner
 from src.data import DataLoader
+from src.validate import random_run_id
 
 log = logging.getLogger(__name__)
 
@@ -190,6 +193,7 @@ class SpecJBBRun:
                  injectors=None,
                  java=None,
                  jar=None,
+                 tag=None,
                  times=1,
                  props={},
                  props_file='specjbb2015.props'):
@@ -212,7 +216,7 @@ class SpecJBBRun:
         self.times = times
         self.props = props
         self.props_file = props_file
-        self.run_id = uuid4().hex
+        self.run_id = tag if tag else random_run_id()
         self.log = logging.LoggerAdapter(log, {'run_id': self.run_id})
 
         self.java = JvmRunOptions(java)
@@ -275,10 +279,14 @@ class SpecJBBRun:
                                  '-J={}'.format(ti_jvm_id))
 
     def run(self):
+        """
+        Sets up the results directory, and executes the configured
+        runs based on self.
+        """
         pwd = os.getcwd()
         results_directory = os.path.abspath(str(self.run_id))
 
-        self.log.debug("set logging directory to {}".format(results_directory))
+        self.log.debug("set run directory to {}".format(results_directory))
 
         try:
             self.log.debug(
@@ -288,6 +296,8 @@ class SpecJBBRun:
             except os.FileExistsError:
                 self.log.debug(
                     "run results directory already existed, continuing")
+
+            os.chdir(results_directory)
 
             for number_of_times in range(self.times):
                 self.log.debug(
@@ -304,10 +314,10 @@ class SpecJBBRun:
     def _run(self):
         """
         Executes this particular SpecJBBRun by:
-        - writing the props file for this run at self.props_file
-        - setting up the controller and running its task
-        - setting up the transaction injectors and backends and running their tasks
-        - emmitting "done" messages when finished
+            - writing the props file for this run at self.props_file
+            - setting up the controller and running its task
+            - setting up the transaction injectors and backends and running their tasks
+            - emmitting "done" messages when finished
         """
         # write props file (or ensure it exists)
         with open(self.props_file, 'w+') as props_file:
@@ -344,14 +354,15 @@ class SpecJBBRun:
 
     def dump(self, level=logging.DEBUG):
         """
-        Dumps info about this currently configured run.
+        Dumps all the information about this currently configured run.
         """
 
         self.log.log(level, vars(self))
 
     def _full_options(self, options_dict):
         """
-        Returns a list of arguments, formatted for the specific JVM invocation.
+        Returns a list of arguments (as they would be passed to Popen),
+        formatted for the specific JVM invocation.
         """
         self.log.debug(
             "full options being generated from: {}".format(options_dict))
@@ -366,10 +377,13 @@ class SpecJBBRun:
         return java + spec
 
     def controller_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.controller)
 
     def backend_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.backends)
 
     def injector_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.injectors)
