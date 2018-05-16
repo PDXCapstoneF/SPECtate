@@ -101,7 +101,7 @@ class RunManager:
         if runs_list is not None:  # run list of runs
             for r in rs.runs:
                 for i in runs_list:
-                    if r["tag"] == i["tag"]:
+                    if r["tag"] == i:
                         s = SpecJBBRun(**r)
                         return s.run()
 
