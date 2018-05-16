@@ -4,6 +4,7 @@ from run_manager import RunManager
 import os
 import pathlib
 import sys
+import copy
 import json
 from tkinter import *
 from tkinter import filedialog
@@ -404,12 +405,12 @@ class MainWindow(Frame):
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
             self.listbox.insert(i+1,x)
-            self.run_manager.update_run_index(index=i+1, tag_to_remove=self.listbox.get(x))
+            self.run_manager.set_run_index(run_tag=x, to_index=i+1)
         elif i > self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
             self.listbox.insert(i-1,x)
-            self.run_manager.update_run_index(index=i-1, tag_to_remove=self.listbox.get(x))
+            self.run_manager.set_run_index(run_tag=x, to_index=i-1)
 
 
 if __name__ == '__main__':
