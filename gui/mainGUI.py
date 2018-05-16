@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from run_manager import RunManager
+from tooltip import Tooltip
 import os
 import pathlib
 import sys
@@ -191,7 +192,6 @@ class MainWindow(Frame):
         self.master.config(menu=self.menu_bar)
 
     def make_arg_form(self, fields):
-        entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
             try:
@@ -219,11 +219,12 @@ class MainWindow(Frame):
             self.arg_label.grid(row=50, column=1, sticky=W)
 
         if fields is not None:
-            for idx, i in enumerate(fields):
+            idx = 0
+            for key, value in fields.items():
                 self.form = Entry(self.canvas,
                                   insertofftime=500,
                                   font=("Calibri", 12),
-                                  width=8,
+                                  width=70,
                                   relief=RIDGE,
                                   highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
                                   highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
@@ -231,9 +232,8 @@ class MainWindow(Frame):
                                   fg=self.colors['text_fg'],
                                   justify=CENTER)
                 self.form.insert(INSERT, "default")
-                entries[i] = self.form
                 var = StringVar()
-                var.set(fields[i])
+                var.set(key)
 
                 # Label
                 self.arg_label = Label(self.canvas,
@@ -243,12 +243,12 @@ class MainWindow(Frame):
                                        # bg="black",
                                        bg=self.colors["label_bg"],
                                        fg=self.colors["label_fg"],
-                                       width=64,
+                                       width=15,
                                        justify=LEFT)
-                self.form.grid(row=idx, column=0, sticky=W)
-                self.arg_label.grid(row=idx, column=1, sticky=W)
-
-        return entries
+                self.form.grid(row=idx, column=1, sticky=W)
+                self.arg_label.grid(row=idx, column=0, sticky=W)
+                Tooltip(self.arg_label, text=value)
+                idx += 1
 
     def on_select(self, event):
         selection = event.widget.curselection()

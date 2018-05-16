@@ -22,7 +22,6 @@ class RunManager:
     def __init__(self, config_file=None, jar=None):
         self.current_run, self.validated_runs, self.jar = None, None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
-        self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
@@ -152,7 +151,6 @@ class RunManager:
 
     def create_run(self, run_type):
         """
-       'example_test.json' # RunList section.
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
         :return: str
