@@ -40,6 +40,12 @@ def do(task):
     task.run()
     log.debug("finished task {}".format(task))
 
+def do_dry(task):
+    """
+    Prints some additional logging information without
+    actually running the task. Similar to `do`.
+    """
+    log.info("DRY: {}".format(task))
 
 class JvmRunOptions:
     """
@@ -275,52 +281,65 @@ class SpecJBBRun:
                                  '-G={}'.format(group_id),
                                  '-J={}'.format(ti_jvm_id))
 
-    def run(self):
+    def run(self, dry_run=False):
         """
         Sets up the results directory, and executes the configured
         runs based on self.
+        `dry_run` sets whether or not to actually run the JVMs associated with
+        this run.
         """
         pwd = os.getcwd()
         results_directory = os.path.abspath(str(self.run_id))
 
         self.log.debug("set run directory to {}".format(results_directory))
 
-        try:
-            self.log.debug(
-                "attempting to create results directory {}".format(results_directory))
+        if dry_run:
+            return self._run(dry_run)
+        else:
             try:
-                os.mkdir(results_directory)
-            except os.FileExistsError:
                 self.log.debug(
-                    "run results directory already existed, continuing")
+                    "attempting to create results directory {}".format(results_directory))
+                try:
+                    os.mkdir(results_directory)
+                except os.FileExistsError:
+                    self.log.debug(
+                        "run results directory already existed, continuing")
 
-            os.chdir(results_directory)
+                os.chdir(results_directory)
 
-            for number_of_times in range(self.times):
-                self.log.debug(
-                        "beginning run {}/{}".format(number_of_times, self.times))
-                self._run()
+                for number_of_times in range(self.times):
+                    self.log.debug(
+                            "beginning run {}/{}".format(number_of_times, self.times))
+                    self._run(dry_run)
 
-        except Exception as e:
-            self.log.error(
-                "exception: {}, removing results directory".format(e))
-            shutil.rmtree(results_directory)
-        finally:
-            os.chdir(pwd)
+            except Exception as e:
+                self.log.error(
+                    "exception: {}, removing results directory".format(e))
+                shutil.rmtree(results_directory)
+            finally:
+                os.chdir(pwd)
 
-    def _run(self):
+    def _run(self, dry_run=False):
         """
         Executes this particular SpecJBBRun by:
             - writing the props file for this run at self.props_file
             - setting up the controller and running its task
             - setting up the transaction injectors and backends and running their tasks
             - emmitting "done" messages when finished
+        `dry_run` set to True will commit all of these changes.
         """
         # write props file (or ensure it exists)
-        with open(self.props_file, 'w+') as props_file:
-            c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': self.props})
-            c.write(props_file)
+        if dry_run:
+            self.log.info("DRY: run would write following props:")
+            if not self.props:
+                self.log.info("DRY: (none provided)")
+            for name, value in self.props.items():
+                self.log.info("DRY: name: {}, value({}): {}".format(name, type(value), value))
+        else:
+            with open(self.props_file, 'w+') as props_file:
+                c = configparser.ConfigParser()
+                c.read_dict({'SPECtate': self.props})
+                c.write(props_file)
 
         # setup jvms
         # we first need to setup the controller
@@ -329,7 +348,11 @@ class SpecJBBRun:
 
         if self.controller["type"] == "composite":
             self.log.info("begin composite benchmark")
-            c.run()
+            if dry_run:
+                self.log.info("DRY: run would invoke following controller:")
+                self.log.info("DRY: {}".format(c))
+            else:
+                c.run()
             self.log.info("done")
             return
 
@@ -343,7 +366,11 @@ class SpecJBBRun:
         # run benchmark
         self.log.info("begin benchmark")
 
-        pool.map(do, tasks)
+        if dry_run:
+            pool.map(do_dry, tasks)
+        else:
+            pool.map(do, tasks)
+
         c.stop()
         self.log.info("done")
 

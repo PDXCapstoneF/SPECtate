@@ -11,6 +11,7 @@ Usage:
 
 Options:
     --level=<log-level>       Set the logging level. Uses python.logging's names for the different leves. [default: INFO]
+    --dry-run                 Sets whether or not to do all configured runs as "dry runs". [default: False]
 """
 # library imports
 import json
@@ -141,7 +142,7 @@ def do_run(arguments):
     for r in rs.runs:
         s = benchmark_run.SpecJBBRun(**r)
 
-        s.run()
+        s.run(arguments['--dry-run'])
 
 def do_script(arguments):
     call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
