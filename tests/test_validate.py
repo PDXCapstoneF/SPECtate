@@ -1,7 +1,7 @@
 from schema import SchemaError
 from unittest import TestCase
 import json
-from src.validate import validate, TemplateSchema, random_run_id
+from src.validate import validate, TemplateDataSchema, random_run_id
 
 
 class TestSpectateConfigValidator(TestCase):

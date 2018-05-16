@@ -15,7 +15,7 @@ def random_run_id():
     """
     return uuid.uuid4().hex
 
-TemplateSchema = Schema({
+TemplateDataSchema = Schema({
     "args": [is_stringy],
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
     Optional("java", default="java"): is_stringy,
@@ -48,7 +48,7 @@ RunConfigSchema = Schema({
 
 SpectateConfig = Schema({
     "TemplateData": {
-        is_stringy: TemplateSchema,
+        is_stringy: TemplateDataSchema,
     },
     "RunList": [RunConfigSchema],
 })
