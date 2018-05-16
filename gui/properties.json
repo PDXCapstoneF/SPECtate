@@ -53,7 +53,14 @@
         "save": "Save",
         "save_as": "Save As...",
         "import_config": "Import Run Configurations",
+        "import_jar": "Import SPECjbb Jar",
         "exit": "Exit"
+      }
+    },
+    "benchmark": {
+      "title": "Benchmark",
+      "items": {
+        "run_all": "Run All"
       }
     },
     "edit": {

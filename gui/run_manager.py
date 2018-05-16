@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+import pathlib
 from pathlib import Path
 import sys
 import copy
@@ -9,19 +10,24 @@ import copy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
 from src.validate import *
+from src.benchmark_run import SpecJBBRun
+from src.run_generator import RunGenerator
 
 
 class RunManager:
-    def __init__(self, config_file=None):
-        self.current_run, self.validated_runs = None, None
+    """
+    Object used by `mainGUI.py` to structure TemplateData and RunLists in memory,
+    allowing some useful operations to isolate run management from the GUI.
+    """
+    def __init__(self, config_file=None, jar=None):
+        self.current_run, self.validated_runs, self.jar = None, None, None
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
         self.test_file = "example_test.json"
         if config_file is None:
             self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
         elif config_file is not None:
             self.RUN_CONFIG = config_file
-
-        # if self.RUN_CONFIG
+        self.load_config()
 
         if Path(self.RUN_CONFIG).is_file():
             with open(self.RUN_CONFIG) as file:
@@ -33,7 +39,6 @@ class RunManager:
                 with open(self.RUN_CONFIG) as file:
                     parsed = json.load(file)
                     self.validated_runs = validate(parsed)
-
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
 
@@ -45,13 +50,84 @@ class RunManager:
         """
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
+    def set_config(self, filepath, type):
+        """
+        Sets the configuration filepath for run_list and for SPECjbb jar files.
+        Caller of `load_config()` (when Type=="RunList") to update configurations stored in memory.
+        :param filepath:
+        :param type:
+        :return:
+        """
+        if (filepath or type) is None:
+            return None
+        extension = pathlib.Path(filepath).suffix
+        if "json" in extension and type == "RunList":
+            if filepath != self.RUN_CONFIG:
+                if Path(filepath).is_file():  # todo: test
+                    self.RUN_CONFIG = filepath
+                    self.load_config()  # update memory with new data
+        elif "jar" in extension and type == "SPECjbb":
+            if Path(filepath).is_file():  # todo: test
+                self.jar = filepath
+                self.load_config()  # update memory with new data
+
+    def load_config(self):
+        """
+        Loads and validates run configurations, and inserts path to SPECjbb
+        jar file into template types so the user can do a run.
+        :return:
+        """
+        if self.RUN_CONFIG is not None:
+            if Path(self.RUN_CONFIG).is_file():
+                with open(self.RUN_CONFIG) as file:
+                    parsed = json.load(file)
+                    self.validated_runs = validate(parsed)
+        if self.jar is not None:
+            if Path(self.jar).is_file():
+                for template in self.validated_runs["TemplateData"].keys():
+                    self.validated_runs["TemplateData"][template]["jar"] = str(self.jar)
+
+    def do_run(self, tag=None):
+        """
+        Based on `do_run()` in `mainCLI`, this method also does a run in the root directory.
+        Ideally `mainCLI` would be extensible in `mainGUI`, but there are some compatibility issues.
+        :return:
+        """
+        print("Inside do_run")
+        with open(self.RUN_CONFIG) as f:
+            args = json.loads(f.read())
+        rs = RunGenerator(**args)
+        os.chdir("..")  # directories made by `SPECjbbRun` will be placed in root.
+
+        if tag is not None:  # run specific
+            for r in rs.runs:
+                if r["tag"] == tag:
+                    s = SpecJBBRun(**r)
+                    return s.run()  # @todo: uncomment before push
+
+        else:  # run all
+            for r in rs.runs:
+                s = SpecJBBRun(**r)
+                s.run()  # @todo: uncomment before push
+        os.chdir("gui/")  # set cwd back to /gui/ when done.
+
     def write_to_file(self, filepath=None):
+        """
+        Dumps validated_runs to default or specified file.
+        :param filepath:
+        :return:
+        """
+        test = True
+        if test is True:
+            with open(self.test_file, 'w') as fh:
+                json.dump(self.validated_runs, fh, indent=4)
+
         if filepath:
             with open(filepath, 'w') as fh:
-                json.dump(self.validated_runs, fh)
+                json.dump(self.validated_runs, fh, indent=4)
         else:
             with open(self.RUN_CONFIG, 'w') as fh:
-                json.dump(self.validated_runs, fh)
+                json.dump(self.validated_runs, fh, indent=4)
 
     def insert_into_config_list(self, key, data):
         # @todo: test
@@ -64,20 +140,19 @@ class RunManager:
         """
         if key not in ["TemplateData", "RunList"] or data is None or not isinstance(data, dict):
             return None
-        if self.initialized:
+        if self.initialized():
             try:
                 if key == "TemplateData":
                     self.validated_runs[key][data["RunType"]] = data
                 elif key == "RunList":
                     self.validated_runs[key].append(data)
                     return True
-            except Exception:  # not a valid run
+            except:  # not a valid run
                 return None
 
     def create_run(self, run_type):
         """
        'example_test.json' # RunList section.
-
         Creates a run to insert into run_list. Values will be initialized to a default value.
         :param run_type: str
         :return: str
@@ -112,12 +187,19 @@ class RunManager:
             run_copy = copy.deepcopy(run)
             if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
                 run_copy["args"]["Tag"] = "{}-{}".format(run["args"]["Tag"], "(copy)")
+                # repetitions = run_copy["args"]["Tag"].count("(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
                     return run_copy
                 else:
                     return None
 
     def remove_run(self, tag_to_remove):
+        """
+        Used to remove run from list. This method is a wrapper for get_run_from_list,
+        which passes a delete operation to perform when the run is found.
+        :param tag_to_remove:
+        :return:
+        """
         if self.initialized():
             self.get_run_from_list(tag_to_find=tag_to_remove, action="del")
 
@@ -156,6 +238,25 @@ class RunManager:
         self.current_run = new_run_tag
         return self.current_run
 
+    def set_run_index(self, run_tag, to_index):
+        """
+        Used for reordering runs in RunList.
+        :param run_tag: str
+        :param to_index: int
+        :return: bool
+        """
+        print("Before: {}".format(self.validated_runs["RunList"]))
+        if to_index > len(self.validated_runs["RunList"]) or to_index < 0:
+            print("Index out of range.")
+            return None
+        for idx, item in enumerate(self.validated_runs["RunList"]):
+            if item["args"]["Tag"] == run_tag:
+                # old_idx = self.validated_runs["RunList"].index(item)
+                self.validated_runs["RunList"][to_index], self.validated_runs["RunList"][idx] = \
+                    self.validated_runs["RunList"][idx], self.validated_runs["RunList"][to_index]
+                return True
+        return False
+
     def get_current_run(self):
         # @todo: test
         """
@@ -183,10 +284,6 @@ class RunManager:
                             return run_copy
                         return run
         return None
-
-    #
-    # def reorder(self, from, to):
-    #     pass
 
     def get_template_types(self):
         """
