@@ -180,7 +180,7 @@ class MainWindow(Frame):
         benchmark_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["benchmark"]["title"], menu=benchmark_menu)
         benchmark_menu.add_command(label=properties["commands"]["benchmark"]["items"]["run_all"],
-                                   command=lambda: self.run_manager.do_run(list=list(self.listbox.get(0, END))),
+                                   command=lambda: self.run_manager.do_run(runs_list=list(self.listbox.get(0, END))),
                                    accelerator="Ctrl+r")
 
         # View Menu
