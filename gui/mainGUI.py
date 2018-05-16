@@ -64,7 +64,6 @@ class MainWindow(Frame):
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
         self.listbox.bind("<ButtonPress-1>", self.on_run_press)
         self.listbox.bind("<B1-Motion>", self.on_run_motion)
-        # self.listbox.bind("<ButtonRelease-1>", self.reorder_runs)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
