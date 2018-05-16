@@ -164,10 +164,6 @@ do = {
     'validate': do_validate,
     'dialogue': do_dialogue,
     'listen': do_listen,
-<<<<<<< HEAD
-    'shout': do_shout,
-=======
->>>>>>> bs-distributed
     'script': do_script,
     'scripts': do_scripts,
 }
