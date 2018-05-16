@@ -14,7 +14,6 @@ import spectate_pb2_grpc
 
 from src import benchmark_run
 from src import task_runner
-from src import run_generator  # TODO: remove
 
 log = logging.getLogger(__name__)
 
@@ -162,18 +161,3 @@ class DistributedComponent(dict):
             local_path=self.meta["results_directory"],
             delete=True)
 
-
-def test(filename):
-    with open(filename, 'r') as f:
-        l = f.read()
-    example = json.loads(l)
-    rg = run_generator.RunGenerator(**example)
-
-    for run in rg.runs:
-        s = benchmark_run.SpecJBBRun(**run)
-        for component in s.components_grouped():
-            log.debug("component: {}".format(component))
-            if "host" in component:
-                submit_run(s._meta(), component)
-            else:
-                log.info("skipping: {}".format(component))

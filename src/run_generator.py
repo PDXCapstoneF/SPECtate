@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 injectors_specjbb_property_name = "specjbb.txi.pergroup.count"
 backends_specjbb_property_name = "specjbb.group.count"
+controller_distributed_property_name = "specjbb.controller.host"
 
 
 def run_type_to_controller_type(rt):
@@ -74,26 +75,27 @@ class RunGenerator:
             # and let's peek for backend count (specjbb.group.count)
             backends = props.get(backends_specjbb_property_name, 1)
 
-            if "injectors" in template or "backends" in template:
-                log.info("template specifies injectors or backends")
-                if "injectors" in template:
-                    injectors = self._ensure_count_is_accurate(
-                        key="injectors",
-                        prop_name=injectors_specjbb_property_name,
-                        template=template,
-                        props=props)
-                elif "backends" in template:
-                    backends = self._ensure_count_is_accurate(
-                        key="backends",
-                        prop_name=backends_specjbb_property_name,
-                        template=template,
-                        props=props)
+            if "injectors" in template:
+                injectors = self._ensure_count_is_accurate(
+                    key="injectors",
+                    prop_name=injectors_specjbb_property_name,
+                    template=template,
+                    props=props)
+            if "backends" in template:
+                backends = self._ensure_count_is_accurate(
+                    key="backends",
+                    prop_name=backends_specjbb_property_name,
+                    template=template,
+                    props=props)
 
             controller = template.get("controller", dict())
             controller.update({
                 "type":
                 run_type_to_controller_type(template["run_type"]),
             })
+
+            if template["run_type"] == "distributed" and controller_distributed_property_name not in props:
+                raise Exception("Controller IP not specified for a distributed run: define value or argument with translation for '{}'".format(controller_distributed_property_name))
 
             self.runs.append({
                 'controller':

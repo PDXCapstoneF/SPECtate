@@ -5,7 +5,6 @@ Usage:
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py listen [options]
-    mainCLI.py shout <fn> [options]
     mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
@@ -149,9 +148,6 @@ def do_run(arguments):
 def do_listen(arguments):
     distributed.listen()
 
-def do_shout(arguments):
-    distributed.test(arguments["<fn>"])
-
 def do_script(arguments):
     call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
 
@@ -168,7 +164,10 @@ do = {
     'validate': do_validate,
     'dialogue': do_dialogue,
     'listen': do_listen,
+<<<<<<< HEAD
     'shout': do_shout,
+=======
+>>>>>>> bs-distributed
     'script': do_script,
     'scripts': do_scripts,
 }
