@@ -194,6 +194,7 @@ class SpecJBBRun:
                  controller=None,
                  backends=None,
                  injectors=None,
+                 cwd=None,
                  java=None,
                  jar=None,
                  tag=None,
@@ -215,6 +216,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
+        self.cwd = os.path.abspath(cwd) if cwd else os.getcwd()
         self.jar = os.path.abspath(jar)
         self.times = times
         self.props = props
@@ -288,8 +290,8 @@ class SpecJBBRun:
         `dry_run` sets whether or not to actually run the JVMs associated with
         this run.
         """
-        pwd = os.getcwd()
-        results_directory = os.path.abspath(str(self.run_id))
+
+        results_directory = os.path.join(self.cwd, str(self.run_id))
 
         self.log.debug("set run directory to {}".format(results_directory))
 
@@ -299,25 +301,25 @@ class SpecJBBRun:
             try:
                 self.log.debug(
                     "attempting to create results directory {}".format(results_directory))
-                try:
-                    os.mkdir(results_directory)
-                except os.FileExistsError:
-                    self.log.debug(
-                        "run results directory already existed, continuing")
+                os.mkdir(results_directory)
+            except os.FileExistsError:
+                self.log.error(
+                    "run results directory already existed, continuing")
 
-                os.chdir(results_directory)
+            os.chdir(results_directory)
 
+            try:
                 for number_of_times in range(self.times):
                     self.log.debug(
                             "beginning run {}/{}".format(number_of_times, self.times))
                     self._run(dry_run)
-
             except Exception as e:
                 self.log.error(
                     "exception: {}, removing results directory".format(e))
                 shutil.rmtree(results_directory)
             finally:
-                os.chdir(pwd)
+                self.log.info("returning to {}".format(self.cwd))
+                os.chdir(self.cwd)
 
     def _run(self, dry_run=False):
         """

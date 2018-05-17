@@ -20,6 +20,7 @@ TemplateDataSchema = Schema({
     Optional("run_type", default="composite"): And(is_stringy, lambda rt: rt.lower() in ["multi", "composite", "distributed_ctrl_txl", "distributed_sut"]),
     Optional("java", default="java"): is_stringy,
     Optional("jar", default="specjbb2015.jar"): is_stringy,
+    Optional("cwd"): is_stringy,
     Optional("prop_options"): {
         is_stringy: object,
     },

@@ -9,8 +9,8 @@ The intention is that you pass a Tate Config into the
 RunGenerator, and it updates itself to have a list of
 all the runs present in that configuration.
 """
+import os
 from src.validate import TemplateDataSchema, RunConfigSchema, random_run_id
-
 
 
 class RunGenerator:
@@ -66,6 +66,7 @@ class RunGenerator:
                 },
                 'backends': backends,
                 'injectors': injectors,
+                'cwd': template["cwd"] if "cwd" in template else os.getcwd(),
                 'java': template["java"],
                 'jar': template["jar"],
                 'tag': run["tag"] if "tag" in run else random_run_id(),
