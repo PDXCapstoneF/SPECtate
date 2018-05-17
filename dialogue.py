@@ -59,7 +59,7 @@ def find(f, seq):
         if f(item): 
             return item
 def find_run_tag(tag, run_list):
-    return find(lambda run : run['Tag'] == tag, run_list)
+    return find(lambda run : run[TAG_ARG] == tag, run_list)
 
 # Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
