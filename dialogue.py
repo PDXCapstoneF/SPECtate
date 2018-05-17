@@ -45,11 +45,6 @@ def print_dict(d):
 # All functions take run_dict, runtype_dict as arguments so that they can be
 # called homogenously from a dictionary in `dialogue`.
 
-def print_all_runs(run_dict, runtype_dict):
-    for k, v in sorted(run_dict.items(), key=lambda x: x[0]):
-        print('\nTag {}\n'.format(k))
-        print_dict(v)
-
 def tag_in_runlist(tag, run_list):
     """
     Returns True if a Run with tag `tag` is in the list.
