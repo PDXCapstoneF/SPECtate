@@ -153,7 +153,7 @@ class RunManager:
 
     def update_run(self, tag_to_find, data):
         """
-        Run tag to update with data data.
+        Update a run with new args.
         :param tag_to_find:
         :param data: dict
         :return:
@@ -162,8 +162,11 @@ class RunManager:
             return None
         for idx, run in enumerate(self.validated_runs["RunList"]):
             if tag_to_find in run["tag"]:  # found run to update
-                for key, value in data.items():
+                for key, value in data["args"].items():  # update arg keys
                     run["args"][key] = value
+                data.pop("args")
+                for key, value in data.items():  # update highest level keys
+                    run[key] = value
             return run
         return None
 
@@ -349,7 +352,13 @@ class RunManager:
             if isinstance(b, str):
                 return a == b
 
+
 if __name__ == "__main__":
     run_manager = RunManager()
-    run_manager.update_run(tag_to_find= "TAG",
-                           data={})
+    new_args = {"tag": "NEW TAG NAME",
+                "args": {
+                "Kit Version": "NEW KIT VERSION"}}
+
+
+    run_manager.update_run(tag_to_find="TAG",
+                           data=new_args)
