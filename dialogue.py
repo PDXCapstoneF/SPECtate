@@ -72,7 +72,8 @@ def print_all_runs(run_list, template_dict):
     `template_dict`.
     """
     for run in run_list:
-        print('\nTemplate Type: {}'.format(run[RUN_TEMPLATE_TYPE]))
+        print('\nTag: {}'.format(run[TAG_ARG]))
+        print('Template Type: {}'.format(run[RUN_TEMPLATE_TYPE]))
         for arg in template_dict[run[RUN_TEMPLATE_TYPE]][RUNLIST_ARGS]:
             print('{}: {}'.format(arg, run[RUNLIST_ARGS][arg]))
         print()
