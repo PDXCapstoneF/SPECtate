@@ -2,9 +2,20 @@ import unittest
 import json
 import testfixtures
 import logging
+import testpath
+import tempfile
+import os
+from contextlib import contextmanager
 
-from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException, JvmRunOptions, SpecJBBComponentOptions, SpecJBBComponentTypes
+from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException, JvmRunOptions, SpecJBBComponentOptions, SpecJBBComponentTypes, do
 
+@contextmanager
+def temporary_directory():
+    pwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        yield
+        os.chdir(pwd)
 
 class TestBenchmarkRun(unittest.TestCase):
     valid_props = [
@@ -27,6 +38,7 @@ class TestBenchmarkRun(unittest.TestCase):
             "jar": "env/Main.jar",
         },
     ]
+
 
     invalid_props = [
         {
@@ -78,6 +90,66 @@ class TestBenchmarkRun(unittest.TestCase):
                 r.dump()
                 # need to have some actual logging output
                 self.assertTrue(l.actual())
+
+    def test_run_id_assigned_after_construction(self):
+        for valid in self.valid_props:
+            r = SpecJBBRun(**valid)
+            self.assertTrue(r.run_id)
+
+    def test_times_is_set_after_construction(self):
+        for valid in self.valid_props:
+            r = SpecJBBRun(**valid)
+            self.assertTrue(r.times)
+
+    def test_run_composite(self):
+        with temporary_directory():
+            r = SpecJBBRun(**{  # composite run with arguments
+                    "controller": {
+                        "type": "composite",
+                        "options": ["arg1", "arg2"],
+                    },
+                    "java": "java",
+                    "jar": "env/Main.jar",
+                })
+
+            with testpath.assert_calls("java"):
+                r.run()
+
+    def test_run_with_custom_java(self):
+        with temporary_directory():
+            r = SpecJBBRun(**{  # composite run with arguments
+                    "controller": {
+                        "type": "composite",
+                        "options": ["arg1", "arg2"],
+                    },
+                    "java": "echo",
+                    "jar": "env/Main.jar",
+                })
+
+            with testpath.assert_calls("echo"):
+                r.run()
+
+
+    def test_run_multijvm(self):
+        with temporary_directory():
+            r = SpecJBBRun(**{  # multijvm run with arguments
+                    "controller": {
+                        "type": "multi",
+                        "options": ["arg1", "arg2"],
+                    },
+                    "java": "java",
+                    "jar": "env/Main.jar",
+                })
+
+            with testpath.MockCommand("java") as mock_java:
+                r.run()
+
+                component_invocations = list(filter(lambda line: "-m" in line, mock_java.get_calls()))
+
+                self.assertTrue(filter(lambda line: "CONTROLLER" in line, component_invocations))
+                self.assertTrue(filter(lambda line: "BACKEND" in line, component_invocations))
+                self.assertTrue(filter(lambda line: "TXINJECTOR" in line, component_invocations))
+
 
 
 class TestJvmRunOptions(unittest.TestCase):
@@ -181,3 +253,21 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
             self.assertEqual(co["count"], 1)
             self.assertEqual(co["options"], options)
             self.assertEqual(co["jvm_opts"], jvm_opts)
+
+
+class TestDo(unittest.TestCase):
+    def test_do_calls_run_method_on_objects(self):
+        class example:
+            def __init__(self):
+                self.called = False
+
+            def run(self):
+                self.called = True
+
+        exampleInstance = example()
+
+        self.assertFalse(exampleInstance.called)
+
+        do(exampleInstance)
+
+        self.assertTrue(exampleInstance.called)

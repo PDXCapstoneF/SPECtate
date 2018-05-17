@@ -11,6 +11,7 @@ Usage:
 
 Options:
     --level=<log-level>       Set the logging level. Uses python.logging's names for the different leves. [default: INFO]
+    --dry-run                 Sets whether or not to do all configured runs as "dry runs". [default: False]
 """
 # library imports
 import json
@@ -77,38 +78,6 @@ blackbox_artifacts = [
 ]
 
 
-def do_run(arguments):
-    """
-    Does a run using scripts/run.sh from the provided property template and configuration.
-    """
-    with open(arguments['<config>'], 'r') as f:
-        args = json.loads(f.read())
-    stringified = list(map(lambda arg: str(arg), to_list(args['specjbb'])))
-    workdir = args['specjbb'].get('workdir', 'scripts')
-    scripts_abspath = relative_to_main(workdir)
-    workdir_abspath = relative_to_main('scripts')
-
-    # if we don't already have the scripts available to us
-    # copy them into the new location
-    if workdir != 'scripts':
-        copy(scripts_abspath, workdir_abspath)
-
-    def cleanup():
-        # we need to cleanup the cwd or worktree for some reason
-        if workdir != 'scripts':
-            rmtree(workdir_abspath)
-        else:
-            for name in map(lambda name: os.path.join(scripts_abspath, name),
-                            blackbox_artifacts):
-                os.remove(name)
-
-    try:
-        if not call(['bash', 'run.sh'] + stringified, cwd=workdir_abspath):
-            cleanup()
-    except:
-        cleanup()
-
-
 def do_validate(arguments):
     """
     Validate a configuration based on the schema provided.
@@ -142,7 +111,7 @@ def do_run(arguments):
     for r in rs.runs:
         s = benchmark_run.SpecJBBRun(**r)
 
-        s.run()
+        s.run(arguments['--dry-run'])
 
 def do_script(arguments):
     call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
