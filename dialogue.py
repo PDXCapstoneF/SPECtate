@@ -16,7 +16,7 @@ TEMPLATE_ARGS = 'args'
 TEMPLATE_ANNO = 'annotations'
 TEMPLATE_TYPES = 'types'
 TEMPLATE_TRANS = 'translations'
-TEMPLATE_DEFAULT = 'default_props' 
+TEMPLATE_DEFAULT = 'prop_options'
 
 
 def write_json(filename, python_dict):
