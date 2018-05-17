@@ -33,7 +33,7 @@ class MainWindow(Frame):
         self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
-        self.form, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
+        self.entries, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
@@ -67,7 +67,7 @@ class MainWindow(Frame):
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
         self.listbox.bind("<ButtonPress-1>", self.on_run_press)
-        self.listbox.bind("<B1-Motion>", self.on_run_motion)
+        self.listbox.bind("<ButtonRelease-1>", self.on_run_motion)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
@@ -206,7 +206,8 @@ class MainWindow(Frame):
         self.master.bind('<Control-r>', lambda event: self.run_manager.do_run())
         self.master.bind('<Control-q>', lambda event: self.on_close())
 
-    def make_arg_form(self, fields):
+    def make_arg_form(self, fields, args_list):
+        self.entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
             try:
@@ -236,7 +237,7 @@ class MainWindow(Frame):
         if fields is not None:
             idx = 0
             for key, value in fields.items():
-                self.form = Entry(self.canvas,
+                form = Entry(self.canvas,
                                   insertofftime=500,
                                   font=("Calibri", 12),
                                   width=70,
@@ -246,7 +247,11 @@ class MainWindow(Frame):
                                   bg=self.colors["text_bg"],  # good
                                   fg=self.colors['text_fg'],
                                   justify=CENTER)
-                self.form.insert(INSERT, "default")
+                if args_list is None:
+                    form.insert(INSERT, "default")
+                    self.entries[key] = form
+                else:
+                    form.insert(INSERT, args_list[key])
                 var = StringVar()
                 var.set(key)
 
@@ -260,21 +265,28 @@ class MainWindow(Frame):
                                        fg=self.colors["label_fg"],
                                        width=15,
                                        justify=LEFT)
-                self.form.grid(row=idx, column=1, sticky=W)
+                form.grid(row=idx, column=1, sticky=W)
                 self.arg_label.grid(row=idx, column=0, sticky=W)
                 Tooltip(self.arg_label, text=value)
                 idx += 1
 
     def on_select(self, event):
         selection = event.widget.curselection()
+        args_list = None
         if selection:
             content = event.widget.get(selection[0])
             if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
                 print("MainWindow continues to edit the same run.")
             else:
+                if self.entries:
+                    args_list = {}
+                    for key in self.entries:
+                        args_list[key] = self.entries[key].get()
+                    self.run_manager.update_run(self.listbox.get(ACTIVE), args_list)
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
-            self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)))
+            self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
+                               args_list=args_list)
 
     def popup_window(self, event):
         """
