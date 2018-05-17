@@ -42,7 +42,7 @@ def print_dict(d):
         print("{}: {}".format(key, value))
 
 # Level-one layer of dialogue.
-# All functions take run_dict, runtype_dict as arguments so that they can be
+# All functions take run_dict, template_dict as arguments so that they can be
 # called homogenously from a dictionary in `dialogue`.
 
 def tag_in_runlist(tag, run_list):
@@ -82,16 +82,16 @@ def print_all_runs(run_list, template_dict):
 def create_run(run_list, template_dict):
     new_run = {}
     # Inputting run type.
-    print('Input the run type. Current options: {}'.format(
+    print('Input the template type. Current options: {}'.format(
             ' '.join(sorted(template_dict.keys()))))
-    run_type = input('-> ')
-    if run_type not in template_dict.keys():
+    template_type = input('-> ')
+    if template_type not in template_dict.keys():
         user_input = input('{} is not currently an option. Add it? '\
-                     .format(run_type))
+                     .format(template_type))
         if user_input.lower() in YES_CONSTS:
-            return create_runtype(run_list, template_dict)
+            return create_template(run_list, template_dict)
         return run_list, template_dict
-    new_run[RUN_TEMPLATE_TYPE] = run_type
+    new_run[RUN_TEMPLATE_TYPE] = template_type
     new_run[RUNLIST_ARGS] = {}
 
     # Input the tag.
@@ -104,7 +104,7 @@ def create_run(run_list, template_dict):
         break
 
     # Input values.
-    for arg in template_dict[run_type][RUNLIST_ARGS]:
+    for arg in template_dict[template_type][RUNLIST_ARGS]:
         while True:
             try:
                 user_input = input('{}: '.format(arg))
@@ -113,8 +113,8 @@ def create_run(run_list, template_dict):
                     return (run_list, template_dict)
                 elif user_input in HELP_CONSTS:
                     print('Annotation:\n{}\nType:\n{}\n'.format(
-                          template_dict[run_type]['annotations'][arg],
-                          template_dict[run_type]['types'][arg]))
+                          template_dict[template_type]['annotations'][arg],
+                          template_dict[template_type]['types'][arg]))
                 else: 
                     new_run[RUNLIST_ARGS][arg] = user_input
                     break
@@ -124,14 +124,14 @@ def create_run(run_list, template_dict):
         if input('Add run {} to list? '.format(new_tag)) in YES_CONSTS:
             run_list.append(new_run)
             print('Run {} added to list.'.format(new_tag))
-            return run_list, runtype_dict
+            return run_list, template_dict
         else:
             if input('Discard new run {}? '.format(new_tag)) in YES_CONSTS:
-                return run_list, runtype_dict
+                return run_list, template_dict
     
     return run_list, template_dict
 
-def create_runtype(run_list, template_dict):
+def create_template(run_list, template_dict):
     new_template = {}
     new_template[TEMPLATE_ARGS] = []
     new_template[TEMPLATE_ANNO] = {}
@@ -316,7 +316,7 @@ def edit_run(run_list, template_dict):
         print('Edit of Run {} cancelled.'.format(old_run[TAG_ARG]))
     return run_list, template_dict
 
-def delete_runtype(run_list, template_dict):
+def delete_template(run_list, template_dict):
     delete_tag = input('Enter the tag of the template you want to delete. ')
     if delete_tag not in template_dict.keys():
         print('Tag not found!')
@@ -411,9 +411,9 @@ def dialogue():
     function_dict = {
         'print all' : print_all_runs,
         'create run' : create_run,
-        'create runtype' : create_runtype,
+        'create template' : create_template,
         'delete run' : delete_run,
-        'delete runtype' : delete_runtype,
+        'delete template' : delete_template,
         'copy run' : copy_run,
         'edit run' : edit_run,
         'save tate' : save_tate,
@@ -424,9 +424,9 @@ def dialogue():
     option_description_dict = {
         'print all' : 'Print all runs',
         'create run' : 'Create a run',
-        'create runtype' : 'Create a runtype',
+        'create template' : 'Create a template',
         'delete run' : 'Delete a run',
-        'delete runtype' : 'Delete a runtype',
+        'delete template' : 'Delete a template',
         'copy run' : 'Copy a run',
         'edit run' : 'Edit a run',
         'save tate' : 'Save TateConfig',
