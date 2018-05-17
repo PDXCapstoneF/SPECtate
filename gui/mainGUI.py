@@ -58,7 +58,7 @@ class MainWindow(Frame):
 
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
-                               selectmode=EXTENDED, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
+                               selectmode=SINGLE, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
         self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
@@ -68,6 +68,7 @@ class MainWindow(Frame):
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
         self.listbox.bind("<ButtonPress-1>", self.on_run_press)
         self.listbox.bind("<ButtonRelease-1>", self.on_run_motion)
+        self.listbox.configure(exportselection=False)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
@@ -249,9 +250,9 @@ class MainWindow(Frame):
                                   justify=CENTER)
                 if args_list is None:
                     form.insert(INSERT, "default")
-                    self.entries[key] = form
                 else:
                     form.insert(INSERT, args_list[key])
+                self.entries[key] = form
                 var = StringVar()
                 var.set(key)
 
@@ -272,21 +273,22 @@ class MainWindow(Frame):
 
     def on_select(self, event):
         selection = event.widget.curselection()
-        args_list = None
+        current_run_tag = self.listbox.get(ACTIVE)
         if selection:
             content = event.widget.get(selection[0])
             if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
                 print("MainWindow continues to edit the same run.")
             else:
                 if self.entries:
+                    print(current_run_tag)
                     args_list = {}
                     for key in self.entries:
                         args_list[key] = self.entries[key].get()
-                    self.run_manager.update_run(self.listbox.get(ACTIVE), args_list)
+                    self.run_manager.update_run(current_run_tag, args_list)
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
             self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
-                               args_list=args_list)
+                               args_list=self.run_manager.get_run_from_list(content)["args"])
 
     def popup_window(self, event):
         """
@@ -430,11 +432,13 @@ class MainWindow(Frame):
             self.listbox.delete(i)
             self.listbox.insert(i+1,x)
             self.run_manager.set_run_index(run_tag=x, to_index=i+1)
+            self.on_select(event)
         elif i > self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
             self.listbox.insert(i-1,x)
             self.run_manager.set_run_index(run_tag=x, to_index=i-1)
+            self.on_select(event)
 
 
 if __name__ == '__main__':
