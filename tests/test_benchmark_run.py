@@ -150,6 +150,52 @@ class TestBenchmarkRun(unittest.TestCase):
                 self.assertTrue(filter(lambda line: "BACKEND" in line, component_invocations))
                 self.assertTrue(filter(lambda line: "TXINJECTOR" in line, component_invocations))
 
+    def test_compliant_runs_need_kit_validation(self):
+        ignore_kit_arguments = [{
+                "controller": {
+                    "type": "composite",
+                    "options": ["-ikv", "arg1", "arg2"],
+                },
+                "java": "java",
+                "jar": "env/Main.jar",
+            },
+            {
+                "controller": {
+                    "type": "multi",
+                    "options": ["-ikv", "arg1", "arg2"],
+                },
+                "java": "java",
+                "jar": "env/Main.jar",
+                },
+            { # on injector options
+                "controller": {
+                    "type": "multi",
+                    "options": ["arg1", "arg2"],
+                },
+                "backends": {
+                    "options": ["-ikv"],
+                    },
+                "java": "java",
+                "jar": "env/Main.jar",
+                },
+            { # on backend options
+                "controller": {
+                    "type": "multi",
+                    "options": ["arg1", "arg2"],
+                },
+                "injectors": {
+                    "options": ["-ikv"],
+                    },
+                "java": "java",
+                "jar": "env/Main.jar",
+
+                },
+            ]
+
+
+        for invalid_props in ignore_kit_arguments:
+            r = SpecJBBRun(**invalid_props)
+            self.assertFalse(r.compliant())
 
 
 class TestJvmRunOptions(unittest.TestCase):
