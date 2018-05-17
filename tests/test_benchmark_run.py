@@ -197,6 +197,10 @@ class TestBenchmarkRun(unittest.TestCase):
             r = SpecJBBRun(**invalid_props)
             self.assertFalse(r.compliant())
 
+    def test_valid_props_compliant(self):
+        for valid in self.valid_props:
+            r = SpecJBBRun(**valid)
+            self.assertTrue(r.compliant())
 
 class TestJvmRunOptions(unittest.TestCase):
     def test_given_none_will_fill_defaults(self):
