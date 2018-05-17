@@ -123,11 +123,6 @@ class RunManager:
         :param filepath:
         :return:
         """
-        test = True
-        if test is True:
-            with open(self.test_file, 'w') as fh:
-                json.dump(self.validated_runs, fh, indent=4)
-
         if filepath:
             with open(filepath, 'w') as fh:
                 json.dump(self.validated_runs, fh, indent=4)
