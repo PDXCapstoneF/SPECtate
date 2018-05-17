@@ -356,6 +356,7 @@ class SpecJBBRun:
 
     def compliant(self):
         if not compliant(self.props):
+            self.log.error("prop file would have been NON-COMPLIANT")
             return False
 
         def contains_forbidden_flag(l):
@@ -363,6 +364,7 @@ class SpecJBBRun:
             return [match for match in l if match == "-ikv"]
 
         if contains_forbidden_flag(self.controller["options"]):
+            self.log.error("controller arguments would have been NON-COMPLIANT")
             return False
 
         tasks = [task for task in self._generate_tasks()]
@@ -378,6 +380,7 @@ class SpecJBBRun:
             specjbb_options = options[jar_index+2:-1]
 
             if contains_forbidden_flag(specjbb_options):
+                self.log.error("component arguments would have been NON-COMPLIANT")
                 return False
 
         return True
