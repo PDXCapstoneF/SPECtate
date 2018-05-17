@@ -93,6 +93,15 @@ def create_run(run_list, template_dict):
     new_run[RUN_TEMPLATE_TYPE] = run_type
     new_run[RUNLIST_ARGS] = {}
 
+    # Input the tag.
+    while True:
+        new_tag = input('Input a tag for the run. ')
+        if new_tag in [run[TAG_ARG] for run in run_list]:
+            print('Tag {} already exists in the run list!'.format(new_tag))
+            continue
+        new_run[TAG_ARG] = new_tag
+        break
+
     # Input values.
     for arg in template_dict[run_type][RUNLIST_ARGS]:
         while True:
@@ -110,13 +119,16 @@ def create_run(run_list, template_dict):
                     break
             except:
                 print('Invalid input.')
+    while True:
+        if input('Add run {} to list? '.format(new_tag)) in YES_CONSTS:
+            run_list.append(new_run)
+            print('Run {} added to list.'.format(new_tag))
+            return run_list, runtype_dict
+        else:
+            if input('Discard new run {}? '.format(new_tag)) in YES_CONSTS:
+                return run_list, runtype_dict
     
-    # Validate tag uniqueness.
-    while tag_in_runlist(new_run[RUNLIST_ARGS][TAG_ARG], run_list):
-        new_run[RUNLIST_ARGS][TAG_ARG] = input('Duplicate tag! Input a new tag. ')
-    run_list.append(new_run)
-    print('Run {} added to list.'.format(new_run[RUNLIST_ARGS][TAG_ARG]))
-    return (run_list, template_dict)
+    return run_list, template_dict
 
 def create_runtype(run_list, template_dict):
     new_template = {}
