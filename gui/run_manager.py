@@ -123,11 +123,6 @@ class RunManager:
         :param filepath:
         :return:
         """
-        test = True
-        if test is True:
-            with open(self.test_file, 'w') as fh:
-                json.dump(self.validated_runs, fh, indent=4)
-
         if filepath:
             with open(filepath, 'w') as fh:
                 json.dump(self.validated_runs, fh, indent=4)
@@ -190,7 +185,7 @@ class RunManager:
         if self.initialized():
             run = self.get_run_from_list(from_tag)
             run_copy = copy.deepcopy(run)
-            if run_copy is not None and isinstance(run_copy, dict) and "Tag" in run_copy["args"]:
+            if run_copy is not None and isinstance(run_copy, dict) and "tag" in run_copy:
                 run_copy["tag"] = "{}-{}".format(run["tag"], "(copy)")
                 # repetitions = run_copy["tag"].count("(copy)")
                 if self.insert_into_config_list("RunList", run_copy):
