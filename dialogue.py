@@ -49,7 +49,7 @@ def tag_in_runlist(tag, run_list):
     """
     Returns True if a Run with tag `tag` is in the list.
     """
-    return any(map(lambda run : run[RUNLIST_ARGS][TAG_ARG] == tag, run_list))
+    return any(map(lambda run : run[TAG_ARG] == tag, run_list))
 
 def find(f, seq):
     """
