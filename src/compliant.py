@@ -19,8 +19,8 @@ def compliant(props=None):
         return False
 
 CompliantRunSchema = Schema({
-    "specjbb.group.count": And(int, lambda group_count: group_count >= 1),
-    "specjbb.txi.pergroup.count": And(int, lambda injector_count: injector_count >= 1),
-    "specjbb.mapreducer.pool.size": And(int, lambda pool_size: pool_size >= 2),
-    is_stringy: object,
+    Optional("specjbb.group.count"): And(int, lambda group_count: group_count >= 1),
+    Optional("specjbb.txi.pergroup.count"): And(int, lambda injector_count: injector_count >= 1),
+    Optional("specjbb.mapreducer.pool.size"): And(int, lambda pool_size: pool_size >= 2),
+    Optional(is_stringy): object,
     })
