@@ -5,6 +5,7 @@ name = "pypi"
 
 [dev-packages]
 testfixtures = "*"
+grpcio-tools = "*"
 testpath = "*"
 
 [packages]
@@ -12,6 +13,7 @@ docopt = "*"
 six = "*"
 schema = "*"
 uuid = "*"
+grpcio = "*"
 
 [requires]
 python_version = "3.6"

@@ -4,6 +4,7 @@ Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
     mainCLI.py dialogue [options]
+    mainCLI.py listen [options]
     mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
@@ -30,6 +31,7 @@ import dialogue
 from src import validate
 from src import run_generator
 from src import benchmark_run
+from src import distributed
 
 log = logging.getLogger(__name__)
 
@@ -112,6 +114,9 @@ def do_run(arguments):
 
         s.run(arguments['--dry-run'])
 
+def do_listen(arguments):
+    distributed.listen()
+
 def do_script(arguments):
     call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
 
@@ -127,6 +132,7 @@ do = {
     'run': do_run,
     'validate': do_validate,
     'dialogue': do_dialogue,
+    'listen': do_listen,
     'script': do_script,
     'scripts': do_scripts,
 }
