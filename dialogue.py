@@ -361,7 +361,7 @@ def load_tate(run_list, template_dict):
 def reorder_run(run_list, template_dict):
     print('Select an index to reorder.')
     for index, run in enumerate(run_list):
-        print('Index {}: Tag {}'.format(index, run[RUNLIST_ARGS]['Tag']))
+        print('Index {}: Tag {}'.format(index, run[TAG_ARG]))
 
     new_list = run_list[:]
     try:
@@ -377,10 +377,10 @@ def reorder_run(run_list, template_dict):
         run = new_list.pop(old_index)
         new_list.insert(new_index, run)
         if input('Remove Tag {} from index {} and place it in {}? '\
-                 .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))\
+                 .format(run[TAG_ARG], old_index, new_index))\
            in YES_CONSTS:
             print('Run {} removed from index {} and placed in index {}.'\
-                  .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))
+                  .format(run[TAG_ARG], old_index, new_index))
             return new_list, template_dict
     except:
         print('Invalid index.')
