@@ -158,12 +158,12 @@ class RunManager:
         :param data: dict
         :return:
         """
-        if not isinstance(tag_to_find, str) or not isinstance(tag_to_find, dict):
+        if not isinstance(tag_to_find, str) or not isinstance(data, dict):
             return None
         for idx, run in enumerate(self.validated_runs["RunList"]):
             if tag_to_find in run["tag"]:  # found run to update
                 for key, value in data.items():
-                    self.validated_runs["RunList"][idx][key] = value
+                    run["args"][key] = value
             return run
         return None
 
@@ -348,3 +348,8 @@ class RunManager:
                 return a == b["tag"]
             if isinstance(b, str):
                 return a == b
+
+if __name__ == "__main__":
+    run_manager = RunManager()
+    run_manager.update_run(tag_to_find= "TAG",
+                           data={})
