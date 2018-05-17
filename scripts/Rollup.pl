@@ -1,6 +1,7 @@
 #! /bin/perl -w
 use Cwd;
-
+use File::Basename;
+use File::Spec;
 # -----------------------------------------------------------
 # Start here
 # -----------------------------------------------------------
@@ -15,10 +16,12 @@ print "$NUM_ARG \n";
 print "$ARGV[0]\n";
 
 
+my $curdir = cwd();
 # navigate to directory to be processed
 $TOPDIR=$ARGV[0];
 chdir $TOPDIR;
-@TOPDIRARRAY = split('\ ', $TOPDIR);
+#@TOPDIRARRAY = split('\ ', $TOPDIR);
+@TOPDIRARRAY = split('/', $TOPDIR);
 $FileName=pop(@TOPDIRARRAY);
 $OutPutFile=$FileName.".csv";
 
@@ -57,7 +60,7 @@ foreach (@DIRLIST) {
 	
 	
 	# Process the GC data using Troys Script store output to Array to parse
-	#GetGCData();
+	GetGCData();
     
 	
 	#GetVMData();
@@ -313,8 +316,9 @@ sub GetGCData{
 	print "\t*****Print GC Log data out to file\n";
 	
 	
-	
-	@GCDATA=`perl E:/PersonalDirectories/mljones2/2015Rollup/Rollup_ParseGC.pl -s $MyTime -e $EndTime Group1.Backend.JVM2.GC.log`;
+	my $fname = File::Spec->catfile($curdir, "Rollup_ParseGC.pl");
+	@GCDATA = `perl $fname -s $MyTime -e $EndTime Group1.Backend.JVM2.GC.log`;
+	#@GCDATA=`perl E:/PersonalDirectories/mljones2/2015Rollup/Rollup_ParseGC.pl -s $MyTime -e $EndTime Group1.Backend.JVM2.GC.log`;
 	
 	
 	
