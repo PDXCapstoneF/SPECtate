@@ -89,8 +89,8 @@ def create_run(run_list, template_dict):
         user_input = input('{} is not currently an option. Add it? '\
                      .format(run_type))
         if user_input.lower() in YES_CONSTS:
-            pass
-        return
+            return create_runtype(run_list, template_dict)
+        return run_list, template_dict
     new_run[RUN_TEMPLATE_TYPE] = run_type
     new_run[RUNLIST_ARGS] = {}
 
