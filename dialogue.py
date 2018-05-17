@@ -18,6 +18,14 @@ TEMPLATE_TYPES = 'types'
 TEMPLATE_TRANS = 'translations'
 TEMPLATE_DEFAULT = 'prop_options'
 
+TYPE_CHECK_FUNC = {
+    'string' : lambda x : str(x),
+    'int' : lambda x : int(x),
+    'integer' : lambda x : int(x),
+    'float' : lambda x : float(x),
+    'bool' : lambda x : x not in set(['false', 'False']),
+    'boolean' : lambda x : x not in set(['false', 'False']),
+}
 
 def write_json(filename, python_dict):
     """ 
@@ -116,8 +124,14 @@ def create_run(run_list, template_dict):
                           template_dict[template_type]['annotations'][arg],
                           template_dict[template_type]['types'][arg]))
                 else: 
-                    new_run[RUNLIST_ARGS][arg] = user_input
-                    break
+                    try:
+                        type_func = TYPE_CHECK_FUNC[
+                          template_dict[template_type][TEMPLATE_TYPES][arg]]
+                        user_input = type_func(user_input)
+                        new_run[RUNLIST_ARGS][arg] = user_input
+                        break
+                    except:
+                        print('Invalid input.')
             except:
                 print('Invalid input.')
     while True:
