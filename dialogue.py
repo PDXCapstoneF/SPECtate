@@ -9,7 +9,7 @@ HELP_CONSTS = set(['?', 'help'])
 TEMPLATE_DATA = 'TemplateData'
 RUN_LIST = 'RunList'
 RUNLIST_ARGS = 'args'
-TAG_ARG = 'Tag'
+TAG_ARG = 'tag'
 RUN_TEMPLATE_TYPE = 'template_type'
 
 TEMPLATE_ARGS = 'args'
