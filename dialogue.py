@@ -228,7 +228,7 @@ def delete_run(run_list, template_dict):
 def copy_run(run_list, template_dict):
     print('Input the tag of the Run that you want to copy. Available tags')
     print('are {}'.format(
-                   ' '.join(run[RUNLIST_ARGS]['Tag'] for run in run_list)))
+                   ' '.join(run[TAG_ARG] for run in run_list)))
     old_run_tag = input('-> ')
 
     if old_run_tag in EXIT_CONSTS:
@@ -250,7 +250,7 @@ def copy_run(run_list, template_dict):
         if tag_in_runlist(new_run_tag, run_list):
             print('Tag {} already exists!'.format(new_run_tag))
         else:
-            new_run[RUNLIST_ARGS]['Tag'] = new_run_tag
+            new_run[TAG_ARG] = new_run_tag
             break
     
     if input('Add run {} to RunList? '.format(new_run_tag)) in YES_CONSTS:
