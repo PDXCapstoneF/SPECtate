@@ -47,6 +47,12 @@ def do(task):
         task.stop()
     log.debug("finished task {}".format(task))
 
+def do_dry(task):
+    """
+    Prints some additional logging information without
+    actually running the task. Similar to `do`.
+    """
+    log.info("DRY: {}".format(task))
 
 def run_in_result_directory(f, name):
     pwd = os.getcwd()
@@ -61,6 +67,8 @@ def run_in_result_directory(f, name):
             os.mkdir(results_directory)
         except os.FileExistsError:
             log.warn("run results directory already existed, continuing")
+
+        os.chdir(results_directory)
 
         f()
     except Exception as e:
@@ -353,19 +361,35 @@ class SpecJBBRun:
         """
         return os.path.abspath(str(self.run_id))
 
-    def run(self):
+    def run(self, dry_run=False):
+        """
+        Sets up the results directory, and executes the configured
+        runs based on self.
+        `dry_run` sets whether or not to actually run the JVMs associated with
+        this run.
+        """
+        if dry_run:
+            return self._run(dry_run)
         return run_in_result_directory(self._run, self.results_directory())
 
-    def _run(self):
+    def _run(self, dry_run=False):
         """
         Executes this particular SpecJBBRun by:
             - writing the props file for this run at self.props_file
             - setting up the controller and running its task
             - setting up the transaction injectors and backends and running their tasks
             - emmitting "done" messages when finished
+        `dry_run` set to True will commit all of these changes.
         """
-        # write props file (or ensure it exists)
-        write_props_to_file(self.props_file, self.props)
+        if dry_run:
+            self.log.info("DRY: run would write following props:")
+            if not self.props:
+                self.log.info("DRY: (none provided)")
+            for name, value in self.props.items():
+                self.log.info("DRY: name: {}, value({}): {}".format(name, type(value), value))
+        else:
+            # write props file (or ensure it exists)
+            write_props_to_file(self.props_file, self.props)
 
         # setup jvms
         # we first need to setup the controller
@@ -377,7 +401,11 @@ class SpecJBBRun:
 
         if self.controller["type"] == "composite":
             self.log.info("begin composite benchmark")
-            c.run()
+            if dry_run:
+                self.log.info("DRY: run would invoke following controller:")
+                self.log.info("DRY: {}".format(c))
+            else:
+                c.run()
             self.log.info("done")
             return
 
@@ -391,7 +419,12 @@ class SpecJBBRun:
         # run benchmark
         self.log.info("begin benchmark")
 
-        pool.map(do, tasks)
+        if dry_run:
+            pool.map(do_dry, tasks)
+        else:
+            pool.map(do, tasks)
+
+        c.stop()
         self.log.info("done")
 
     def dump(self, level=logging.DEBUG):
