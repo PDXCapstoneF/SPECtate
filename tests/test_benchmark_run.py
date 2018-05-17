@@ -5,8 +5,17 @@ import logging
 import testpath
 import tempfile
 import os
+from contextlib import contextmanager
 
 from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException, JvmRunOptions, SpecJBBComponentOptions, SpecJBBComponentTypes, do
+
+@contextmanager
+def temporary_directory():
+    pwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        yield
+        os.chdir(pwd)
 
 class TestBenchmarkRun(unittest.TestCase):
     valid_props = [
@@ -93,20 +102,21 @@ class TestBenchmarkRun(unittest.TestCase):
             self.assertTrue(r.times)
 
     def test_run_composite(self):
-        r = SpecJBBRun(**{  # composite run with arguments
-                "controller": {
-                    "type": "composite",
-                    "options": ["arg1", "arg2"],
-                },
-                "java": "java",
-                "jar": "env/Main.jar",
-            })
+        with temporary_directory():
+            r = SpecJBBRun(**{  # composite run with arguments
+                    "controller": {
+                        "type": "composite",
+                        "options": ["arg1", "arg2"],
+                    },
+                    "java": "java",
+                    "jar": "env/Main.jar",
+                })
 
-        with testpath.assert_calls("java"):
-            r.run()
+            with testpath.assert_calls("java"):
+                r.run()
 
     def test_run_with_custom_java(self):
-        with tempfile.TemporaryDirectory() as td:
+        with temporary_directory():
             r = SpecJBBRun(**{  # composite run with arguments
                     "controller": {
                         "type": "composite",
@@ -121,7 +131,7 @@ class TestBenchmarkRun(unittest.TestCase):
 
 
     def test_run_multijvm(self):
-        with tempfile.TemporaryDirectory() as td:
+        with temporary_directory():
             r = SpecJBBRun(**{  # multijvm run with arguments
                     "controller": {
                         "type": "multi",
