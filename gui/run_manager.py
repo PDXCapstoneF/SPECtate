@@ -151,6 +151,22 @@ class RunManager:
             except:  # not a valid run
                 return None
 
+    def update_run(self, tag_to_find, data):
+        """
+        Run tag to update with data data.
+        :param tag_to_find:
+        :param data: dict
+        :return:
+        """
+        if not isinstance(tag_to_find, str) or not isinstance(data, dict):
+            return None
+        for idx, run in enumerate(self.validated_runs["RunList"]):
+            if tag_to_find in run["tag"]:  # found run to update
+                for key, value in data.items():
+                    run["args"][key] = value
+            return run
+        return None
+
     def create_run(self, run_type):
         """
         Creates a run to insert into run_list. Values will be initialized to a default value.
@@ -332,3 +348,8 @@ class RunManager:
                 return a == b["tag"]
             if isinstance(b, str):
                 return a == b
+
+if __name__ == "__main__":
+    run_manager = RunManager()
+    run_manager.update_run(tag_to_find= "TAG",
+                           data={})
