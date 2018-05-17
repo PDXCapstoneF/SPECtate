@@ -272,6 +272,17 @@ def edit_run(run_list, template_dict):
         return run_list, template_dict
     new_run = copy.deepcopy(old_run)
 
+    # Edit the name.
+    while True:
+        new_tag = input('Input a new tag name. Blank input keeps it the same. ')
+        if not new_tag:
+            break
+        if new_tag != old_run[TAG_ARG] and tag_in_runlist(new_tag, run_list):
+            print('Tag already exists! Input a new tag.')
+        else:
+            new_run[TAG_ARG] = new_tag
+            break
+
     for arg in template_dict[new_run[RUN_TEMPLATE_TYPE]][TEMPLATE_ARGS]:
         while True:
             try:
@@ -290,28 +301,19 @@ def edit_run(run_list, template_dict):
             except:
                 print('Invalid input.')
 
-    # Tag uniqueness validation.
-    while new_run[RUNLIST_ARGS]['Tag'] != old_run[RUNLIST_ARGS]['Tag'] and \
-          tag_in_runlist(new_run[RUNLIST_ARGS]['Tag'], run_list):
-        user_input = input('Tag already exists! Input a new tag! ')
-        if not user_input or user_input in HELP_CONSTS:
-            continue
-        if user_input in EXIT_CONSTS:
-            return run_list, template_dict
-        new_run[RUNLIST_ARGS]['Tag'] = user_input
     
     if input('Are you sure you want to change run {}? '\
-             .format(old_run[RUNLIST_ARGS]['Tag'])) in YES_CONSTS:
+             .format(old_run[TAG_ARG])) in YES_CONSTS:
         # Find the index of old_run and create a new list with new_run in its
         # place.
         for index, run in enumerate(run_list):
             if run == old_run:
-                print('Run {} changed.'.format(old_run[RUNLIST_ARGS]['Tag']))
+                print('Run {} changed.'.format(old_run[TAG_ARG]))
                 return (run_list[:index] + [new_run] + run_list[index+1:], 
                         template_dict)
         print('Something terribly wrong has happened. Cancelled.')
     else:
-        print('Edit of Run {} cancelled.'.format(old_run[RUNLIST_ARGS]['Tag']))
+        print('Edit of Run {} cancelled.'.format(old_run[TAG_ARG]))
     return run_list, template_dict
 
 def delete_runtype(run_list, template_dict):
