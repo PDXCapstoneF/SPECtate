@@ -3,6 +3,7 @@
 Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
+    mainCLI.py compliant [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
@@ -120,6 +121,17 @@ def do_scripts(arguments):
     log.info("These are the scripts available to run using 'script':")
     log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
 
+def do_compliant(arguments):
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    rs = run_generator.RunGenerator(**args)
+    for r in rs.runs:
+        s = benchmark_run.SpecJBBRun(**r)
+
+        log.info("validating the following run:")
+        s.dump(logging.INFO)
+        log.info("compliant? {}".format(s.compliant()))
+
 
 # dictionary of runnables
 # these are functions that take arguments from the
@@ -127,6 +139,7 @@ def do_scripts(arguments):
 do = {
     'run': do_run,
     'validate': do_validate,
+    'compliant': do_compliant,
     'dialogue': do_dialogue,
     'script': do_script,
     'scripts': do_scripts,
