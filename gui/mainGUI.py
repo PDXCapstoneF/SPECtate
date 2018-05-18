@@ -292,8 +292,6 @@ class MainWindow(Frame):
                     self.run_manager.update_run(current_run_tag, args_list)
                     if is_changed:
                         self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
-                    else:
-                        self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'black'})
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
             self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
