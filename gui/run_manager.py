@@ -351,13 +351,3 @@ class RunManager:
                 return a == b["tag"]
             if isinstance(b, str):
                 return a == b
-
-
-if __name__ == "__main__":
-    run_manager = RunManager()
-    # new_args = {"tag": "NEW TAG NAME",
-    #             "args": {
-    #                 "Kit Version": "NEW KIT VERSION"}}
-    #
-    # run_manager.update_run(tag_to_find="TAG",
-    #                        data=new_args)
