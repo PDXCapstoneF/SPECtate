@@ -285,12 +285,15 @@ class MainWindow(Frame):
                     args_list = {}
                     args_list["args"] = {}
                     for key in self.entries:
-                        if self.entries[key].get() != current_run["args"][key]:
+                        if self.entries[key].get() != str(current_run["args"][key]):
+                            print(self.entries[key].get(), current_run["args"][key])
                             is_changed = True
                         args_list["args"][key] = self.entries[key].get()
                     self.run_manager.update_run(current_run_tag, args_list)
                     if is_changed:
                         self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
+                    else:
+                        self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'black'})
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
             self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
