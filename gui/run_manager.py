@@ -167,7 +167,7 @@ class RunManager:
                 data.pop("args")
                 for key, value in data.items():  # update highest level keys
                     run[key] = value
-            return run
+                return run
         return None
 
     def create_run(self, run_type):
