@@ -13,6 +13,7 @@ import configparser
 
 from src.task_runner import TaskRunner
 from src.validate import random_run_id
+from src.compliant import compliant
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ def do_dry(task):
     """
     log.info("DRY: {}".format(task))
 
-class JvmRunOptions:
+class JvmRunOptions(dict):
     """
     A helper class for SpecJBBRun, to provide defaults and a way
     for lists, dict etc to be coerced into something that SpecJBBRun can work with.
@@ -61,15 +62,15 @@ class JvmRunOptions:
         If dict: validate that the dict has the required keys, and set the internal dict to val.
         """
         if isinstance(val, str):
-            self.__dict__ = {
+            self.update({
                 "path": val,
                 "options": [],
-            }
+            })
         elif isinstance(val, list):
-            self.__dict__ = {
+            self.update({
                 "path": val[0],
                 "options": val[1:],
-            }
+            })
         elif isinstance(val, dict):
             if "path" not in val:
                 raise Exception("'path' not specified for JvmRunOptions")
@@ -80,30 +81,15 @@ class JvmRunOptions:
             elif not isinstance(val["options"], list):
                 raise Exception("'path' must be a string")
 
-            self.__dict__ = val
+            self.update(val)
         elif val is None:
-            self.__dict__ = {
+            self.update({
                 "path": "java",
                 "options": []
-            }
+            })
         else:
             raise Exception(
                 "unrecognized type given to JvmRunOptions: {}".format(type(val)))
-
-    def __getitem__(self, name):
-        """
-        Defined so that JvmRunOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that JvmRunOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
 
 
 """
@@ -148,39 +134,24 @@ class SpecJBBComponentOptions(dict):
 
             rest["type"] = component_type
 
-            self.__dict__ = rest
+            self.update(rest)
         elif isinstance(rest, int):
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": rest,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         elif rest is None:
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": 1,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         else:
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
-
-    def __getitem__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
 
 
 class SpecJBBRun:
@@ -247,10 +218,10 @@ class SpecJBBRun:
             self.controller = SpecJBBComponentOptions("composite")
         else:
             self.controller = SpecJBBComponentOptions(
-                controller["type"], controller)
+                controller["type"], rest=controller)
 
-        self.backends = SpecJBBComponentOptions("backend", backends)
-        self.injectors = SpecJBBComponentOptions("txinjector", injectors)
+        self.backends = SpecJBBComponentOptions("backend", rest=backends)
+        self.injectors = SpecJBBComponentOptions("txinjector", rest=injectors)
 
     def _generate_tasks(self):
         """
@@ -411,3 +382,35 @@ class SpecJBBRun:
     def injector_run_args(self):
         """See self._full_options"""
         return self._full_options(self.injectors)
+
+    def compliant(self):
+        if not compliant(self.props):
+            self.log.error("prop file would have been NON-COMPLIANT")
+            return False
+
+        def contains_forbidden_flag(l):
+            """Returns if a list contains '-ikv'"""
+            return [match for match in l if match == "-ikv"]
+
+        if contains_forbidden_flag(self.controller["options"]):
+            self.log.error("controller arguments would have been NON-COMPLIANT")
+            return False
+
+        tasks = [task for task in self._generate_tasks()]
+
+        for task in tasks:
+            options = task.argument_list()
+
+            try:
+                jar_index = options.index("-jar")
+            except Exception:
+                continue
+
+            specjbb_options = options[jar_index+2:-1]
+
+            if contains_forbidden_flag(specjbb_options):
+                self.log.error("component arguments would have been NON-COMPLIANT")
+                return False
+
+        return True
+

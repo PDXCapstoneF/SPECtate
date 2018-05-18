@@ -150,7 +150,57 @@ class TestBenchmarkRun(unittest.TestCase):
                 self.assertTrue(filter(lambda line: "BACKEND" in line, component_invocations))
                 self.assertTrue(filter(lambda line: "TXINJECTOR" in line, component_invocations))
 
+    def test_compliant_runs_need_kit_validation(self):
+        ignore_kit_arguments = [{
+                "controller": {
+                    "type": "composite",
+                    "options": ["-ikv", "arg1", "arg2"],
+                },
+                "java": "java",
+                "jar": "env/Main.jar",
+            },
+            {
+                "controller": {
+                    "type": "multi",
+                    "options": ["-ikv", "arg1", "arg2"],
+                },
+                "java": "java",
+                "jar": "env/Main.jar",
+                },
+            { # on injector options
+                "controller": {
+                    "type": "multi",
+                    "options": ["arg1", "arg2"],
+                },
+                "backends": {
+                    "options": ["-ikv"],
+                    },
+                "java": "java",
+                "jar": "env/Main.jar",
+                },
+            { # on backend options
+                "controller": {
+                    "type": "multi",
+                    "options": ["arg1", "arg2"],
+                },
+                "injectors": {
+                    "options": ["-ikv"],
+                    },
+                "java": "java",
+                "jar": "env/Main.jar",
 
+                },
+            ]
+
+
+        for invalid_props in ignore_kit_arguments:
+            r = SpecJBBRun(**invalid_props)
+            self.assertFalse(r.compliant())
+
+    def test_valid_props_compliant(self):
+        for valid in self.valid_props:
+            r = SpecJBBRun(**valid)
+            self.assertTrue(r.compliant())
 
 class TestJvmRunOptions(unittest.TestCase):
     def test_given_none_will_fill_defaults(self):
@@ -160,18 +210,14 @@ class TestJvmRunOptions(unittest.TestCase):
         java_path = "java"
         j = JvmRunOptions(java_path)
 
-        self.assertEqual(j.path, java_path)
         self.assertEqual(j["path"], java_path)
-        self.assertEqual(j.options, [])
         self.assertEqual(j["options"], [])
 
     def test_given_list(self):
         java_list = ["java", "-jar", "example_jar"]
         j = JvmRunOptions(java_list)
 
-        self.assertEqual(j.path, java_list[0])
         self.assertEqual(j["path"], java_list[0])
-        self.assertEqual(j.options, java_list[1:])
         self.assertEqual(j["options"], java_list[1:])
 
     def test_given_dict(self):
@@ -182,9 +228,7 @@ class TestJvmRunOptions(unittest.TestCase):
 
         j = JvmRunOptions(valid)
 
-        self.assertEqual(j.path, valid["path"])
         self.assertEqual(j["path"], valid["path"])
-        self.assertEqual(j.options, valid["options"])
         self.assertEqual(j["options"], valid["options"])
 
     def test_with_dict_missing_options(self):
@@ -194,9 +238,7 @@ class TestJvmRunOptions(unittest.TestCase):
 
         j = JvmRunOptions(valid)
 
-        self.assertEqual(j.path, valid["path"])
         self.assertEqual(j["path"], valid["path"])
-        self.assertEqual(j.options, [])
         self.assertEqual(j["options"], [])
 
     def test_validates_dictionaries(self):
