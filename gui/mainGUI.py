@@ -274,18 +274,23 @@ class MainWindow(Frame):
     def on_select(self, event):
         selection = event.widget.curselection()
         current_run_tag = self.listbox.get(ACTIVE)
+        is_changed = False
         if selection:
             content = event.widget.get(selection[0])
             if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
                 print("MainWindow continues to edit the same run.")
             else:
                 if self.entries:
+                    current_run = self.run_manager.get_run_from_list(current_run_tag)
                     args_list = {}
                     args_list["args"] = {}
                     for key in self.entries:
+                        if self.entries[key].get() != current_run["args"][key]:
+                            is_changed = True
                         args_list["args"][key] = self.entries[key].get()
-                    print(args_list["args"])
                     self.run_manager.update_run(current_run_tag, args_list)
+                    if is_changed:
+                        self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
             self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
