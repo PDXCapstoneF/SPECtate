@@ -158,16 +158,19 @@ class RunManager:
         :param data: dict
         :return:
         """
+        print(data)
         if not isinstance(tag_to_find, str) or not isinstance(data, dict):
             return None
         for idx, run in enumerate(self.validated_runs["RunList"]):
+            print(run["tag"])
             if tag_to_find in run["tag"]:  # found run to update
+                print("Gotta", run["tag"])
                 for key, value in data["args"].items():  # update arg keys
                     run["args"][key] = value
                 data.pop("args")
                 for key, value in data.items():  # update highest level keys
                     run[key] = value
-            return run
+                return run
         return None
 
     def create_run(self, run_type):

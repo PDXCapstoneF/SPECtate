@@ -280,10 +280,11 @@ class MainWindow(Frame):
                 print("MainWindow continues to edit the same run.")
             else:
                 if self.entries:
-                    print(current_run_tag)
                     args_list = {}
+                    args_list["args"] = {}
                     for key in self.entries:
-                        args_list[key] = self.entries[key].get()
+                        args_list["args"][key] = self.entries[key].get()
+                    print(args_list["args"])
                     self.run_manager.update_run(current_run_tag, args_list)
                 print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
