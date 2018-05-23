@@ -33,7 +33,7 @@ class MainWindow(Frame):
         self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
-        self.entries, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
+        self.entries, self.arg_label, self.new_theme_window, self.menu_bar = None, None, None, None
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
@@ -211,10 +211,6 @@ class MainWindow(Frame):
         self.entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
-            try:
-                self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
-            except:
-                self.tater = PhotoImage(file="gui/tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,
@@ -223,7 +219,7 @@ class MainWindow(Frame):
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
-            self.canvas.create_image(5, 5, image=self.tater, anchor='nw', state=NORMAL)  # Label
+            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)  # Label
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
                                    # relief=SUNKEN,
@@ -278,7 +274,7 @@ class MainWindow(Frame):
         if selection:
             content = event.widget.get(selection[0])
             if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
-                print("MainWindow continues to edit the same run.")
+                pass
             else:
                 if self.entries:
                     current_run = self.run_manager.get_run_from_list(current_run_tag)
@@ -292,7 +288,6 @@ class MainWindow(Frame):
                     self.run_manager.update_run(current_run_tag, args_list)
                     if is_changed:
                         self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
-                print("MainWindow switched to new run.")
                 self.run_manager.set_current_run(content)
             self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
                                args_list=self.run_manager.get_run_from_list(content)["args"])
