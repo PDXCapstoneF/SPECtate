@@ -77,6 +77,7 @@ class MainWindow(Frame):
                                     command=lambda: self.duplicate_selected(self.listbox.curselection()))
         self.popup_menu.add_command(label='Run',
                                     command=lambda: self.do_runs(self.listbox.curselection()))
+        self.popup_menu.add_command(label='Rename', command=lambda: self.rename(self.listbox.curselection()))
 
         # Create canvas
         self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
@@ -325,6 +326,43 @@ class MainWindow(Frame):
             inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(item))
             if inserted is not None and isinstance(inserted, dict):
                 self.listbox.insert(END, inserted["tag"])
+
+    def rename(self, selection):
+        """
+        Create the window to rename, contains an Entry initialized which the current selection
+        :param selection: tuple of selected indexes
+        """
+        self.rename_window = Toplevel(self)
+        self.rename_window.title("Rename")
+        name_entry = Entry(self.rename_window)
+        name_entry.insert(INSERT, self.listbox.get(selection))
+        name_entry.focus_set()
+        name_entry.pack(fill=X)
+        confirm_btn = Button(self.rename_window, text="Rename",
+                             command=lambda: self.close_rename_window(name_entry.get(), selection[0]))
+        confirm_btn.pack()
+        self.rename_window.protocol("WM_DELETE_WINDOW", lambda: self.close_rename_window(name_entry.get(), selection[0]))
+
+    def close_rename_window(self, new_name, index):
+        """
+        On close the rename window, update the name in memory
+        :param new_name: the new name for the run
+        :param index: the index of the selected item in the listbox
+        :return:
+        """
+        answer = messagebox.askyesnocancel("Rename", "Do you want to rename and exit?")
+        if answer:
+            self.listbox.insert(index+1, new_name)
+            args_list = {"tag": new_name, "args": {}}
+            for key in self.entries:
+                args_list["args"][key] = self.entries[key].get()
+            self.run_manager.update_run(self.listbox.get(index), args_list)
+            self.listbox.delete(index)
+            self.rename_window.destroy()
+        elif answer is None:
+            return
+        else:
+            self.rename_window.destroy()
 
     def save(self):
         self.run_manager.write_to_file()
