@@ -1,9 +1,7 @@
 | Service        | Master           | Development  |
 | ------------- |:-------------:| ------------------:|
 | CI Status      | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=master)](https://travis-ci.org/PDXCapstoneF/SPECtate)    | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=dev)](https://travis-ci.org/PDXCapstoneF/SPECtate) |
-| Documentation Status | [![Documentation Status](https://readthedocs.org/projects/spectate/badge/?version=latest)](https://spectate.readthedocs.io/en/latest/?badge=latest)
- | [![Documentation Status](https://readthedocs.org/projects/spectate/badge/?version=dev)](https://spectate.readthedocs.io/en/latest/?badge=dev)
-|
+| Documentation Status | [![Documentation Status](https://readthedocs.org/projects/spectate/badge/?version=latest)](https://spectate.readthedocs.io/en/latest/?badge=latest) | [![Documentation Status](https://readthedocs.org/projects/spectate/badge/?version=dev)](https://spectate.readthedocs.io/en/latest/?badge=dev) |
 
 # SPECtate
 
