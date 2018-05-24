@@ -296,6 +296,25 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
             self.assertEqual(co["options"], options)
             self.assertEqual(co["jvm_opts"], jvm_opts)
 
+    def test_refuses_extra_prop_files(self):
+        options = ["-p", "an_extra_props_file.props"]
+
+        def construct_all_types(c):
+            with self.assertRaises(Exception):
+                SpecJBBComponentOptions(c, { "options": options })
+
+        component_options = list(map(construct_all_types, SpecJBBComponentTypes))
+
+    def test_refuses_setting_component_type(self):
+        options = ["-p", "an_extra_props_file.props"]
+
+        def construct_all_types(c):
+            with self.assertRaises(Exception):
+                SpecJBBComponentOptions(c, { "options": options })
+
+        component_options = list(map(construct_all_types, SpecJBBComponentTypes))
+
+
 
 class TestDo(unittest.TestCase):
     def test_do_calls_run_method_on_objects(self):
