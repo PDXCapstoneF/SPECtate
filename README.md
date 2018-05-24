@@ -1,9 +1,8 @@
-# SPECtate
-
 | Service        | Master           | Development  |
 | ------------- |:-------------:| ------------------:|
 | CI Status      | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=master)](https://travis-ci.org/PDXCapstoneF/SPECtate)    | [![Build Status](https://travis-ci.org/PDXCapstoneF/SPECtate.svg?branch=dev)](https://travis-ci.org/PDXCapstoneF/SPECtate) |
 
+# SPECtate
 
 SPECtate is a configuration tool that interfaces with the benchmarking software [SPECjbb®2015](https://www.spec.org/jbb2015/). SPECtate is designed to to be a more user-friendly alternative for configuring and invoking the SPECjbb®2015 benchmarking software, providing: 
 
