@@ -12,12 +12,9 @@ from tkinter import filedialog
 from tkinter import messagebox
 import webbrowser
 
-
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
-from src.benchmark_run import SpecJBBRun
-from src.run_generator import RunGenerator
 
 try:
     with open("gui/properties.json") as properties_file:
@@ -61,7 +58,7 @@ class MainWindow(Frame):
                                selectmode=SINGLE, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
-        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
+        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview)  # bg=self.colors["scrollbar"]
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
@@ -100,14 +97,6 @@ class MainWindow(Frame):
                 self.listbox.insert(i, run_list[i])
                 i += 1
 
-    def create_tag(self):
-        """
-        # @todo
-        Will be a naming convention for creating a run tag.
-        :return:
-        """
-        pass
-
     def do_runs(self, selection):
         for item in selection:
             run = self.run_manager.do_run(tag=self.listbox.get(item))
@@ -132,7 +121,6 @@ class MainWindow(Frame):
                         variable=button_results,
                         command=lambda: self.set_theme(var))
         button.pack(anchor='s')
-        # self.update()
 
     def set_theme(self, theme):
         theme = theme.get()
@@ -155,7 +143,7 @@ class MainWindow(Frame):
         file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
-                              command=lambda: self.create_new_run(),  accelerator="Ctrl+n")
+                              command=lambda: self.create_new_run(), accelerator="Ctrl+n")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"],
                               command='', accelerator="Ctrl+t")  # @todo
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
@@ -172,10 +160,6 @@ class MainWindow(Frame):
         # Edit Menu
         edit_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
-
-        # @todo: implement or remove.
-        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
-        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
 
         # Benchmark Menu
         benchmark_menu = Menu(self.menu_bar, tearoff=0)
@@ -215,17 +199,13 @@ class MainWindow(Frame):
                                  width=80,
                                  height=self.height,
                                  bg=self.colors["canvas_bg"],
-                                 #bg=self.colors['canvas'],
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
-            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)  # Label
+            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
-                                   # relief=SUNKEN,
-                                   #bg="red",
-                                   #fg="red",
-                                   highlightbackground=self.colors["highlightcolorbg"],  # dark = black
+                                   highlightbackground=self.colors["highlightcolorbg"],
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
@@ -235,15 +215,15 @@ class MainWindow(Frame):
             idx = 0
             for key, value in fields.items():
                 form = Entry(self.canvas,
-                                  insertofftime=500,
-                                  font=("Calibri", 12),
-                                  width=70,
-                                  relief=RIDGE,
-                                  highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
-                                  highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
-                                  bg=self.colors["text_bg"],  # good
-                                  fg=self.colors['text_fg'],
-                                  justify=CENTER)
+                             insertofftime=500,
+                             font=("Calibri", 12),
+                             width=70,
+                             relief=RIDGE,
+                             highlightcolor=self.colors["highlightcolor"],
+                             highlightbackground=self.colors["highlightcolorbg"],
+                             bg=self.colors["text_bg"],  # good
+                             fg=self.colors['text_fg'],
+                             justify=CENTER)
                 if args_list is None:
                     form.insert(INSERT, "default")
                 else:
@@ -257,7 +237,6 @@ class MainWindow(Frame):
                                        textvariable=var,
                                        relief=RAISED,
                                        font=("Calibri", 12),
-                                       # bg="black",
                                        bg=self.colors["label_bg"],
                                        fg=self.colors["label_fg"],
                                        width=15,
@@ -273,7 +252,8 @@ class MainWindow(Frame):
         is_changed = False
         if selection:
             content = event.widget.get(selection[0])
-            if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
+            if self.run_manager.compare_tags(a=self.run_manager.get_current_run(),
+                                             b=self.run_manager.get_run_from_list(content)):
                 pass
             else:
                 if self.entries:
@@ -289,8 +269,9 @@ class MainWindow(Frame):
                     if is_changed:
                         self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
                 self.run_manager.set_current_run(content)
-            self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
-                               args_list=self.run_manager.get_run_from_list(content)["args"])
+            self.make_arg_form(
+                fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
+                args_list=self.run_manager.get_run_from_list(content)["args"])
 
     def popup_window(self, event):
         """
@@ -312,9 +293,6 @@ class MainWindow(Frame):
         self.popup_menu.tk_popup(event.x_root, event.y_root)
 
     def delete_selected(self, selection):
-        # for item in selection[::-1]:
-        #     # @todo: RunManager call here
-        #     self.listbox.delete(item)
         # iterate from end to beginning, loop
         for item in selection[::-1]:
             removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(item))
@@ -377,17 +355,10 @@ class MainWindow(Frame):
         add a new run into the end of runlist
         :param runtype: string
         """
-        # @todo: create the run object. Then call self.run_man to add to list.
         runtype = runtype.get()
         self.new_theme_window.destroy()
         run = self.run_manager.create_run(runtype)
         self.listbox.insert(END, run)
-        # self.run_manager.insert_into_config_list("RunList", run)
-
-    def save_group(self):
-        # @todo: is this needed?
-        # save stuff
-        pass
 
     def load_file(self, type=None):
         """
@@ -432,14 +403,14 @@ class MainWindow(Frame):
         if i < self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
-            self.listbox.insert(i+1,x)
-            self.run_manager.set_run_index(run_tag=x, to_index=i+1)
+            self.listbox.insert(i + 1, x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i + 1)
             self.on_select(event)
         elif i > self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
-            self.listbox.insert(i-1,x)
-            self.run_manager.set_run_index(run_tag=x, to_index=i-1)
+            self.listbox.insert(i - 1, x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i - 1)
             self.on_select(event)
 
 
