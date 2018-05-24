@@ -19,13 +19,14 @@ TEMPLATE_TRANS = 'translations'
 TEMPLATE_DEFAULT = 'prop_options'
 
 TYPE_CHECK_FUNC = {
-    'string' : lambda x : str(x),
-    'int' : lambda x : int(x),
-    'integer' : lambda x : int(x),
-    'float' : lambda x : float(x),
-    'bool' : lambda x : x not in set(['false', 'False']),
-    'boolean' : lambda x : x not in set(['false', 'False']),
+    'string': lambda x: str(x),
+    'int': lambda x: int(x),
+    'integer': lambda x: int(x),
+    'float': lambda x: float(x),
+    'bool': lambda x: x not in set(['false', 'False']),
+    'boolean': lambda x: x not in set(['false', 'False']),
 }
+
 
 def write_json(filename, python_dict):
     """ 
@@ -45,34 +46,42 @@ def read_json(filename):
     with open(filename) as f:
         return json.load(f)
 
+
 def print_dict(d):
     for key, value in sorted(d.items(), key=lambda x: x[0]):
         print("{}: {}".format(key, value))
+
 
 # Level-one layer of dialogue.
 # All functions take run_dict, template_dict as arguments so that they can be
 # called homogenously from a dictionary in `dialogue`.
 
+
 def tag_in_runlist(tag, run_list):
     """
     Returns True if a Run with tag `tag` is in the list.
     """
-    return any(map(lambda run : run[TAG_ARG] == tag, run_list))
+    return any(map(lambda run: run[TAG_ARG] == tag, run_list))
+
 
 def find(f, seq):
     """
     Return first item in sequence where f(item) == True.
     """
     for item in seq:
-        if f(item): 
+        if f(item):
             return item
+
+
 def find_run_tag(tag, run_list):
-    return find(lambda run : run[TAG_ARG] == tag, run_list)
+    return find(lambda run: run[TAG_ARG] == tag, run_list)
+
 
 # Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
 # `dialogue`. All functions must, in turn, *return* a tuple (run_dict,
 # template_dict) as arguments.
+
 
 def print_all_runs(run_list, template_dict):
     """
@@ -87,11 +96,12 @@ def print_all_runs(run_list, template_dict):
         print()
     return (run_list, template_dict)
 
+
 def create_run(run_list, template_dict):
     new_run = {}
     # Inputting run type.
-    print('Input the template type. Current options: {}'.format(
-            ' '.join(sorted(template_dict.keys()))))
+    print('Input the template type. Current options: {}'.format(' '.join(
+        sorted(template_dict.keys()))))
     template_type = input('-> ')
     if template_type not in template_dict.keys():
         user_input = input('{} is not currently an option. Add it? '\
@@ -121,12 +131,12 @@ def create_run(run_list, template_dict):
                     return (run_list, template_dict)
                 elif user_input in HELP_CONSTS:
                     print('Annotation:\n{}\nType:\n{}\n'.format(
-                          template_dict[template_type]['annotations'][arg],
-                          template_dict[template_type]['types'][arg]))
-                else: 
+                        template_dict[template_type]['annotations'][arg],
+                        template_dict[template_type]['types'][arg]))
+                else:
                     try:
-                        type_func = TYPE_CHECK_FUNC[
-                          template_dict[template_type][TEMPLATE_TYPES][arg]]
+                        type_func = TYPE_CHECK_FUNC[template_dict[template_type]
+                                                    [TEMPLATE_TYPES][arg]]
                         user_input = type_func(user_input)
                         new_run[RUNLIST_ARGS][arg] = user_input
                         break
@@ -142,8 +152,9 @@ def create_run(run_list, template_dict):
         else:
             if input('Discard new run {}? '.format(new_tag)) in YES_CONSTS:
                 return run_list, template_dict
-    
+
     return run_list, template_dict
+
 
 def create_template(run_list, template_dict):
     new_template = {}
@@ -183,9 +194,8 @@ def create_template(run_list, template_dict):
                               'Blank input skips this step. ')
         if new_arg_trans in EXIT_CONSTS:
             break
-        
-        print('Current argument:\n',
-              'Arg: {}\n'.format(new_arg),
+
+        print('Current argument:\n', 'Arg: {}\n'.format(new_arg),
               'Type: {}\n'.format(new_arg_type),
               'Annotation: {}\n'.format(new_arg_annotation),
               'Translation: {}'.format(new_arg_trans))
@@ -196,7 +206,7 @@ def create_template(run_list, template_dict):
             new_template[TEMPLATE_TYPES][new_arg] = new_arg_type
             if new_arg_trans:
                 new_template[TEMPLATE_TRANS][new_arg] = new_arg_trans
-    
+
     # Default props.
     while True:
         default_property = input('Input a default property. Blank or \'exit\' '\
@@ -220,14 +230,13 @@ def create_template(run_list, template_dict):
 
     return run_list, template_dict
 
+
 def delete_run(run_list, template_dict):
     print('Input the tag of the Run that you want to delete. Available tags')
-    print('are {}'.format(
-                   ' '.join(run[TAG_ARG] for run in run_list)))
+    print('are {}'.format(' '.join(run[TAG_ARG] for run in run_list)))
     delete_tag = input('-> ')
 
-    new_run_list = [run for run in run_list 
-                    if run[TAG_ARG] != delete_tag]
+    new_run_list = [run for run in run_list if run[TAG_ARG] != delete_tag]
     if len(run_list) == len(new_run_list):
         print('Tag {} does not exist.'.format(delete_tag))
     else:
@@ -239,15 +248,15 @@ def delete_run(run_list, template_dict):
             print('Deletion of tag {} cancelled.'.format(delete_tag))
     return run_list, template_dict
 
+
 def copy_run(run_list, template_dict):
     print('Input the tag of the Run that you want to copy. Available tags')
-    print('are {}'.format(
-                   ' '.join(run[TAG_ARG] for run in run_list)))
+    print('are {}'.format(' '.join(run[TAG_ARG] for run in run_list)))
     old_run_tag = input('-> ')
 
     if old_run_tag in EXIT_CONSTS:
         return run_list, template_dict
-    
+
     old_run = find_run_tag(old_run_tag, run_list)
     if not old_run:
         print('Tag {} not found.'.format(old_run_tag))
@@ -266,13 +275,14 @@ def copy_run(run_list, template_dict):
         else:
             new_run[TAG_ARG] = new_run_tag
             break
-    
+
     if input('Add run {} to RunList? '.format(new_run_tag)) in YES_CONSTS:
         print('Added run {} to RunList.'.format(new_run_tag))
         run_list.append(new_run)
     else:
         print('Run {} not copied.'.format(old_run_tag))
     return run_list, template_dict
+
 
 def edit_run(run_list, template_dict):
     edit_tag = input('Input the tag of the Run you want to edit. ')
@@ -315,7 +325,7 @@ def edit_run(run_list, template_dict):
             except:
                 print('Invalid input.')
 
-    
+
     if input('Are you sure you want to change run {}? '\
              .format(old_run[TAG_ARG])) in YES_CONSTS:
         # Find the index of old_run and create a new list with new_run in its
@@ -323,12 +333,13 @@ def edit_run(run_list, template_dict):
         for index, run in enumerate(run_list):
             if run == old_run:
                 print('Run {} changed.'.format(old_run[TAG_ARG]))
-                return (run_list[:index] + [new_run] + run_list[index+1:], 
+                return (run_list[:index] + [new_run] + run_list[index + 1:],
                         template_dict)
         print('Something terribly wrong has happened. Cancelled.')
     else:
         print('Edit of Run {} cancelled.'.format(old_run[TAG_ARG]))
     return run_list, template_dict
+
 
 def delete_template(run_list, template_dict):
     delete_tag = input('Enter the tag of the template you want to delete. ')
@@ -343,6 +354,7 @@ def delete_template(run_list, template_dict):
         print('Deletion of Template {} cancelled.'.format(delete_tag))
     return run_list, template_dict
 
+
 def save_tate(run_list, template_dict):
     filename = input('Input a filename to save the TateConfig to. ')
     if not filename or filename in EXIT_CONSTS:
@@ -351,11 +363,15 @@ def save_tate(run_list, template_dict):
     if input('Are you sure you want to save to {}? '.format(filename))\
         in YES_CONSTS:
         try:
-            write_json(filename, {RUN_LIST : run_list, TEMPLATE_DATA : template_dict})
+            write_json(filename, {
+                RUN_LIST: run_list,
+                TEMPLATE_DATA: template_dict
+            })
             print('Saved TateConfig to {}'.format(filename))
         except:
             print('Unable to save to {}.'.format(filename))
     return run_list, template_dict
+
 
 def load_tate(run_list, template_dict):
     filename = input('Input a filename to load the TateConfig from. ')
@@ -371,6 +387,7 @@ def load_tate(run_list, template_dict):
         except:
             print('Unable to load filename {}'.format(filename))
     return run_list, template_dict
+
 
 def reorder_run(run_list, template_dict):
     print('Select an index to reorder.')
@@ -399,9 +416,8 @@ def reorder_run(run_list, template_dict):
     except:
         print('Invalid index.')
         return run_list, template_dict
-    
+
     print('Reorder canceled.')
-    
 
 
 def error(run_dict, template_dict):
@@ -423,29 +439,29 @@ def dialogue():
         json_filename = default_json
 
     function_dict = {
-        'print all' : print_all_runs,
-        'create run' : create_run,
-        'create template' : create_template,
-        'delete run' : delete_run,
-        'delete template' : delete_template,
-        'copy run' : copy_run,
-        'edit run' : edit_run,
-        'save tate' : save_tate,
-        'load tate' : load_tate,
-        'reorder run' : reorder_run,
+        'print all': print_all_runs,
+        'create run': create_run,
+        'create template': create_template,
+        'delete run': delete_run,
+        'delete template': delete_template,
+        'copy run': copy_run,
+        'edit run': edit_run,
+        'save tate': save_tate,
+        'load tate': load_tate,
+        'reorder run': reorder_run,
     }
 
     option_description_dict = {
-        'print all' : 'Print all runs',
-        'create run' : 'Create a run',
-        'create template' : 'Create a template',
-        'delete run' : 'Delete a run',
-        'delete template' : 'Delete a template',
-        'copy run' : 'Copy a run',
-        'edit run' : 'Edit a run',
-        'save tate' : 'Save TateConfig',
-        'load tate' : 'Load TateConfig',
-        'reorder run' : 'Reorder a run',
+        'print all': 'Print all runs',
+        'create run': 'Create a run',
+        'create template': 'Create a template',
+        'delete run': 'Delete a run',
+        'delete template': 'Delete a template',
+        'copy run': 'Copy a run',
+        'edit run': 'Edit a run',
+        'save tate': 'Save TateConfig',
+        'load tate': 'Load TateConfig',
+        'reorder run': 'Reorder a run',
     }
 
     try:
@@ -472,7 +488,6 @@ def dialogue():
         if user_input.lower() in HELP_CONSTS:
             continue
         elif user_input.lower() not in EXIT_CONSTS:
-            run_list, template_dict = function_dict.get(user_input, error)(run_list, template_dict)
+            run_list, template_dict = function_dict.get(user_input, error)(
+                run_list, template_dict)
     print('Exiting.')
-
-

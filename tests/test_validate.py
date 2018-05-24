@@ -6,11 +6,11 @@ from src.validate import validate, TemplateDataSchema, random_run_id
 
 class TestSpectateConfigValidator(TestCase):
     examples = [
-            'example_config.json',
-            'examples/example_curses_template.json',
-            'examples/example_basic_config.json',
-            'examples/example_config.json',
-            ]
+        'example_config.json',
+        'examples/example_curses_template.json',
+        'examples/example_basic_config.json',
+        'examples/example_config.json',
+    ]
 
     def test_example_config_does_validate(self):
         for example in self.examples:
@@ -114,33 +114,32 @@ class TestSpectateConfigValidator(TestCase):
             })
 
     sample_hbir_template = {
-                "args": [
-                    "Tag", "Kit Version", "JDK", "RTSTART",
-                    "JVM Options", "NUMA Nodes", "Data Collection",
-                    "T1", "T2", "T3"
-                ],
-                "prop_options": {
-                    "specjbb.controller.type": "HBIR",
-                    "specjbb.time.server": False,
-                    "specjbb.comm.connect.client.pool.size": 192,
-                    "specjbb.comm.connect.selector.runner.count": 4,
-                    "specjbb.comm.connect.timeouts.connect": 650000,
-                    "specjbb.comm.connect.timeouts.read": 650000,
-                    "specjbb.comm.connect.timeouts.write": 650000,
-                    "specjbb.comm.connect.worker.pool.max": 320,
-                    "specjbb.customerDriver.threads": 64,
-                    "specjbb.customerDriver.threads.saturate": 144,
-                    "specjbb.customerDriver.threads.probe": 96,
-                    "specjbb.mapreducer.pool.size": 27
-                },
-                "translations": {
-                    "RTSTART": "specjbb.controller.rtcurve.start",
-                    "T1": "specjbb.forkjoin.workers.Tier1",
-                    "T2": "specjbb.forkjoin.workers.Tier2",
-                    "T3": "specjbb.forkjoin.workers.Tier3",
-                    "NUMA Nodes": "specjbb.group.count"
-                }
-            }
+        "args": [
+            "Tag", "Kit Version", "JDK", "RTSTART", "JVM Options", "NUMA Nodes",
+            "Data Collection", "T1", "T2", "T3"
+        ],
+        "prop_options": {
+            "specjbb.controller.type": "HBIR",
+            "specjbb.time.server": False,
+            "specjbb.comm.connect.client.pool.size": 192,
+            "specjbb.comm.connect.selector.runner.count": 4,
+            "specjbb.comm.connect.timeouts.connect": 650000,
+            "specjbb.comm.connect.timeouts.read": 650000,
+            "specjbb.comm.connect.timeouts.write": 650000,
+            "specjbb.comm.connect.worker.pool.max": 320,
+            "specjbb.customerDriver.threads": 64,
+            "specjbb.customerDriver.threads.saturate": 144,
+            "specjbb.customerDriver.threads.probe": 96,
+            "specjbb.mapreducer.pool.size": 27
+        },
+        "translations": {
+            "RTSTART": "specjbb.controller.rtcurve.start",
+            "T1": "specjbb.forkjoin.workers.Tier1",
+            "T2": "specjbb.forkjoin.workers.Tier2",
+            "T3": "specjbb.forkjoin.workers.Tier3",
+            "NUMA Nodes": "specjbb.group.count"
+        }
+    }
 
     sample_args = {
         "Tag": "sample Tag",
@@ -155,24 +154,23 @@ class TestSpectateConfigValidator(TestCase):
         "T3": 3,
     }
 
-
     def test_RunList_with_times_validates(self):
         v = validate({
-                "TemplateData": {
-                    "HBIR": self.sample_hbir_template,
+            "TemplateData": {
+                "HBIR": self.sample_hbir_template,
+            },
+            "RunList": [
+                {
+                    "template_type": "HBIR",
+                    "args": self.sample_args,
                 },
-                "RunList": [
-                    {
-                        "template_type": "HBIR",
-                        "args": self.sample_args,
-                    },
-                    {
-                        "template_type": "HBIR",
-                        "args": self.sample_args,
-                        "times": 2,
-                    },
-                ]
-            })
+                {
+                    "template_type": "HBIR",
+                    "args": self.sample_args,
+                    "times": 2,
+                },
+            ]
+        })
 
         for run in v["RunList"]:
             self.assertEqual(self.sample_args, run["args"])
@@ -184,14 +182,12 @@ class TestSpectateConfigValidator(TestCase):
         v = validate({
             "TemplateData": {
                 "HBIR": self.sample_hbir_template,
-                },
-            "RunList": [
-                {
-                    "template_type": "HBIR",
-                    "args": self.sample_args,
-                    }
-                ]
-            })
+            },
+            "RunList": [{
+                "template_type": "HBIR",
+                "args": self.sample_args,
+            }]
+        })
 
         self.assertTrue(v["RunList"][0]["tag"])
 
@@ -201,15 +197,13 @@ class TestSpectateConfigValidator(TestCase):
         v = validate({
             "TemplateData": {
                 "HBIR": self.sample_hbir_template,
-                },
-            "RunList": [
-                {
-                    "template_type": "HBIR",
-                    "args": self.sample_args,
-                    "tag": custom_tag,
-                    }
-                ]
-            })
+            },
+            "RunList": [{
+                "template_type": "HBIR",
+                "args": self.sample_args,
+                "tag": custom_tag,
+            }]
+        })
 
         self.assertEqual(v["RunList"][0]["tag"], custom_tag)
 
@@ -220,18 +214,14 @@ class TestSpectateConfigValidator(TestCase):
             self.assertFalse({
                 "TemplateData": {
                     "HBIR": self.sample_hbir_template,
-                    },
-                "RunList": [
-                    {
-                        "template_type": "HBIR",
-                        "args": self.sample_args,
-                        "tag": custom_tag,
-                        },
-                    {
-                        "template_type": "HBIR",
-                        "args": self.sample_args,
-                        "tag": custom_tag,
-                        }
-                    ]
-                })
-
+                },
+                "RunList": [{
+                    "template_type": "HBIR",
+                    "args": self.sample_args,
+                    "tag": custom_tag,
+                }, {
+                    "template_type": "HBIR",
+                    "args": self.sample_args,
+                    "tag": custom_tag,
+                }]
+            })
