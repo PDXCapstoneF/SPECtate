@@ -52,7 +52,7 @@ class MainWindow(Frame):
         self.right_frame = Frame(self.master, background=self.colors['frame'],
                                  borderwidth=5, relief=RIDGE,
                                  height=250,
-                                 width=50)
+                                 width=85)
         self.left_frame.pack(side=LEFT, fill=BOTH, expand=YES)
         self.right_frame.pack(side=RIGHT, fill=BOTH, expand=YES)
 
@@ -80,7 +80,7 @@ class MainWindow(Frame):
         self.popup_menu.add_command(label='Rename', command=lambda: self.rename(self.listbox.curselection()))
 
         # Create canvas
-        self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
+        self.canvas = Canvas(self.right_frame, width=85, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
         self.canvas.config(scrollregion=(0, 0, 300, 650), highlightthickness=0)
         self.canvas.pack(side="right", expand=True, fill="both")
 
@@ -213,7 +213,7 @@ class MainWindow(Frame):
         if self.canvas is not None:
             self.canvas.destroy()
             self.canvas = Canvas(self.right_frame,
-                                 width=80,
+                                 width=85,
                                  height=self.height,
                                  bg=self.colors["canvas_bg"],
                                  #bg=self.colors['canvas'],
@@ -238,7 +238,7 @@ class MainWindow(Frame):
                 form = Entry(self.canvas,
                                   insertofftime=500,
                                   font=("Calibri", 12),
-                                  width=70,
+                                  width=53,
                                   relief=RIDGE,
                                   highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
                                   highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
@@ -249,6 +249,8 @@ class MainWindow(Frame):
                     form.insert(INSERT, "default")
                 else:
                     form.insert(INSERT, args_list[key])
+                hsb = Scrollbar(orient=HORIZONTAL, command=form.xview)
+                form.configure(xscrollcommand=hsb.set)
                 self.entries[key] = form
                 var = StringVar()
                 var.set(key)
@@ -264,9 +266,10 @@ class MainWindow(Frame):
                                        width=15,
                                        justify=LEFT)
                 form.grid(row=idx, column=1, sticky=W)
+                hsb.grid(row=idx+1, columnspan=2, sticky=EW, in_=self.canvas)
                 self.arg_label.grid(row=idx, column=0, sticky=W)
                 Tooltip(self.arg_label, text=value)
-                idx += 1
+                idx += 2
 
     def on_select(self, event):
         selection = event.widget.curselection()
@@ -337,6 +340,7 @@ class MainWindow(Frame):
         name_entry = Entry(self.rename_window)
         name_entry.insert(INSERT, self.listbox.get(selection))
         name_entry.focus_set()
+        name_entry.selection_range(0, END)
         name_entry.pack(fill=X)
         confirm_btn = Button(self.rename_window, text="Rename",
                              command=lambda: self.close_rename_window(name_entry.get(), selection[0]))
