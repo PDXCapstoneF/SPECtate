@@ -2,6 +2,7 @@
 
 from run_manager import RunManager
 from tooltip import Tooltip
+from new_window import NewWindow
 import os
 import pathlib
 import sys
@@ -155,8 +156,8 @@ class MainWindow(Frame):
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
                               command=lambda: self.create_new_run(),  accelerator="Ctrl+n")
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"],
-                              command='', accelerator="Ctrl+t")  # @todo
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_template"],
+                              command=lambda: self.create_new_template(), accelerator="Ctrl+t")  # @todo
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
                               command=self.save, accelerator="Ctrl+s")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
@@ -355,6 +356,11 @@ class MainWindow(Frame):
                         variable=button_results,
                         command=lambda: self.add_new_run(var))
         button.pack(anchor='s')
+
+    def create_new_template(self):
+        self.new_template_window = Toplevel(self.master)
+        self.new_template_window.title("Create New Template")
+        NewWindow(self.new_template_window)
 
     def add_new_run(self, runtype):
         """
