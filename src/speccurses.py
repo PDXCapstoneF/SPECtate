@@ -7,8 +7,8 @@ import os.path
 import sys
 from traceback import TracebackException
 
-import objects
-from objects import spec_decoder, spec_config, spec_run
+import src.objects
+from src.objects import spec_decoder, spec_config, spec_run
 
 # KEY_ENTER = 343, but my ENTER key registers as 10 =/
 from src.runcontext import runcontext

@@ -5,6 +5,7 @@ Usage:
     mainCLI.py validate [options] <config>
     mainCLI.py compliant [options] <config>
     mainCLI.py dialogue [options]
+    mainCLI.py curses [options]
     mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
     mainCLI.py (-h | --help)
@@ -27,10 +28,11 @@ from shutil import copy, rmtree
 from docopt import docopt
 
 # source imports
-import dialogue
+from src import dialogue
 from src import validate
 from src import run_generator
 from src import benchmark_run
+from src import speccurses
 
 log = logging.getLogger(__name__)
 
@@ -131,6 +133,8 @@ def do_compliant(arguments):
         s.dump(logging.INFO)
         log.info("compliant? {}".format(s.compliant()))
 
+def do_curses(arguments):
+    speccurses.main()
 
 # dictionary of runnables
 # these are functions that take arguments from the
@@ -140,6 +144,7 @@ do = {
     'validate': do_validate,
     'compliant': do_compliant,
     'dialogue': do_dialogue,
+    'curses': do_curses,
     'script': do_script,
     'scripts': do_scripts,
 }
