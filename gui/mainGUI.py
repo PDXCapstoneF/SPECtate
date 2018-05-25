@@ -251,6 +251,10 @@ class MainWindow(Frame):
                     form.insert(INSERT, args_list[key])
                 hsb = Scrollbar(orient=HORIZONTAL, command=form.xview)
                 form.configure(xscrollcommand=hsb.set)
+                form.bind('<Control-c>', lambda event: form.event_generate("<<Copy>>"))
+                form.bind('<Control-p>', lambda event: form.event_generate("<<Paste>>"))
+                form.bind('<<Paste>>', lambda event: self.custom_paste(event))
+                form.bind('<Control-x>', lambda event: form.event_generate("<<Cut>>"))
                 self.entries[key] = form
                 var = StringVar()
                 var.set(key)
@@ -271,6 +275,18 @@ class MainWindow(Frame):
                 Tooltip(self.arg_label, text=value)
                 idx += 2
 
+    def custom_paste(self, event):
+        """
+        Modify the paste for working on Linux
+        Delete the content from sel.first to sel.last and insert whatever from the clipboard
+        """
+        try:
+            event.widget.delete("sel.first", "sel.last")
+        except:
+            pass
+        event.widget.insert("insert", event.widget.clipboard_get())
+        return "break"
+
     def on_select(self, event):
         selection = event.widget.curselection()
         current_run_tag = self.listbox.get(ACTIVE)
@@ -282,8 +298,7 @@ class MainWindow(Frame):
             else:
                 if self.entries:
                     current_run = self.run_manager.get_run_from_list(current_run_tag)
-                    args_list = {}
-                    args_list["args"] = {}
+                    args_list = {"args": {}}
                     for key in self.entries:
                         if self.entries[key].get() != str(current_run["args"][key]):
                             print(self.entries[key].get(), current_run["args"][key])
