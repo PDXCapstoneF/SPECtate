@@ -144,12 +144,16 @@ class RunManager:
         if self.initialized():
             try:
                 if key == "TemplateData":
-                    self.validated_runs[key][data["RunType"]] = data
+                    self.validated_runs[key][data["template_type"]] = data
                 elif key == "RunList":
                     self.validated_runs[key].append(data)
                     return True
             except:  # not a valid run
                 return None
+
+    def create_template(self):
+        #self.insert_into_config_list(key="TemplateData", )
+        pass
 
     def create_run(self, run_type):
         """
