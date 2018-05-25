@@ -1,5 +1,7 @@
 """
-This module replaces `run.sh`.
+This module adds the necessary machinery to do
+SPECjbb2015 runs without much additional configuration,
+with logging and error handling included.
 """
 
 import os
@@ -11,6 +13,7 @@ import configparser
 
 from src.task_runner import TaskRunner
 from src.validate import random_run_id
+from src.compliant import compliant
 
 log = logging.getLogger(__name__)
 
@@ -38,8 +41,14 @@ def do(task):
     task.run()
     log.debug("finished task {}".format(task))
 
+def do_dry(task):
+    """
+    Prints some additional logging information without
+    actually running the task. Similar to `do`.
+    """
+    log.info("DRY: {}".format(task))
 
-class JvmRunOptions:
+class JvmRunOptions(dict):
     """
     A helper class for SpecJBBRun, to provide defaults and a way
     for lists, dict etc to be coerced into something that SpecJBBRun can work with.
@@ -53,15 +62,15 @@ class JvmRunOptions:
         If dict: validate that the dict has the required keys, and set the internal dict to val.
         """
         if isinstance(val, str):
-            self.__dict__ = {
+            self.update({
                 "path": val,
                 "options": [],
-            }
+            })
         elif isinstance(val, list):
-            self.__dict__ = {
+            self.update({
                 "path": val[0],
                 "options": val[1:],
-            }
+            })
         elif isinstance(val, dict):
             if "path" not in val:
                 raise Exception("'path' not specified for JvmRunOptions")
@@ -72,30 +81,15 @@ class JvmRunOptions:
             elif not isinstance(val["options"], list):
                 raise Exception("'path' must be a string")
 
-            self.__dict__ = val
+            self.update(val)
         elif val is None:
-            self.__dict__ = {
+            self.update({
                 "path": "java",
                 "options": []
-            }
+            })
         else:
             raise Exception(
                 "unrecognized type given to JvmRunOptions: {}".format(type(val)))
-
-    def __getitem__(self, name):
-        """
-        Defined so that JvmRunOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that JvmRunOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
 
 
 """
@@ -140,39 +134,24 @@ class SpecJBBComponentOptions(dict):
 
             rest["type"] = component_type
 
-            self.__dict__ = rest
+            self.update(rest)
         elif isinstance(rest, int):
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": rest,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         elif rest is None:
-            self.__dict__ = {
+            self.update({
                 "type": component_type,
                 "count": 1,
                 "options": [],
                 "jvm_opts": []
-            }
+            })
         else:
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
-
-    def __getitem__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions is subscriptable.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __getattr__(self, name):
-        """
-        Defined so that SpecJBBComponentOptions can be accessed via attr names.
-        """
-        return self.__dict__.__getitem__(name)
-
-    def __repr__(self):
-        return "{}".format(self.__dict__)
 
 
 class SpecJBBRun:
@@ -186,6 +165,7 @@ class SpecJBBRun:
                  controller=None,
                  backends=None,
                  injectors=None,
+                 cwd=None,
                  java=None,
                  jar=None,
                  tag=None,
@@ -207,6 +187,7 @@ class SpecJBBRun:
         if None in [java, jar] or not isinstance(jar, str):
             raise InvalidRunConfigurationException
 
+        self.cwd = os.path.abspath(cwd) if cwd else os.getcwd()
         self.jar = os.path.abspath(jar)
         self.times = times
         self.props = props
@@ -237,10 +218,10 @@ class SpecJBBRun:
             self.controller = SpecJBBComponentOptions("composite")
         else:
             self.controller = SpecJBBComponentOptions(
-                controller["type"], controller)
+                controller["type"], rest=controller)
 
-        self.backends = SpecJBBComponentOptions("backend", backends)
-        self.injectors = SpecJBBComponentOptions("txinjector", injectors)
+        self.backends = SpecJBBComponentOptions("backend", rest=backends)
+        self.injectors = SpecJBBComponentOptions("txinjector", rest=injectors)
 
     def _generate_tasks(self):
         """
@@ -273,48 +254,65 @@ class SpecJBBRun:
                                  '-G={}'.format(group_id),
                                  '-J={}'.format(ti_jvm_id))
 
-    def run(self):
-        pwd = os.getcwd()
-        results_directory = os.path.abspath(str(self.run_id))
+    def run(self, dry_run=False):
+        """
+        Sets up the results directory, and executes the configured
+        runs based on self.
+        `dry_run` sets whether or not to actually run the JVMs associated with
+        this run.
+        """
+
+        results_directory = os.path.join(self.cwd, str(self.run_id))
 
         self.log.debug("set run directory to {}".format(results_directory))
 
-        try:
-            self.log.debug(
-                "attempting to create results directory {}".format(results_directory))
+        if dry_run:
+            return self._run(dry_run)
+        else:
             try:
+                self.log.debug(
+                    "attempting to create results directory {}".format(results_directory))
                 os.mkdir(results_directory)
             except os.FileExistsError:
-                self.log.debug(
+                self.log.error(
                     "run results directory already existed, continuing")
 
             os.chdir(results_directory)
 
-            for number_of_times in range(self.times):
-                self.log.debug(
-                        "beginning run {}/{}".format(number_of_times, self.times))
-                self._run()
+            try:
+                for number_of_times in range(self.times):
+                    self.log.debug(
+                            "beginning run {}/{}".format(number_of_times, self.times))
+                    self._run(dry_run)
+            except Exception as e:
+                self.log.error(
+                    "exception: {}, removing results directory".format(e))
+                shutil.rmtree(results_directory)
+            finally:
+                self.log.info("returning to {}".format(self.cwd))
+                os.chdir(self.cwd)
 
-        except Exception as e:
-            self.log.error(
-                "exception: {}, removing results directory".format(e))
-            shutil.rmtree(results_directory)
-        finally:
-            os.chdir(pwd)
-
-    def _run(self):
+    def _run(self, dry_run=False):
         """
         Executes this particular SpecJBBRun by:
-        - writing the props file for this run at self.props_file
-        - setting up the controller and running its task
-        - setting up the transaction injectors and backends and running their tasks
-        - emmitting "done" messages when finished
+            - writing the props file for this run at self.props_file
+            - setting up the controller and running its task
+            - setting up the transaction injectors and backends and running their tasks
+            - emmitting "done" messages when finished
+        `dry_run` set to True will commit all of these changes.
         """
         # write props file (or ensure it exists)
-        with open(self.props_file, 'w+') as props_file:
-            c = configparser.ConfigParser()
-            c.read_dict({'SPECtate': self.props})
-            c.write(props_file)
+        if dry_run:
+            self.log.info("DRY: run would write following props:")
+            if not self.props:
+                self.log.info("DRY: (none provided)")
+            for name, value in self.props.items():
+                self.log.info("DRY: name: {}, value({}): {}".format(name, type(value), value))
+        else:
+            with open(self.props_file, 'w+') as props_file:
+                c = configparser.ConfigParser()
+                c.read_dict({'SPECtate': self.props})
+                c.write(props_file)
 
         # setup jvms
         # we first need to setup the controller
@@ -323,7 +321,11 @@ class SpecJBBRun:
 
         if self.controller["type"] == "composite":
             self.log.info("begin composite benchmark")
-            c.run()
+            if dry_run:
+                self.log.info("DRY: run would invoke following controller:")
+                self.log.info("DRY: {}".format(c))
+            else:
+                c.run()
             self.log.info("done")
             return
 
@@ -337,20 +339,25 @@ class SpecJBBRun:
         # run benchmark
         self.log.info("begin benchmark")
 
-        pool.map(do, tasks)
+        if dry_run:
+            pool.map(do_dry, tasks)
+        else:
+            pool.map(do, tasks)
+
         c.stop()
         self.log.info("done")
 
     def dump(self, level=logging.DEBUG):
         """
-        Dumps info about this currently configured run.
+        Dumps all the information about this currently configured run.
         """
 
         self.log.log(level, vars(self))
 
     def _full_options(self, options_dict):
         """
-        Returns a list of arguments, formatted for the specific JVM invocation.
+        Returns a list of arguments (as they would be passed to Popen),
+        formatted for the specific JVM invocation.
         """
         self.log.debug(
             "full options being generated from: {}".format(options_dict))
@@ -365,10 +372,45 @@ class SpecJBBRun:
         return java + spec
 
     def controller_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.controller)
 
     def backend_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.backends)
 
     def injector_run_args(self):
+        """See self._full_options"""
         return self._full_options(self.injectors)
+
+    def compliant(self):
+        if not compliant(self.props):
+            self.log.error("prop file would have been NON-COMPLIANT")
+            return False
+
+        def contains_forbidden_flag(l):
+            """Returns if a list contains '-ikv'"""
+            return [match for match in l if match == "-ikv"]
+
+        if contains_forbidden_flag(self.controller["options"]):
+            self.log.error("controller arguments would have been NON-COMPLIANT")
+            return False
+
+        tasks = [task for task in self._generate_tasks()]
+
+        for task in tasks:
+            options = task.argument_list()
+
+            try:
+                jar_index = options.index("-jar")
+            except Exception:
+                continue
+
+            specjbb_options = options[jar_index+2:-1]
+
+            if contains_forbidden_flag(specjbb_options):
+                self.log.error("component arguments would have been NON-COMPLIANT")
+                return False
+
+        return True
+

@@ -9,15 +9,23 @@ HELP_CONSTS = set(['?', 'help'])
 TEMPLATE_DATA = 'TemplateData'
 RUN_LIST = 'RunList'
 RUNLIST_ARGS = 'args'
-TAG_ARG = 'Tag'
+TAG_ARG = 'tag'
 RUN_TEMPLATE_TYPE = 'template_type'
 
 TEMPLATE_ARGS = 'args'
 TEMPLATE_ANNO = 'annotations'
 TEMPLATE_TYPES = 'types'
 TEMPLATE_TRANS = 'translations'
-TEMPLATE_DEFAULT = 'default_props' 
+TEMPLATE_DEFAULT = 'prop_options'
 
+TYPE_CHECK_FUNC = {
+    'string' : lambda x : str(x),
+    'int' : lambda x : int(x),
+    'integer' : lambda x : int(x),
+    'float' : lambda x : float(x),
+    'bool' : lambda x : x not in set(['false', 'False']),
+    'boolean' : lambda x : x not in set(['false', 'False']),
+}
 
 def write_json(filename, python_dict):
     """ 
@@ -42,20 +50,14 @@ def print_dict(d):
         print("{}: {}".format(key, value))
 
 # Level-one layer of dialogue.
-# All functions take run_dict, runtype_dict as arguments so that they can be
+# All functions take run_dict, template_dict as arguments so that they can be
 # called homogenously from a dictionary in `dialogue`.
-
-# Level-one layer of dialogue.
-def print_all_runs(run_dict, runtype_dict):
-    for k, v in sorted(run_dict.items(), key=lambda x: x[0]):
-        print('\nTag {}\n'.format(k))
-        print_dict(v)
 
 def tag_in_runlist(tag, run_list):
     """
     Returns True if a Run with tag `tag` is in the list.
     """
-    return any(map(lambda run : run[RUNLIST_ARGS][TAG_ARG] == tag, run_list))
+    return any(map(lambda run : run[TAG_ARG] == tag, run_list))
 
 def find(f, seq):
     """
@@ -65,7 +67,7 @@ def find(f, seq):
         if f(item): 
             return item
 def find_run_tag(tag, run_list):
-    return find(lambda run : run[RUNLIST_ARGS]['Tag'] == tag, run_list)
+    return find(lambda run : run[TAG_ARG] == tag, run_list)
 
 # Level-one layer of dialogue. All functions take run_dict, template_dict as
 # arguments so that they can be called homogeneously from a dictionary in
@@ -78,7 +80,8 @@ def print_all_runs(run_list, template_dict):
     `template_dict`.
     """
     for run in run_list:
-        print('\nTemplate Type: {}'.format(run[RUN_TEMPLATE_TYPE]))
+        print('\nTag: {}'.format(run[TAG_ARG]))
+        print('Template Type: {}'.format(run[RUN_TEMPLATE_TYPE]))
         for arg in template_dict[run[RUN_TEMPLATE_TYPE]][RUNLIST_ARGS]:
             print('{}: {}'.format(arg, run[RUNLIST_ARGS][arg]))
         print()
@@ -87,20 +90,29 @@ def print_all_runs(run_list, template_dict):
 def create_run(run_list, template_dict):
     new_run = {}
     # Inputting run type.
-    print('Input the run type. Current options: {}'.format(
+    print('Input the template type. Current options: {}'.format(
             ' '.join(sorted(template_dict.keys()))))
-    run_type = input('-> ')
-    if run_type not in template_dict.keys():
+    template_type = input('-> ')
+    if template_type not in template_dict.keys():
         user_input = input('{} is not currently an option. Add it? '\
-                     .format(run_type))
+                     .format(template_type))
         if user_input.lower() in YES_CONSTS:
-            pass
-        return
-    new_run[RUN_TEMPLATE_TYPE] = run_type
+            return create_template(run_list, template_dict)
+        return run_list, template_dict
+    new_run[RUN_TEMPLATE_TYPE] = template_type
     new_run[RUNLIST_ARGS] = {}
 
+    # Input the tag.
+    while True:
+        new_tag = input('Input a tag for the run. ')
+        if new_tag in [run[TAG_ARG] for run in run_list]:
+            print('Tag {} already exists in the run list!'.format(new_tag))
+            continue
+        new_run[TAG_ARG] = new_tag
+        break
+
     # Input values.
-    for arg in template_dict[run_type][RUNLIST_ARGS]:
+    for arg in template_dict[template_type][RUNLIST_ARGS]:
         while True:
             try:
                 user_input = input('{}: '.format(arg))
@@ -109,22 +121,31 @@ def create_run(run_list, template_dict):
                     return (run_list, template_dict)
                 elif user_input in HELP_CONSTS:
                     print('Annotation:\n{}\nType:\n{}\n'.format(
-                          template_dict[run_type]['annotations'][arg],
-                          template_dict[run_type]['types'][arg]))
+                          template_dict[template_type]['annotations'][arg],
+                          template_dict[template_type]['types'][arg]))
                 else: 
-                    new_run[RUNLIST_ARGS][arg] = user_input
-                    break
+                    try:
+                        type_func = TYPE_CHECK_FUNC[
+                          template_dict[template_type][TEMPLATE_TYPES][arg]]
+                        user_input = type_func(user_input)
+                        new_run[RUNLIST_ARGS][arg] = user_input
+                        break
+                    except:
+                        print('Invalid input.')
             except:
                 print('Invalid input.')
+    while True:
+        if input('Add run {} to list? '.format(new_tag)) in YES_CONSTS:
+            run_list.append(new_run)
+            print('Run {} added to list.'.format(new_tag))
+            return run_list, template_dict
+        else:
+            if input('Discard new run {}? '.format(new_tag)) in YES_CONSTS:
+                return run_list, template_dict
     
-    # Validate tag uniqueness.
-    while tag_in_runlist(new_run[RUNLIST_ARGS][TAG_ARG], run_list):
-        new_run[RUNLIST_ARGS][TAG_ARG] = input('Duplicate tag! Input a new tag. ')
-    run_list.append(new_run)
-    print('Run {} added to list.'.format(new_run[RUNLIST_ARGS][TAG_ARG]))
-    return (run_list, template_dict)
+    return run_list, template_dict
 
-def create_runtype(run_list, template_dict):
+def create_template(run_list, template_dict):
     new_template = {}
     new_template[TEMPLATE_ARGS] = []
     new_template[TEMPLATE_ANNO] = {}
@@ -202,11 +223,11 @@ def create_runtype(run_list, template_dict):
 def delete_run(run_list, template_dict):
     print('Input the tag of the Run that you want to delete. Available tags')
     print('are {}'.format(
-                   ' '.join(run[RUNLIST_ARGS]['Tag'] for run in run_list)))
+                   ' '.join(run[TAG_ARG] for run in run_list)))
     delete_tag = input('-> ')
 
     new_run_list = [run for run in run_list 
-                    if run[RUNLIST_ARGS]['Tag'] != delete_tag]
+                    if run[TAG_ARG] != delete_tag]
     if len(run_list) == len(new_run_list):
         print('Tag {} does not exist.'.format(delete_tag))
     else:
@@ -221,7 +242,7 @@ def delete_run(run_list, template_dict):
 def copy_run(run_list, template_dict):
     print('Input the tag of the Run that you want to copy. Available tags')
     print('are {}'.format(
-                   ' '.join(run[RUNLIST_ARGS]['Tag'] for run in run_list)))
+                   ' '.join(run[TAG_ARG] for run in run_list)))
     old_run_tag = input('-> ')
 
     if old_run_tag in EXIT_CONSTS:
@@ -243,7 +264,7 @@ def copy_run(run_list, template_dict):
         if tag_in_runlist(new_run_tag, run_list):
             print('Tag {} already exists!'.format(new_run_tag))
         else:
-            new_run[RUNLIST_ARGS]['Tag'] = new_run_tag
+            new_run[TAG_ARG] = new_run_tag
             break
     
     if input('Add run {} to RunList? '.format(new_run_tag)) in YES_CONSTS:
@@ -265,6 +286,17 @@ def edit_run(run_list, template_dict):
         return run_list, template_dict
     new_run = copy.deepcopy(old_run)
 
+    # Edit the name.
+    while True:
+        new_tag = input('Input a new tag name. Blank input keeps it the same. ')
+        if not new_tag:
+            break
+        if new_tag != old_run[TAG_ARG] and tag_in_runlist(new_tag, run_list):
+            print('Tag already exists! Input a new tag.')
+        else:
+            new_run[TAG_ARG] = new_tag
+            break
+
     for arg in template_dict[new_run[RUN_TEMPLATE_TYPE]][TEMPLATE_ARGS]:
         while True:
             try:
@@ -283,31 +315,22 @@ def edit_run(run_list, template_dict):
             except:
                 print('Invalid input.')
 
-    # Tag uniqueness validation.
-    while new_run[RUNLIST_ARGS]['Tag'] != old_run[RUNLIST_ARGS]['Tag'] and \
-          tag_in_runlist(new_run[RUNLIST_ARGS]['Tag'], run_list):
-        user_input = input('Tag already exists! Input a new tag! ')
-        if not user_input or user_input in HELP_CONSTS:
-            continue
-        if user_input in EXIT_CONSTS:
-            return run_list, template_dict
-        new_run[RUNLIST_ARGS]['Tag'] = user_input
     
     if input('Are you sure you want to change run {}? '\
-             .format(old_run[RUNLIST_ARGS]['Tag'])) in YES_CONSTS:
+             .format(old_run[TAG_ARG])) in YES_CONSTS:
         # Find the index of old_run and create a new list with new_run in its
         # place.
         for index, run in enumerate(run_list):
             if run == old_run:
-                print('Run {} changed.'.format(old_run[RUNLIST_ARGS]['Tag']))
+                print('Run {} changed.'.format(old_run[TAG_ARG]))
                 return (run_list[:index] + [new_run] + run_list[index+1:], 
                         template_dict)
         print('Something terribly wrong has happened. Cancelled.')
     else:
-        print('Edit of Run {} cancelled.'.format(old_run[RUNLIST_ARGS]['Tag']))
+        print('Edit of Run {} cancelled.'.format(old_run[TAG_ARG]))
     return run_list, template_dict
 
-def delete_runtype(run_list, template_dict):
+def delete_template(run_list, template_dict):
     delete_tag = input('Enter the tag of the template you want to delete. ')
     if delete_tag not in template_dict.keys():
         print('Tag not found!')
@@ -352,7 +375,7 @@ def load_tate(run_list, template_dict):
 def reorder_run(run_list, template_dict):
     print('Select an index to reorder.')
     for index, run in enumerate(run_list):
-        print('Index {}: Tag {}'.format(index, run[RUNLIST_ARGS]['Tag']))
+        print('Index {}: Tag {}'.format(index, run[TAG_ARG]))
 
     new_list = run_list[:]
     try:
@@ -368,10 +391,10 @@ def reorder_run(run_list, template_dict):
         run = new_list.pop(old_index)
         new_list.insert(new_index, run)
         if input('Remove Tag {} from index {} and place it in {}? '\
-                 .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))\
+                 .format(run[TAG_ARG], old_index, new_index))\
            in YES_CONSTS:
             print('Run {} removed from index {} and placed in index {}.'\
-                  .format(run[RUNLIST_ARGS]['Tag'], old_index, new_index))
+                  .format(run[TAG_ARG], old_index, new_index))
             return new_list, template_dict
     except:
         print('Invalid index.')
@@ -402,9 +425,9 @@ def dialogue():
     function_dict = {
         'print all' : print_all_runs,
         'create run' : create_run,
-        'create runtype' : create_runtype,
+        'create template' : create_template,
         'delete run' : delete_run,
-        'delete runtype' : delete_runtype,
+        'delete template' : delete_template,
         'copy run' : copy_run,
         'edit run' : edit_run,
         'save tate' : save_tate,
@@ -415,9 +438,9 @@ def dialogue():
     option_description_dict = {
         'print all' : 'Print all runs',
         'create run' : 'Create a run',
-        'create runtype' : 'Create a runtype',
+        'create template' : 'Create a template',
         'delete run' : 'Delete a run',
-        'delete runtype' : 'Delete a runtype',
+        'delete template' : 'Delete a template',
         'copy run' : 'Copy a run',
         'edit run' : 'Edit a run',
         'save tate' : 'Save TateConfig',

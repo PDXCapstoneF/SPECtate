@@ -6,6 +6,7 @@ import pathlib
 from pathlib import Path
 import sys
 import copy
+
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
@@ -19,25 +20,26 @@ class RunManager:
     Object used by `mainGUI.py` to structure TemplateData and RunLists in memory,
     allowing some useful operations to isolate run management from the GUI.
     """
+
     def __init__(self, config_file=None, jar=None):
-        self.current_run, self.validated_runs, self.jar = None, None, None
+        self.RUN_CONFIG, self.current_run, self.validated_runs, self.jar = None, None, None, None
+
+        # Find example_config relative to run_manager.py
+        self.default_config = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) \
+                                         + '/example_config.json'
         self.template_fields = ["args", "annotations", "prop_options", "types", "translations"]
-        if config_file is None:
-            self.RUN_CONFIG = os.path.dirname(os.path.abspath('../example_config.json')) + '/example_config.json'
+
+        # Set paths to config files
+        if config_file is None:  # no config file specified, use default that SPECtate provides.
+            self.set_config(filepath=self.default_config, config_type="RunList")
         elif config_file is not None:
-            self.RUN_CONFIG = config_file
+            self.set_config(filepath=config_file, config_type="RunList")
+        if jar is not None:
+            self.set_config(filepath=jar, config_type="SPECjbb")
+
+        # load into memory
         self.load_config()
 
-        if Path(self.RUN_CONFIG).is_file():
-            with open(self.RUN_CONFIG) as file:
-                parsed = json.load(file)
-                self.validated_runs = validate(parsed)
-        elif not Path(self.RUN_CONFIG).is_file():
-            if Path(os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json').is_file():
-                self.RUN_CONFIG = os.path.dirname(os.path.abspath('example_config.json')) + '/example_config.json'
-                with open(self.RUN_CONFIG) as file:
-                    parsed = json.load(file)
-                    self.validated_runs = validate(parsed)
         if not self.initialized():
             print("Run configuration not loaded. Please supply a valid configuration file.")
 
@@ -49,26 +51,24 @@ class RunManager:
         """
         return True if (self.validated_runs is not None and isinstance(self.validated_runs, dict)) else False
 
-    def set_config(self, filepath, type):
+    def set_config(self, filepath, config_type, load=True):
         """
         Sets the configuration filepath for run_list and for SPECjbb jar files.
-        Caller of `load_config()` (when Type=="RunList") to update configurations stored in memory.
-        :param filepath:
-        :param type:
+        Will load new configurations into memory if load=True.
+        :param filepath: str
+        :param config_type: str
+        :param load: bool
         :return:
         """
-        if (filepath or type) is None:
-            return None
         extension = pathlib.Path(filepath).suffix
-        if "json" in extension and type == "RunList":
-            if filepath != self.RUN_CONFIG:
-                if Path(filepath).is_file():  # todo: test
-                    self.RUN_CONFIG = filepath
-                    self.load_config()  # update memory with new data
-        elif "jar" in extension and type == "SPECjbb":
-            if Path(filepath).is_file():  # todo: test
+        if "json" in extension and config_type == "RunList":
+            if Path(filepath).is_file():  # if given a proper filepath
+                self.RUN_CONFIG = filepath
+        elif "jar" in extension and config_type == "SPECjbb":
+            if Path(filepath).is_file():
                 self.jar = filepath
-                self.load_config()  # update memory with new data
+        if load is True:
+            self.load_config()
 
     def load_config(self):
         """
@@ -83,7 +83,7 @@ class RunManager:
                     self.validated_runs = validate(parsed)
         if self.jar is not None:
             if Path(self.jar).is_file():
-                for template in self.validated_runs["TemplateData"].keys():
+                for template in self.validated_runs["TemplateData"].keys():  # update each template with this jar's path
                     self.validated_runs["TemplateData"][template]["jar"] = str(self.jar)
 
     def do_run(self, tag=None, runs_list=None):
@@ -154,6 +154,25 @@ class RunManager:
     def create_template(self):
         #self.insert_into_config_list(key="TemplateData", )
         pass
+
+    def update_run(self, tag_to_find, data):
+        """
+        Update a run with new args.
+        :param tag_to_find:
+        :param data: dict
+        :return:
+        """
+        if not isinstance(tag_to_find, str) or not isinstance(data, dict):
+            return None
+        for idx, run in enumerate(self.validated_runs["RunList"]):
+            if tag_to_find in run["tag"]:  # found run to update
+                for key, value in data["args"].items():  # update arg keys
+                    run["args"][key] = value
+                data.pop("args")
+                for key, value in data.items():  # update highest level keys
+                    run[key] = value
+                return run
+        return None
 
     def create_run(self, run_type):
         """

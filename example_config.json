@@ -112,6 +112,7 @@
 	"RunList": [{
             "tag": "TAG",
 			"template_type": "HBIR",
+			"tag": "TAG",
 			"args": {
 				"Kit Version": "15",
 				"JDK": 7,
@@ -127,6 +128,7 @@
 		{
             "tag": "SPECjbb",
 			"template_type": "HBIR_RT",
+		        "tag" : "specjbb",
 			"args": {
 				  "Kit Version": "RC3",
 				  "RTSTART" : 30,

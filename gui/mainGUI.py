@@ -13,7 +13,6 @@ from tkinter import filedialog
 from tkinter import messagebox
 import webbrowser
 
-
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../src/')  # @todo: avoid PYTHONPATH
@@ -34,7 +33,7 @@ class MainWindow(Frame):
         self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         Frame.__init__(self, *args, **kwargs)
-        self.form, self.arg_label, self.tater, self.new_theme_window, self.menu_bar = None, None, None, None, None
+        self.entries, self.arg_label, self.new_theme_window, self.menu_bar = None, None, None, None
         self.run_manager = RunManager(config_file=None)
         self.width = properties["main_window"]["width"]
         self.height = properties["main_window"]["height"]
@@ -59,16 +58,17 @@ class MainWindow(Frame):
 
         # Create scroll list
         self.listbox = Listbox(self.left_frame, width=20, height=self.height, relief=GROOVE, font="Arial",
-                               selectmode=EXTENDED, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
+                               selectmode=SINGLE, bg=self.colors["listbox_bg"], fg=self.colors["listbox_fg"])
         self.list_scrollbar = Scrollbar(self)
         self.listbox.config(yscrollcommand=self.list_scrollbar.set)
-        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview) # bg=self.colors["scrollbar"]
+        self.list_scrollbar.config(orient=VERTICAL, command=self.listbox.yview)  # bg=self.colors["scrollbar"]
         self.listbox.pack(side="left", expand=True, fill="both")
         self.list_scrollbar.pack(side="left", fill="y")
         self.listbox.bind("<<ListboxSelect>>", self.on_select)
         self.listbox.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
         self.listbox.bind("<ButtonPress-1>", self.on_run_press)
         self.listbox.bind("<ButtonRelease-1>", self.on_run_motion)
+        self.listbox.configure(exportselection=False)
 
         # Create popup menu
         self.popup_menu = Menu(self.listbox, tearoff=0)
@@ -77,6 +77,7 @@ class MainWindow(Frame):
                                     command=lambda: self.duplicate_selected(self.listbox.curselection()))
         self.popup_menu.add_command(label='Run',
                                     command=lambda: self.do_runs(self.listbox.curselection()))
+        self.popup_menu.add_command(label='Rename', command=lambda: self.rename(self.listbox.curselection()))
 
         # Create canvas
         self.canvas = Canvas(self.right_frame, width=80, height=self.height, bg=self.colors['canvas'], relief=GROOVE)
@@ -157,7 +158,7 @@ class MainWindow(Frame):
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
                               command=lambda: self.create_new_run(),  accelerator="Ctrl+n")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_template"],
-                              command=lambda: self.create_new_template(), accelerator="Ctrl+t")  # @todo
+                              command=lambda: self.create_new_template(), accelerator="Ctrl+t")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
                               command=self.save, accelerator="Ctrl+s")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
@@ -207,27 +208,30 @@ class MainWindow(Frame):
         self.master.bind('<Control-r>', lambda event: self.run_manager.do_run())
         self.master.bind('<Control-q>', lambda event: self.on_close())
 
-    def make_arg_form(self, fields):
+    def select_all(self, event):
+        # select text
+        event.widget.select_range(0, 'end')
+        # move cursor to the end
+        event.widget.icursor('end')
+
+    def make_arg_form(self, fields, args_list):
+        self.entries = {}
         if self.canvas is not None:
             self.canvas.destroy()
-            try:
-                self.tater = PhotoImage(file="tater.pgm").zoom(5).subsample(50)
-            except:
-                self.tater = PhotoImage(file="gui/tater.pgm").zoom(5).subsample(50)
             self.canvas = Canvas(self.right_frame,
                                  width=80,
                                  height=self.height,
                                  bg=self.colors["canvas_bg"],
-                                 #bg=self.colors['canvas'],
+                                 # bg=self.colors['canvas'],
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
-            self.canvas.create_image(5, 5, image=self.tater, anchor='nw', state=NORMAL)  # Label
+            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)  # Label
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
                                    # relief=SUNKEN,
-                                   #bg="red",
-                                   #fg="red",
+                                   # bg="red",
+                                   # fg="red",
                                    highlightbackground=self.colors["highlightcolorbg"],  # dark = black
                                    font=("Calibri", 12),
                                    width=64,
@@ -237,17 +241,23 @@ class MainWindow(Frame):
         if fields is not None:
             idx = 0
             for key, value in fields.items():
-                self.form = Entry(self.canvas,
-                                  insertofftime=500,
-                                  font=("Calibri", 12),
-                                  width=70,
-                                  relief=RIDGE,
-                                  highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
-                                  highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
-                                  bg=self.colors["text_bg"],  # good
-                                  fg=self.colors['text_fg'],
-                                  justify=CENTER)
-                self.form.insert(INSERT, "default")
+                form = Entry(self.canvas,
+                             insertofftime=500,
+                             font=("Calibri", 12),
+                             width=70,
+                             relief=RIDGE,
+                             highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
+                             highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
+                             bg=self.colors["text_bg"],  # good
+                             fg=self.colors['text_fg'],
+                             justify=CENTER)
+                form.bind('<Control-KeyRelease-a>', self.select_all)
+
+                if args_list is None:
+                    form.insert(INSERT, "default")
+                else:
+                    form.insert(INSERT, args_list[key])
+                self.entries[key] = form
                 var = StringVar()
                 var.set(key)
 
@@ -261,21 +271,37 @@ class MainWindow(Frame):
                                        fg=self.colors["label_fg"],
                                        width=15,
                                        justify=LEFT)
-                self.form.grid(row=idx, column=1, sticky=W)
+                form.grid(row=idx, column=1, sticky=W)
                 self.arg_label.grid(row=idx, column=0, sticky=W)
                 Tooltip(self.arg_label, text=value)
                 idx += 1
 
     def on_select(self, event):
         selection = event.widget.curselection()
+        current_run_tag = self.listbox.get(ACTIVE)
+        is_changed = False
         if selection:
             content = event.widget.get(selection[0])
-            if self.run_manager.compare_tags(a=self.run_manager.get_current_run(), b=self.run_manager.get_run_from_list(content)):
-                print("MainWindow continues to edit the same run.")
+            if self.run_manager.compare_tags(a=self.run_manager.get_current_run(),
+                                             b=self.run_manager.get_run_from_list(content)):
+                pass
             else:
-                print("MainWindow switched to new run.")
+                if self.entries:
+                    current_run = self.run_manager.get_run_from_list(current_run_tag)
+                    args_list = {}
+                    args_list["args"] = {}
+                    for key in self.entries:
+                        if self.entries[key].get() != str(current_run["args"][key]):
+                            print(self.entries[key].get(), current_run["args"][key])
+                            is_changed = True
+                        args_list["args"][key] = self.entries[key].get()
+                    self.run_manager.update_run(current_run_tag, args_list)
+                    if is_changed:
+                        self.listbox.itemconfig(self.listbox.index(ACTIVE), {'fg': 'blue'})
                 self.run_manager.set_current_run(content)
-            self.make_arg_form(fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)))
+            self.make_arg_form(
+                fields=self.run_manager.get_template_type_args(self.run_manager.get_run_from_list(content)),
+                args_list=self.run_manager.get_run_from_list(content)["args"])
 
     def popup_window(self, event):
         """
@@ -310,6 +336,44 @@ class MainWindow(Frame):
             inserted = self.run_manager.duplicate_run(from_tag=self.listbox.get(item))
             if inserted is not None and isinstance(inserted, dict):
                 self.listbox.insert(END, inserted["tag"])
+
+    def rename(self, selection):
+        """
+        Create the window to rename, contains an Entry initialized which the current selection
+        :param selection: tuple of selected indexes
+        """
+        self.rename_window = Toplevel(self)
+        self.rename_window.title("Rename")
+        name_entry = Entry(self.rename_window)
+        name_entry.insert(INSERT, self.listbox.get(selection))
+        name_entry.focus_set()
+        name_entry.pack(fill=X)
+        confirm_btn = Button(self.rename_window, text="Rename",
+                             command=lambda: self.close_rename_window(name_entry.get(), selection[0]))
+        confirm_btn.pack()
+        self.rename_window.protocol("WM_DELETE_WINDOW",
+                                    lambda: self.close_rename_window(name_entry.get(), selection[0]))
+
+    def close_rename_window(self, new_name, index):
+        """
+        On close the rename window, update the name in memory
+        :param new_name: the new name for the run
+        :param index: the index of the selected item in the listbox
+        :return:
+        """
+        answer = messagebox.askyesnocancel("Rename", "Do you want to rename and exit?")
+        if answer:
+            self.listbox.insert(index + 1, new_name)
+            args_list = {"tag": new_name, "args": {}}
+            for key in self.entries:
+                args_list["args"][key] = self.entries[key].get()
+            self.run_manager.update_run(self.listbox.get(index), args_list)
+            self.listbox.delete(index)
+            self.rename_window.destroy()
+        elif answer is None:
+            return
+        else:
+            self.rename_window.destroy()
 
     def save(self):
         self.run_manager.write_to_file()
@@ -422,13 +486,15 @@ class MainWindow(Frame):
         if i < self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
-            self.listbox.insert(i+1,x)
-            self.run_manager.set_run_index(run_tag=x, to_index=i+1)
+            self.listbox.insert(i + 1, x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i + 1)
+            self.on_select(event)
         elif i > self.curIndex:
             x = copy.deepcopy(self.listbox.get(i))
             self.listbox.delete(i)
-            self.listbox.insert(i-1,x)
-            self.run_manager.set_run_index(run_tag=x, to_index=i-1)
+            self.listbox.insert(i - 1, x)
+            self.run_manager.set_run_index(run_tag=x, to_index=i - 1)
+            self.on_select(event)
 
 
 if __name__ == '__main__':

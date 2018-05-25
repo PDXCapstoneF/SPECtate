@@ -3,6 +3,7 @@
 Usage:
     mainCLI.py run [options] <config> [--props <props>]
     mainCLI.py validate [options] <config>
+    mainCLI.py compliant [options] <config>
     mainCLI.py dialogue [options]
     mainCLI.py script [options] <script> [ARG ...]
     mainCLI.py scripts [options]
@@ -11,6 +12,7 @@ Usage:
 
 Options:
     --level=<log-level>       Set the logging level. Uses python.logging's names for the different leves. [default: INFO]
+    --dry-run                 Sets whether or not to do all configured runs as "dry runs". [default: False]
 """
 # library imports
 import json
@@ -77,38 +79,6 @@ blackbox_artifacts = [
 ]
 
 
-def do_run(arguments):
-    """
-    Does a run using scripts/run.sh from the provided property template and configuration.
-    """
-    with open(arguments['<config>'], 'r') as f:
-        args = json.loads(f.read())
-    stringified = list(map(lambda arg: str(arg), to_list(args['specjbb'])))
-    workdir = args['specjbb'].get('workdir', 'scripts')
-    scripts_abspath = relative_to_main(workdir)
-    workdir_abspath = relative_to_main('scripts')
-
-    # if we don't already have the scripts available to us
-    # copy them into the new location
-    if workdir != 'scripts':
-        copy(scripts_abspath, workdir_abspath)
-
-    def cleanup():
-        # we need to cleanup the cwd or worktree for some reason
-        if workdir != 'scripts':
-            rmtree(workdir_abspath)
-        else:
-            for name in map(lambda name: os.path.join(scripts_abspath, name),
-                            blackbox_artifacts):
-                os.remove(name)
-
-    try:
-        if not call(['bash', 'run.sh'] + stringified, cwd=workdir_abspath):
-            cleanup()
-    except:
-        cleanup()
-
-
 def do_validate(arguments):
     """
     Validate a configuration based on the schema provided.
@@ -142,7 +112,7 @@ def do_run(arguments):
     for r in rs.runs:
         s = benchmark_run.SpecJBBRun(**r)
 
-        s.run()
+        s.run(arguments['--dry-run'])
 
 def do_script(arguments):
     call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
@@ -151,6 +121,17 @@ def do_scripts(arguments):
     log.info("These are the scripts available to run using 'script':")
     log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
 
+def do_compliant(arguments):
+    with open(arguments['<config>'], 'r') as f:
+        args = json.loads(f.read())
+    rs = run_generator.RunGenerator(**args)
+    for r in rs.runs:
+        s = benchmark_run.SpecJBBRun(**r)
+
+        log.info("validating the following run:")
+        s.dump(logging.INFO)
+        log.info("compliant? {}".format(s.compliant()))
+
 
 # dictionary of runnables
 # these are functions that take arguments from the
@@ -158,6 +139,7 @@ def do_scripts(arguments):
 do = {
     'run': do_run,
     'validate': do_validate,
+    'compliant': do_compliant,
     'dialogue': do_dialogue,
     'script': do_script,
     'scripts': do_scripts,
