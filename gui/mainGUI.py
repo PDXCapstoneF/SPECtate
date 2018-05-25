@@ -243,7 +243,7 @@ class MainWindow(Frame):
                 form = Entry(self.canvas,
                              insertofftime=500,
                              font=("Calibri", 12),
-                             width=70,
+                             width=53,
                              relief=RIDGE,
                              highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
                              highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
