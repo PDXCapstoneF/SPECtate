@@ -155,6 +155,10 @@ class SpecJBBComponentOptions(dict):
             raise Exception(
                 "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".
                 format(rest))
+        if "-p" in self["options"]:
+            raise Exception("SpecJBBComponentOptions recieved external props file")
+        if "-m" in self["options"]:
+            raise Exception("SpecJBBComponentOptions recieved manual component type")
 
 
 class SpecJBBRun:
