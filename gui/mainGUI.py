@@ -2,7 +2,7 @@
 
 from run_manager import RunManager
 from tooltip import Tooltip
-from new_window import NewWindow
+from new_template_window import NewTemplateWindow
 import os
 import pathlib
 import sys
@@ -360,7 +360,7 @@ class MainWindow(Frame):
     def create_new_template(self):
         self.new_template_window = Toplevel(self.master)
         self.new_template_window.title("Create New Template")
-        NewWindow(self.new_template_window)
+        NewTemplateWindow(self.new_template_window)
 
     def add_new_run(self, runtype):
         """

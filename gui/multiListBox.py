@@ -5,37 +5,48 @@ import tkinter.ttk as ttk
 class MultiColumnListbox(object):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, headers, data):
+    def __init__(self, master, container, headers, data, col_width):
+        self.master = master
+        self.container = container
+        self.col_width = col_width
         self.tree = None
-        self.build_tree(headers, data)
+        self.headers = headers
+        self.data = data
+        self.build_tree()
 
-    def build_tree(self, headers, data):
-        container = ttk.Frame()
-        container.pack(fill='both', expand=True)
+    def build_tree(self):
         # create a treeview with dual scrollbars
-        self.tree = ttk.Treeview(columns=headers, show="headings")
-        vsb = ttk.Scrollbar(orient="vertical",
+        self.tree = ttk.Treeview(self.container, columns=self.headers, show="headings")
+        vsb = ttk.Scrollbar(self.container, orient="vertical",
             command=self.tree.yview)
-        hsb = ttk.Scrollbar(orient="horizontal",
+        hsb = ttk.Scrollbar(self.container, orient="horizontal",
             command=self.tree.xview)
         self.tree.configure(yscrollcommand=vsb.set,
             xscrollcommand=hsb.set)
-        self.tree.grid(column=0, row=0, sticky='nsew', in_=container)
-        vsb.grid(column=1, row=0, sticky='ns', in_=container)
-        hsb.grid(column=0, row=1, sticky='ew', in_=container)
-        container.grid_columnconfigure(0, weight=1)
-        container.grid_rowconfigure(0, weight=1)
-        for col in headers:
+        self.tree.grid(column=0, row=0, sticky='nsew', in_=self.container)
+        vsb.grid(column=1, row=0, sticky='ns', in_=self.container)
+        hsb.grid(column=0, row=1, sticky='ew', in_=self.container)
+        self.container.grid_columnconfigure(0, weight=1)
+        self.container.grid_rowconfigure(0, weight=1)
+        for col in self.headers:
             self.tree.heading(col, text=col.title(), command=lambda c=col: sort_by(self.tree, c, 0))
             # adjust the column's width to the header string
-            self.tree.column(col, width=tkfont.Font().measure(col.title()))
+            min_w = tkfont.Font().measure(col.title()) + 40
+            if self.col_width < min_w:
+                self.tree.column(col, width=min_w)
+            else:
+                self.tree.column(col, width=self.col_width)
+        self.populate(self.data)
+
+    def populate(self, data):
+        self.tree.delete(*self.tree.get_children())
         for item in data:
             self.tree.insert('', 'end', values=item)
             # adjust column's width if necessary to fit each value
             for ix, val in enumerate(item):
-                col_w = tkfont.Font().measure(val)
-                if self.tree.column(headers[ix],width=None) < col_w:
-                    self.tree.column(headers[ix], width=col_w)
+                min_w = tkfont.Font().measure(val)
+                if self.tree.column(self.headers[ix], width=None) < min_w:
+                    self.tree.column(self.headers[ix], width=min_w + 30)
 
 
 def sort_by(tree, col, descending):
