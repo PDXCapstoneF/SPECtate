@@ -424,7 +424,7 @@ class MainWindow(Frame):
     def create_new_template(self):
         self.new_template_window = Toplevel(self.master)
         self.new_template_window.title("Create New Template")
-        NewTemplateWindow(self.new_template_window)
+        NewTemplateWindow(self.new_template_window, self.run_manager)
 
     def add_new_run(self, runtype):
         """

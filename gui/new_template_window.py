@@ -23,17 +23,19 @@ except FileNotFoundError:
 
 
 class NewTemplateWindow(Frame):
-    def __init__(self, master):
+    def __init__(self, master, run_manager):
         super().__init__()
         self.THEME = "light"
         self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         self.template_name, self.form, self.add_arg_button, self.listbox_arg, self.add_prop_button, self.listbox_prop = None, None, None, None, None, None
+        self.get_data_dialog = None
         self.headers_arg = ['Name', 'Type', 'Annotation', 'Translation']
         self.headers_prop = ['Key', 'Value']
         self.list_args = []
         self.list_props = []
         self.master = master
+        self.run_manager = run_manager
         self.width = 390
         self.height = 550
         self.master.minsize(width=self.width, height=self.height)
@@ -98,11 +100,22 @@ class NewTemplateWindow(Frame):
         button_confirm.grid(row=5, columnspan=4, sticky=E, padx=5)
 
     def save_new_template(self):
-        filepath = filedialog.asksaveasfilename(title="Select file",
-                                                filetypes=(("JSON file", "*.json"), ("All files", "*.*")),
-                                                defaultextension=".json")
-        if filepath:
-            pass
+        new_template = dict()
+        new_template["jar"] = "temp"
+        new_template["args"] = []
+        new_template["annotations"] = dict()
+        new_template["prop_options"] = dict()
+        new_template["types"] = dict()
+        new_template["translations"] = dict()
+        for item in self.list_args:
+            new_template["args"].append(item[0])
+            new_template["annotations"][item[0]] = item[2]
+            new_template["types"][item[0]] = item[1]
+            if item[3]:
+                new_template["translations"][item[0]] = item[3]
+        for item in self.list_props:
+            new_template["prop_options"][item[0]] = item[1]
+        self.run_manager.create_template({self.template_name: new_template})
 
     def create_new_arg(self):
         self.get_data_dialog = Toplevel(self)

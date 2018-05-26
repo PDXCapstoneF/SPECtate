@@ -144,16 +144,16 @@ class RunManager:
         if self.initialized():
             try:
                 if key == "TemplateData":
-                    self.validated_runs[key][data["template_type"]] = data
+                    template_name = list(data.keys())[0]
+                    self.validated_runs[key][template_name] = data[template_name]
                 elif key == "RunList":
                     self.validated_runs[key].append(data)
                     return True
             except:  # not a valid run
                 return None
 
-    def create_template(self):
-        #self.insert_into_config_list(key="TemplateData", )
-        pass
+    def create_template(self, template):
+        self.insert_into_config_list("TemplateData", template)
 
     def update_run(self, tag_to_find, data):
         """
