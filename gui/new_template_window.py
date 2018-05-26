@@ -44,7 +44,6 @@ class NewTemplateWindow(Frame):
         self.make_form()
 
     def make_form(self):
-        # Label
         Label(self.master, text="Template Name:",
               font=("Calibri", 12),
               bg=self.colors["label_bg"],
@@ -129,7 +128,7 @@ class NewTemplateWindow(Frame):
         Label(self.get_data_dialog, text="Type:").grid(row=1)
         Label(self.get_data_dialog, text="Annotation:").grid(row=2)
         Label(self.get_data_dialog, text="Translation:").grid(row=3)
-        self.error_arg = Label(self.get_data_dialog, text="Name, Type, Annotation, Translation are required!", fg="red")
+        self.error_arg = Label(self.get_data_dialog, text="Name, Type, Annotation are required!", fg="red")
         self.error_arg.grid(row=4, columnspan=2, sticky=W)
         self.error_arg.grid_remove()
 
