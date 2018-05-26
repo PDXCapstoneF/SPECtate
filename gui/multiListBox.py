@@ -1,5 +1,6 @@
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
+from tkinter import *
 
 
 class MultiColumnListbox(object):
@@ -10,6 +11,7 @@ class MultiColumnListbox(object):
         self.container = container
         self.col_width = col_width
         self.tree = None
+        self.popup_menu = None
         self.headers = headers
         self.data = data
         self.build_tree()
@@ -24,6 +26,9 @@ class MultiColumnListbox(object):
         self.tree.configure(yscrollcommand=vsb.set,
             xscrollcommand=hsb.set)
         self.tree.grid(column=0, row=0, sticky='nsew', in_=self.container)
+        self.popup_menu = Menu(self.tree, tearoff=0)
+        self.popup_menu.add_command(label='Delete', command=lambda: self.delete_selected(self.tree.selection()))
+        self.tree.bind('<2>' if self.master.tk.call('tk', 'windowingsystem') == 'aqua' else '<3>', self.popup_window)
         vsb.grid(column=1, row=0, sticky='ns', in_=self.container)
         hsb.grid(column=0, row=1, sticky='ew', in_=self.container)
         self.container.grid_columnconfigure(0, weight=1)
@@ -48,16 +53,24 @@ class MultiColumnListbox(object):
                 if self.tree.column(self.headers[ix], width=None) < min_w:
                     self.tree.column(self.headers[ix], width=min_w + 30)
 
+    def popup_window(self, event):
+        selection = self.tree.identify_row(event.y)
+        if selection:
+            self.tree.selection_set(selection)
+            self.popup_menu.tk_popup(event.x_root, event.y_root)
+
+    def delete_selected(self, selection):
+        for item in selection[::-1]:
+            self.data.remove(tuple(self.tree.item(item)["values"]))
+            self.tree.delete(item)
+
 
 def sort_by(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
     # grab values to sort
     data = [(tree.set(child, col), child) for child in tree.get_children('')]
     # if the data to be sorted is numeric
-    if col.title() == "Number Of Instances":
-        data.sort(key=lambda x: float(x[0]), reverse=descending)
-    else:
-        data.sort(reverse=descending)
+    data.sort(reverse=descending)
     for ix, item in enumerate(data):
         tree.move(item[1], '', ix)
     # switch the heading so it will sort in the opposite direction

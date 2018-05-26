@@ -29,7 +29,7 @@ class NewTemplateWindow(Frame):
         self.colors = properties["main_window"]["themes"][self.THEME]
         self.font = "Calibri"
         self.template_name, self.listbox_arg, self.listbox_prop = None, None, None
-        self.error_template_name, self.error_arg, self.error_prop = None, None, None
+        self.error_template_name, self.error_arg, self.error_arg_duplicate, self.error_prop = None, None, None, None
         self.get_data_dialog = None
         self.headers_arg = ['Name', 'Type', 'Annotation', 'Translation']
         self.headers_prop = ['Key', 'Value']
@@ -131,6 +131,9 @@ class NewTemplateWindow(Frame):
         self.error_arg = Label(self.get_data_dialog, text="Name, Type, Annotation are required!", fg="red")
         self.error_arg.grid(row=4, columnspan=2, sticky=W)
         self.error_arg.grid_remove()
+        self.error_arg_duplicate = Label(self.get_data_dialog, text="Argument name already existed!", fg="red")
+        self.error_arg_duplicate.grid(row=4, columnspan=2, sticky=W)
+        self.error_arg_duplicate.grid_remove()
 
         arg_name = Entry(self.get_data_dialog)
         arg_type = Entry(self.get_data_dialog)
@@ -148,10 +151,20 @@ class NewTemplateWindow(Frame):
 
     def add_new_arg(self, arg):
         if arg[0] and arg[1] and arg[2]:
-            self.list_args.append(arg)
-            self.listbox_arg.populate(self.list_args)
-            self.get_data_dialog.destroy()
+            duplicate = False
+            for item in self.list_args:
+                if arg[0] == item[0]:
+                    duplicate = True
+                    break
+            if duplicate:
+                self.error_arg.grid_remove()
+                self.error_arg_duplicate.grid()
+            else:
+                self.list_args.append(arg)
+                self.listbox_arg.populate(self.list_args)
+                self.get_data_dialog.destroy()
         else:
+            self.error_arg_duplicate.grid_remove()
             self.error_arg.grid()
         
     def create_new_prop(self):
@@ -161,7 +174,7 @@ class NewTemplateWindow(Frame):
         Label(self.get_data_dialog, text="Key:").grid(row=0)
         Label(self.get_data_dialog, text="Value:").grid(row=1)
         self.error_prop = Label(self.get_data_dialog, text="Both key and value are required!", fg="red")
-        self.error_prop.grid(row=4, columnspan=2, sticky=W)
+        self.error_prop.grid(row=2, columnspan=2, sticky=W)
         self.error_prop.grid_remove()
 
         prop_key = Entry(self.get_data_dialog)
@@ -172,7 +185,7 @@ class NewTemplateWindow(Frame):
         prop_key.focus()
         button_confirm = Button(self.get_data_dialog, text='Confirm',
                                 command=lambda: self.add_new_prop((prop_key.get(), prop_value.get())))
-        button_confirm.grid(row=2, columnspan=2)
+        button_confirm.grid(row=3, columnspan=2)
 
     def add_new_prop(self, prop):
         if prop[0] and prop[1]:
