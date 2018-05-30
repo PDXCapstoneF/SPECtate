@@ -188,8 +188,12 @@ class RunManager:
         for arg in run_type_copy["args"]:
             if run_type_copy["types"][arg] == "string":
                 new_args[arg] = "0"
-            if run_type_copy["types"][arg] == "integer":
+            elif run_type_copy["types"][arg] == "integer":
                 new_args[arg] = 0
+            elif run_type_copy["types"][arg] == "float":
+                new_args[arg] = 0.00
+            else:
+                new_args[arg] = "none type"
         run_type_copy["args"] = new_args
         run_type_copy["template_type"] = str(run_type)
         run_type_copy["tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
