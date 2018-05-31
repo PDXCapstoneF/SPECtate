@@ -2,6 +2,7 @@
 
 from run_manager import RunManager
 from tooltip import Tooltip
+from new_template_window import NewTemplateWindow
 import os
 import pathlib
 import sys
@@ -155,9 +156,9 @@ class MainWindow(Frame):
         file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["file"]["title"], menu=file_menu)
         file_menu.add_command(label=properties["commands"]["file"]["items"]["new_run"],
-                              command=lambda: self.create_new_run(), accelerator="Ctrl+n")
-        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_runtype"],
-                              command='', accelerator="Ctrl+t")  # @todo
+                              command=lambda: self.create_new_run(),  accelerator="Ctrl+n")
+        file_menu.add_command(label=properties["commands"]["file"]["items"]["new_template"],
+                              command=lambda: self.create_new_template(), accelerator="Ctrl+t")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save"],
                               command=self.save, accelerator="Ctrl+s")
         file_menu.add_command(label=properties["commands"]["file"]["items"]["save_as"], command=self.save_as)
@@ -379,7 +380,7 @@ class MainWindow(Frame):
         :param index: the index of the selected item in the listbox
         :return:
         """
-        answer = messagebox.askyesnocancel("Rename", "Do you want to rename and exit?")
+        answer = messagebox.askyesnocancel("Rename", "Are you sure that you want to rename?")
         if answer:
             self.listbox.insert(index + 1, new_name)
             args_list = {"tag": new_name, "args": {}}
@@ -438,6 +439,11 @@ class MainWindow(Frame):
                         variable=button_results,
                         command=lambda: self.add_new_run(var))
         button.pack(anchor='s')
+
+    def create_new_template(self):
+        self.new_template_window = Toplevel(self.master)
+        self.new_template_window.title("Create New Template")
+        NewTemplateWindow(self.new_template_window, self.run_manager)
 
     def add_new_run(self, runtype):
         """

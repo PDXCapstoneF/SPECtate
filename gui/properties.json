@@ -40,16 +40,12 @@
       }
     }
   },
-  "group_window": {
-    "width": 600,
-    "height": 400
-   },
   "commands": {
     "file": {
       "title": "File",
       "items": {
         "new_run": "New Run",
-        "new_runtype": "New Run Type",
+        "new_template": "New Template",
         "save": "Save",
         "save_as": "Save As...",
         "import_config": "Import Run Configurations",
@@ -79,9 +75,8 @@
     "help": {
       "title": "Help",
       "items": {
-        "issues": "Issues",
-        "wiki": "Wiki",
         "issues": "Report Issues",
+        "wiki": "Wiki",
         "exit": "Exit"
       }
     }

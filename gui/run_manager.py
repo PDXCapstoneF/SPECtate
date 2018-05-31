@@ -144,12 +144,16 @@ class RunManager:
         if self.initialized():
             try:
                 if key == "TemplateData":
-                    self.validated_runs[key][data["RunType"]] = data
+                    template_name = list(data.keys())[0]
+                    self.validated_runs[key][template_name] = data[template_name]
                 elif key == "RunList":
                     self.validated_runs[key].append(data)
                     return True
             except:  # not a valid run
                 return None
+
+    def create_template(self, template):
+        self.insert_into_config_list("TemplateData", template)
 
     def update_run(self, tag_to_find, data):
         """
@@ -184,8 +188,12 @@ class RunManager:
         for arg in run_type_copy["args"]:
             if run_type_copy["types"][arg] == "string":
                 new_args[arg] = "0"
-            if run_type_copy["types"][arg] == "integer":
+            elif run_type_copy["types"][arg] == "integer":
                 new_args[arg] = 0
+            elif run_type_copy["types"][arg] == "float":
+                new_args[arg] = 0.00
+            else:
+                new_args[arg] = "none type"
         run_type_copy["args"] = new_args
         run_type_copy["template_type"] = str(run_type)
         run_type_copy["tag"] = ("{}-{}".format(run_type, str(uuid.uuid4())[:8]))
