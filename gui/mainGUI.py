@@ -380,7 +380,7 @@ class MainWindow(Frame):
         :param index: the index of the selected item in the listbox
         :return:
         """
-        answer = messagebox.askyesnocancel("Rename", "Do you want to rename and exit?")
+        answer = messagebox.askyesnocancel("Rename", "Are you sure that you want to rename?")
         if answer:
             self.listbox.insert(index + 1, new_name)
             args_list = {"tag": new_name, "args": {}}

@@ -138,12 +138,13 @@ class NewTemplateWindow(Frame):
         self.error_arg_duplicate.grid_remove()
 
         arg_name = Entry(self.get_data_dialog)
-        arg_type = Entry(self.get_data_dialog)
+        arg_type = StringVar(self.get_data_dialog)
+        arg_type.set("string")
         arg_annotation = Entry(self.get_data_dialog)
         arg_translation = Entry(self.get_data_dialog)
 
         arg_name.grid(row=0, column=1)
-        arg_type.grid(row=1, column=1)
+        OptionMenu(self.get_data_dialog, arg_type, *{"string", "integer", "float"}).grid(row=1, column=1, sticky=W)
         arg_annotation.grid(row=2, column=1)
         arg_translation.grid(row=3, column=1)
         arg_name.focus()
