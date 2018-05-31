@@ -37,21 +37,23 @@ class NewTemplateWindow(Frame):
         self.list_props = []
         self.master = master
         self.run_manager = run_manager
-        self.width = 390
-        self.height = 570
+        self.width = 600
+        self.height = 600
         self.master.minsize(width=self.width, height=self.height)
         self.master.geometry("%dx%d" % (self.width, self.height))
+        self.form_frame = Frame(self.master)
+        self.form_frame.pack(fill=Y, expand=YES)
         self.make_form()
 
     def make_form(self):
-        Label(self.master, text="Template Name:",
+        Label(self.form_frame, text="Template Name:",
               font=("Calibri", 12),
               bg=self.colors["label_bg"],
               fg=self.colors["label_fg"],
               width=15,
               justify=CENTER).grid(row=0, column=0, sticky=W, padx=5)
 
-        self.template_name = Entry(self.master,
+        self.template_name = Entry(self.form_frame,
                           insertofftime=500,
                           font=("Calibri", 12),
                           width=30,
@@ -64,11 +66,11 @@ class NewTemplateWindow(Frame):
 
         self.template_name.grid(row=0, column=1, sticky=W)
         self.template_name.focus()
-        self.error_template_name = Label(self.master, text="Template name is required!", fg="red")
+        self.error_template_name = Label(self.form_frame, text="Template name is required!", fg="red")
         self.error_template_name.grid(row=1, columnspan=4, sticky=W, padx=5)
         self.error_template_name.grid_remove()
 
-        Button(self.master,
+        Button(self.form_frame,
                text="Add New Argument",
                relief=RIDGE,
                font=("Calibri", 12),
@@ -77,11 +79,11 @@ class NewTemplateWindow(Frame):
                width=20,
                justify=CENTER,
                command=lambda: self.create_new_arg()).grid(row=2, columnspan=4)
-        container_listbox_arg = ttk.Frame(self.master)
+        container_listbox_arg = ttk.Frame(self.form_frame)
         container_listbox_arg.grid(row=3, columnspan=4)
-        self.listbox_arg = MultiColumnListbox(self.master, container_listbox_arg, self.headers_arg, self.list_args, 0)
+        self.listbox_arg = MultiColumnListbox(self.form_frame, container_listbox_arg, self.headers_arg, self.list_args, 0)
 
-        Button(self.master,
+        Button(self.form_frame,
                text="Add New Prop Option",
                relief=RIDGE,
                font=("Calibri", 12),
@@ -90,11 +92,11 @@ class NewTemplateWindow(Frame):
                width=20,
                justify=CENTER,
                command=lambda: self.create_new_prop()).grid(row=4, columnspan=4)
-        container_listbox_prop = ttk.Frame(self.master)
+        container_listbox_prop = ttk.Frame(self.form_frame)
         container_listbox_prop.grid(row=5, columnspan=4)
-        self.listbox_prop = MultiColumnListbox(self.master, container_listbox_prop, self.headers_prop, self.list_props, 180)
+        self.listbox_prop = MultiColumnListbox(self.form_frame, container_listbox_prop, self.headers_prop, self.list_props, 180)
 
-        Button(self.master,
+        Button(self.form_frame,
                text='Confirm',
                command=lambda: self.save_new_template()).grid(row=6, columnspan=4, sticky=E, padx=5)
 
