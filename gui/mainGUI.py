@@ -159,10 +159,6 @@ class MainWindow(Frame):
         file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close,
                               accelerator="Ctrl+q")
 
-        # Edit Menu
-        edit_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
-
         # Benchmark Menu
         benchmark_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["benchmark"]["title"], menu=benchmark_menu)
