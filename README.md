@@ -45,6 +45,21 @@ pipenv install
 ```
 
 
+#### Docker
+
+This project has a Docker file. You can build an image 
+yourself and run SPECtate with it:
+
+```shell
+# build the image
+docker build -t SPECtate:latest .
+# run SPECtate
+docker run SPECtate:latest --help
+# would display the help text like you ran it yourself
+# with python mainCLI.py --help
+```
+
+
 ## Example CLI Usage
 
 * Run an example configuration:
