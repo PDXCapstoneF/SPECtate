@@ -9,6 +9,7 @@ from contextlib import contextmanager
 
 from src.benchmark_run import SpecJBBRun, InvalidRunConfigurationException, JvmRunOptions, SpecJBBComponentOptions, SpecJBBComponentTypes, do
 
+
 @contextmanager
 def temporary_directory():
     pwd = os.getcwd()
@@ -16,6 +17,7 @@ def temporary_directory():
         os.chdir(td)
         yield
         os.chdir(pwd)
+
 
 class TestBenchmarkRun(unittest.TestCase):
     valid_props = [
@@ -38,7 +40,6 @@ class TestBenchmarkRun(unittest.TestCase):
             "jar": "env/Main.jar",
         },
     ]
-
 
     invalid_props = [
         {
@@ -63,18 +64,21 @@ class TestBenchmarkRun(unittest.TestCase):
                 SpecJBBRun(**invalid)
 
     def test_valid_give_run_options(self):
-        t = SpecJBBRun(**{
-            "backends": 2,
-            "injectors": 4,
-            "controller": {
-                "type": "multi",
-                "options": ["arg1", "arg2"],
-            },
-            "java": "java",
-            "jar": "env/Main.jar",
-        })
+        t = SpecJBBRun(
+            **{
+                "backends": 2,
+                "injectors": 4,
+                "controller": {
+                    "type": "multi",
+                    "options": ["arg1", "arg2"],
+                },
+                "java": "java",
+                "jar": "env/Main.jar",
+            })
 
-        for f in [t.controller_run_args, t.backend_run_args, t.injector_run_args]:
+        for f in [
+                t.controller_run_args, t.backend_run_args, t.injector_run_args
+        ]:
             self.assertTrue(any("env/Main.jar" in arg for arg in f()))
             self.assertTrue("java" in f())
             self.assertEqual("java", f()[0])
@@ -129,7 +133,6 @@ class TestBenchmarkRun(unittest.TestCase):
             with testpath.assert_calls("echo"):
                 r.run()
 
-
     def test_run_multijvm(self):
         with temporary_directory():
             r = SpecJBBRun(**{  # multijvm run with arguments
@@ -144,11 +147,18 @@ class TestBenchmarkRun(unittest.TestCase):
             with testpath.MockCommand("java") as mock_java:
                 r.run()
 
-                component_invocations = list(filter(lambda line: "-m" in line, mock_java.get_calls()))
+                component_invocations = list(
+                    filter(lambda line: "-m" in line, mock_java.get_calls()))
 
-                self.assertTrue(filter(lambda line: "CONTROLLER" in line, component_invocations))
-                self.assertTrue(filter(lambda line: "BACKEND" in line, component_invocations))
-                self.assertTrue(filter(lambda line: "TXINJECTOR" in line, component_invocations))
+                self.assertTrue(
+                    filter(lambda line: "CONTROLLER" in line,
+                           component_invocations))
+                self.assertTrue(
+                    filter(lambda line: "BACKEND" in line,
+                           component_invocations))
+                self.assertTrue(
+                    filter(lambda line: "TXINJECTOR" in line,
+                           component_invocations))
 
     def test_compliant_runs_need_kit_validation(self):
         ignore_kit_arguments = [{
@@ -192,7 +202,6 @@ class TestBenchmarkRun(unittest.TestCase):
                 },
             ]
 
-
         for invalid_props in ignore_kit_arguments:
             r = SpecJBBRun(**invalid_props)
             self.assertFalse(r.compliant())
@@ -202,7 +211,9 @@ class TestBenchmarkRun(unittest.TestCase):
             r = SpecJBBRun(**valid)
             self.assertTrue(r.compliant())
 
+
 class TestJvmRunOptions(unittest.TestCase):
+
     def test_given_none_will_fill_defaults(self):
         self.assertTrue(JvmRunOptions())
 
@@ -242,23 +253,19 @@ class TestJvmRunOptions(unittest.TestCase):
         self.assertEqual(j["options"], [])
 
     def test_validates_dictionaries(self):
-        invalid_missing_path = {
-            "options": []
-        }
+        invalid_missing_path = {"options": []}
 
         with self.assertRaises(Exception):
             j = JvmRunOptions(invalid_missing_path)
 
-        invalid_types = {
-            "path": 2,
-            "options": {}
-        }
+        invalid_types = {"path": 2, "options": {}}
 
         with self.assertRaises(Exception):
             j = JvmRunOptions(invalid_types)
 
 
 class TestSpecJBBComponentOptions(unittest.TestCase):
+
     def test_given_invalid_type(self):
         with self.assertRaises(Exception):
             SpecJBBComponentOptions("foo")
@@ -275,7 +282,8 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
     def test_given_int(self):
         count = 5
         component_options = list(
-            map(lambda c: SpecJBBComponentOptions(c, count), SpecJBBComponentTypes))
+            map(lambda c: SpecJBBComponentOptions(c, count),
+                SpecJBBComponentTypes))
 
         for co in component_options:
             self.assertEqual(co["count"], count)
@@ -286,10 +294,11 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
         options = ["a", "b"]
         jvm_opts = ["c", "d"]
 
-        component_options = list(map(lambda c: SpecJBBComponentOptions(c, {
-            "options": options,
-            "jvm_opts": jvm_opts,
-        }), SpecJBBComponentTypes))
+        component_options = list(
+            map(
+                lambda c: SpecJBBComponentOptions(c, {
+                    "options": options,
+                    "jvm_opts": jvm_opts,}), SpecJBBComponentTypes))
 
         for co in component_options:
             self.assertEqual(co["count"], 1)
@@ -317,8 +326,11 @@ class TestSpecJBBComponentOptions(unittest.TestCase):
 
 
 class TestDo(unittest.TestCase):
+
     def test_do_calls_run_method_on_objects(self):
+
         class example:
+
             def __init__(self):
                 self.called = False
 

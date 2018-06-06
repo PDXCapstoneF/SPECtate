@@ -1,53 +1,48 @@
 {
-	"TemplateData": {
-		"HBIR": {
-			"args": [
-				"arg1",
-				"arg2"
-			]
-
-		},
-		"HBIR BUT BETTER": {
-			"args": [
-				"arg1",
-				"arg2",
-				"arg3"
-			]
-
-		},
-		"LOADLEVELS BUT NOT": {
-			"args": [
-				"foo",
-				"bar",
-				"baz"
-			]
-
-
-		}
-	},
-	"RunList": [
-		{
-			"template_type": "HBIR BUT BETTER",
-			"args": {
-				"arg1": "value 1",
-				"arg2": "value 1",
-				"arg3": "value 1"
-			}
-		},
-		{
-			"template_type": "HBIR",
-			"args": {
-				"arg1": 4,
-				"arg2": false
-			}
-
-		},
-		{
-			"template_type": "HBIR",
-			"args": {
-				"arg1": 4,
-				"arg2": false
-			}
-		}
-	]
+  "TemplateData": {
+    "HBIR": {
+      "args": [
+        "arg1",
+        "arg2"
+      ]
+    },
+    "HBIR BUT BETTER": {
+      "args": [
+        "arg1",
+        "arg2",
+        "arg3"
+      ]
+    },
+    "LOADLEVELS BUT NOT": {
+      "args": [
+        "foo",
+        "bar",
+        "baz"
+      ]
+    }
+  },
+  "RunList": [
+    {
+      "template_type": "HBIR BUT BETTER",
+      "args": {
+        "arg1": "value 1",
+        "arg2": "value 1",
+        "arg3": "value 1"
+      }
+    },
+    {
+      "template_type": "HBIR",
+      "args": {
+        "arg1": 4,
+        "arg2": false
+      }
+    },
+    {
+      "template_type": "HBIR",
+      "args": {
+        "arg1": 4,
+        "arg2": false
+      }
+    }
+  ]
 }
