@@ -15,9 +15,7 @@ import webbrowser
 
 # import modules defined at ../
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append('../src/')  # @todo: avoid PYTHONPATH
-from src.benchmark_run import SpecJBBRun
-from src.run_generator import RunGenerator
+sys.path.append('../src/')
 
 try:
     with open("gui/properties.json") as properties_file:
@@ -101,17 +99,9 @@ class MainWindow(Frame):
                 self.listbox.insert(i, run_list[i])
                 i += 1
 
-    def create_tag(self):
-        """
-        # @todo
-        Will be a naming convention for creating a run tag.
-        :return:
-        """
-        pass
-
     def do_runs(self, selection):
         for item in selection:
-            run = self.run_manager.do_run(tag=self.listbox.get(item))
+            self.run_manager.do_run(tag=self.listbox.get(item))
 
     def theme_window(self):
         """
@@ -133,7 +123,6 @@ class MainWindow(Frame):
                         variable=button_results,
                         command=lambda: self.set_theme(var))
         button.pack(anchor='s')
-        # self.update()
 
     def set_theme(self, theme):
         theme = theme.get()
@@ -170,14 +159,6 @@ class MainWindow(Frame):
         file_menu.add_command(label=properties["commands"]["file"]["items"]["exit"], command=self.on_close,
                               accelerator="Ctrl+q")
 
-        # Edit Menu
-        edit_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label=properties["commands"]["edit"]["title"], menu=edit_menu)
-
-        # @todo: implement or remove.
-        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["undo"], command='')
-        edit_menu.add_command(label=properties["commands"]["edit"]["items"]["redo"], command='')
-
         # Benchmark Menu
         benchmark_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label=properties["commands"]["benchmark"]["title"], menu=benchmark_menu)
@@ -209,10 +190,8 @@ class MainWindow(Frame):
         self.master.bind('<Control-q>', lambda event: self.on_close())
 
     def select_all(self, event):
-        # select text
-        event.widget.select_range(0, 'end')
-        # move cursor to the end
-        event.widget.icursor('end')
+        event.widget.select_range(0, 'end')  # select text
+        event.widget.icursor('end')          # move cursor to the end
 
     def make_arg_form(self, fields, args_list):
         self.entries = {}
@@ -222,17 +201,13 @@ class MainWindow(Frame):
                                  width=85,
                                  height=self.height,
                                  bg=self.colors["canvas_bg"],
-                                 # bg=self.colors['canvas'],
                                  relief=GROOVE)
             self.canvas.pack(side="right", expand=True, fill="both")
         if fields is None:
-            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)  # Label
+            self.canvas.create_image(5, 5, anchor='nw', state=NORMAL)
             self.arg_label = Label(self.canvas,
                                    text="Well this is weird... I don't have anything to show you.",
-                                   # relief=SUNKEN,
-                                   # bg="red",
-                                   # fg="red",
-                                   highlightbackground=self.colors["highlightcolorbg"],  # dark = black
+                                   highlightbackground=self.colors["highlightcolorbg"],
                                    font=("Calibri", 12),
                                    width=64,
                                    justify=LEFT)
@@ -246,9 +221,9 @@ class MainWindow(Frame):
                              font=("Calibri", 12),
                              width=53,
                              relief=RIDGE,
-                             highlightcolor=self.colors["highlightcolor"],  # dark = black, light =
-                             highlightbackground=self.colors["highlightcolorbg"],  # dark = black, light =
-                             bg=self.colors["text_bg"],  # good
+                             highlightcolor=self.colors["highlightcolor"],
+                             highlightbackground=self.colors["highlightcolorbg"],
+                             bg=self.colors["text_bg"],
                              fg=self.colors['text_fg'],
                              justify=CENTER)
                 form.bind('<Control-KeyRelease-a>', self.select_all)
@@ -272,7 +247,6 @@ class MainWindow(Frame):
                                        textvariable=var,
                                        relief=RAISED,
                                        font=("Calibri", 12),
-                                       # bg="black",
                                        bg=self.colors["label_bg"],
                                        fg=self.colors["label_fg"],
                                        width=15,
@@ -341,10 +315,6 @@ class MainWindow(Frame):
         self.popup_menu.tk_popup(event.x_root, event.y_root)
 
     def delete_selected(self, selection):
-        # for item in selection[::-1]:
-        #     # @todo: RunManager call here
-        #     self.listbox.delete(item)
-        # iterate from end to beginning, loop
         for item in selection[::-1]:
             removed = self.run_manager.remove_run(tag_to_remove=self.listbox.get(item))
             self.listbox.delete(item)
@@ -450,17 +420,10 @@ class MainWindow(Frame):
         add a new run into the end of runlist
         :param runtype: string
         """
-        # @todo: create the run object. Then call self.run_man to add to list.
         runtype = runtype.get()
         self.new_theme_window.destroy()
         run = self.run_manager.create_run(runtype)
         self.listbox.insert(END, run)
-        # self.run_manager.insert_into_config_list("RunList", run)
-
-    def save_group(self):
-        # @todo: is this needed?
-        # save stuff
-        pass
 
     def load_file(self, type=None):
         """
