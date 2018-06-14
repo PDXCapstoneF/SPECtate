@@ -22,7 +22,8 @@ SPECtate is a configuration tool that interfaces with the benchmarking software 
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See usage for notes on how to use the project on a live system.
 
-There's a pre-packaged binary for quick, out-of-the box setup without **any dependencies**! Check out the [releases](https://github.com/PDXCapstoneF/SPECtate/releases) for binaries for core.
+There's a pre-packaged binary for quick, out-of-the box setup without **any dependencies**! 
+Check out the [releases](https://github.com/PDXCapstoneF/SPECtate/releases) for binaries for the main CLI application.
 
 ### Prerequisites
 
