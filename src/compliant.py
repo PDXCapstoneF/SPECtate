@@ -5,6 +5,7 @@ or not according to https://www.spec.org/jbb2015/docs/runrules.pdf.
 from schema import Schema, And, Or, Optional
 from src.validate import is_stringy
 
+
 def compliant(props=None):
     """
     Returns a boolean representing whether or not a run is compliant.
@@ -18,9 +19,14 @@ def compliant(props=None):
     except Exception:
         return False
 
+
 CompliantRunSchema = Schema({
-    Optional("specjbb.group.count"): And(int, lambda group_count: group_count >= 1),
-    Optional("specjbb.txi.pergroup.count"): And(int, lambda injector_count: injector_count >= 1),
-    Optional("specjbb.mapreducer.pool.size"): And(int, lambda pool_size: pool_size >= 2),
-    Optional(is_stringy): object,
-    })
+    Optional("specjbb.group.count"):
+    And(int, lambda group_count: group_count >= 1),
+    Optional("specjbb.txi.pergroup.count"):
+    And(int, lambda injector_count: injector_count >= 1),
+    Optional("specjbb.mapreducer.pool.size"):
+    And(int, lambda pool_size: pool_size >= 2),
+    Optional(is_stringy):
+    object,
+})

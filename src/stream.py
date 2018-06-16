@@ -3,6 +3,7 @@ from queue import Queue, Empty
 
 
 class stream:
+
     def __init__(self, s):
         """
         s: the stream to read from.
@@ -12,8 +13,8 @@ class stream:
         self._queue = Queue()
         self._active = True
 
-
-        self._t = Thread(target = self._read, args = (self._stream, self, self._queue))
+        self._t = Thread(
+            target=self._read, args=(self._stream, self, self._queue))
         self._t.daemon = True
         self._t.start()
 
@@ -39,5 +40,5 @@ class stream:
         return ''
 
     def close(self):
-        if(self._active):
+        if (self._active):
             self._active = False

@@ -1,64 +1,64 @@
 {
-    "TemplateData": {
-        "CURSES": {
-            "annotations": {
-                "JVM Options": "A string of arguments to be passed to the JVM",
-                "Run Type": "The run type must be 'composite', 'distributed_ctrl_txl', 'distributed_sut', or 'multi'",
-                "Ignore Kit Validation": "Whether or not SPECjbb will perform kit validation prior to running",
-                "Numa Nodes": "The number of numa nodes to use when running multiple TXINJECTOR's or BACKEND's",
-                "Tag": "The name of this run",
-                "JDK": "The full path location of a java executable to be invoked",
-                "Data Collection": "Currently unsupported",
-                "Number of Runs": "The number of times this run will execute sequentially",
-                "Verbose": "Whether or not SPECjbb will produce verbose output during a run",
-                "Skip Report": "Whether or not SPECjbb will skip producing a report after completion"
-            },
-            "args": [
-                "JDK",
-                "JVM Options",
-                "Run Type",
-                "Tag",
-                "Numa Nodes",
-                "Verbose",
-                "Report Level",
-                "Skip Report",
-                "Ignore Kit Validation",
-                "Number of Runs",
-                "Data Collection"
-            ],
-            "types": {
-                "JVM Options": "string",
-                "Run Type": "string",
-                "Ignore Kit Validation": "boolean",
-                "Numa Nodes": "integer",
-                "Tag": "string",
-                "JDK": "string",
-                "Data Collection": "string",
-                "Number of Runs": "integer",
-                "Verbose": "boolean",
-                "Skip Report": "boolean"
-            }
-        }
-    },
-    "RunList": [
-        {
-            "template_type": "CURSES",
-            "args": {
-                "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
-                "Run Type": "composite",
-                "Ignore Kit Validation": false,
-                "Report Level": 0,
-                "Tag": "tag-name",
-                "Number of Runs": 1,
-                "Skip Report": false,
-                "Numa Nodes": 1,
-                "JDK": "/usr/bin/java",
-                "Data Collection": "NONE",
-                "Verbose": false
-            },
-            "props_extra": {
-                "specjbb.comm.connect.worker.pool.min": "12323"
-            }
-        }
-    ]
+  "TemplateData": {
+    "CURSES": {
+      "annotations": {
+        "JVM Options": "A string of arguments to be passed to the JVM",
+        "Run Type": "The run type must be 'composite', 'distributed_ctrl_txl', 'distributed_sut', or 'multi'",
+        "Ignore Kit Validation": "Whether or not SPECjbb will perform kit validation prior to running",
+        "Numa Nodes": "The number of numa nodes to use when running multiple TXINJECTOR's or BACKEND's",
+        "Tag": "The name of this run",
+        "JDK": "The full path location of a java executable to be invoked",
+        "Data Collection": "Currently unsupported",
+        "Number of Runs": "The number of times this run will execute sequentially",
+        "Verbose": "Whether or not SPECjbb will produce verbose output during a run",
+        "Skip Report": "Whether or not SPECjbb will skip producing a report after completion"
+      },
+      "args": [
+        "JDK",
+        "JVM Options",
+        "Run Type",
+        "Tag",
+        "Numa Nodes",
+        "Verbose",
+        "Report Level",
+        "Skip Report",
+        "Ignore Kit Validation",
+        "Number of Runs",
+        "Data Collection"
+      ],
+      "types": {
+        "JVM Options": "string",
+        "Run Type": "string",
+        "Ignore Kit Validation": "boolean",
+        "Numa Nodes": "integer",
+        "Tag": "string",
+        "JDK": "string",
+        "Data Collection": "string",
+        "Number of Runs": "integer",
+        "Verbose": "boolean",
+        "Skip Report": "boolean"
+      }
+    }
+  },
+  "RunList": [
+    {
+      "template_type": "CURSES",
+      "args": {
+        "JVM Options": "-Xms29g -Xmx29g -Xmn27g -XX:ParallelGCThreads=48",
+        "Run Type": "composite",
+        "Ignore Kit Validation": false,
+        "Report Level": 0,
+        "Tag": "tag-name",
+        "Number of Runs": 1,
+        "Skip Report": false,
+        "Numa Nodes": 1,
+        "JDK": "/usr/bin/java",
+        "Data Collection": "NONE",
+        "Verbose": false
+      },
+      "props_extra": {
+        "specjbb.comm.connect.worker.pool.min": "12323"
+      }
+    }
+  ]
 }
