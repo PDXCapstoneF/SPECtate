@@ -41,12 +41,14 @@ def do(task):
     task.run()
     log.debug("finished task {}".format(task))
 
+
 def do_dry(task):
     """
     Prints some additional logging information without
     actually running the task. Similar to `do`.
     """
     log.info("DRY: {}".format(task))
+
 
 class JvmRunOptions(dict):
     """
@@ -83,13 +85,11 @@ class JvmRunOptions(dict):
 
             self.update(val)
         elif val is None:
-            self.update({
-                "path": "java",
-                "options": []
-            })
+            self.update({"path": "java", "options": []})
         else:
             raise Exception(
-                "unrecognized type given to JvmRunOptions: {}".format(type(val)))
+                "unrecognized type given to JvmRunOptions: {}".format(
+                    type(val)))
 
 
 """
@@ -119,10 +119,12 @@ class SpecJBBComponentOptions(dict):
             component_type = component_type.lower()
             if component_type not in SpecJBBComponentTypes:
                 raise Exception(
-                    "invalid component type '{}' given to SpecJBBComponentOptions".format(component_type))
+                    "invalid component type '{}' given to SpecJBBComponentOptions".
+                    format(component_type))
         else:
             raise Exception(
-                "Unrecognized type given to SpecJBBComponentOptions: {}".format(type(component_type)))
+                "Unrecognized type given to SpecJBBComponentOptions: {}".format(
+                    type(component_type)))
 
         if isinstance(rest, dict):
             if "count" not in rest:
@@ -151,7 +153,8 @@ class SpecJBBComponentOptions(dict):
             })
         else:
             raise Exception(
-                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".format(rest))
+                "Unrecognized 'rest' given to SpecJBBComponentOptions: {}".
+                format(rest))
         if "-p" in self["options"]:
             raise Exception("SpecJBBComponentOptions recieved external props file")
         if "-m" in self["options"]:
@@ -235,16 +238,14 @@ class SpecJBBRun:
         if self.controller["type"] == "composite":
             return
 
-        self.log.info(
-            "generating {} groups, each with {} transaction injectors"
-                .format(self.backends["count"], self.injectors["count"]))
+        self.log.info("generating {} groups, each with {} transaction injectors"
+                      .format(self.backends["count"], self.injectors["count"]))
 
         for _ in range(self.backends["count"]):
             group_id = uuid4().hex
             backend_jvm_id = uuid4().hex
             self.log.debug("constructing group {}".format(group_id))
-            yield TaskRunner(*self.backend_run_args(),
-                             '-G={}'.format(group_id),
+            yield TaskRunner(*self.backend_run_args(), '-G={}'.format(group_id),
                              '-J={}'.format(backend_jvm_id))
 
             self.log.debug(
@@ -253,7 +254,8 @@ class SpecJBBRun:
             for _ in range(self.injectors["count"]):
                 ti_jvm_id = uuid4().hex
                 self.log.debug(
-                    "preparing injector in group {} with jvmid={}".format(group_id, ti_jvm_id))
+                    "preparing injector in group {} with jvmid={}".format(
+                        group_id, ti_jvm_id))
                 yield TaskRunner(*self.injector_run_args(),
                                  '-G={}'.format(group_id),
                                  '-J={}'.format(ti_jvm_id))
@@ -275,7 +277,8 @@ class SpecJBBRun:
         else:
             try:
                 self.log.debug(
-                    "attempting to create results directory {}".format(results_directory))
+                    "attempting to create results directory {}".format(
+                        results_directory))
                 os.mkdir(results_directory)
             except os.FileExistsError:
                 self.log.error(
@@ -285,8 +288,8 @@ class SpecJBBRun:
 
             try:
                 for number_of_times in range(self.times):
-                    self.log.debug(
-                            "beginning run {}/{}".format(number_of_times, self.times))
+                    self.log.debug("beginning run {}/{}".format(
+                        number_of_times, self.times))
                     self._run(dry_run)
             except Exception as e:
                 self.log.error(
@@ -311,7 +314,8 @@ class SpecJBBRun:
             if not self.props:
                 self.log.info("DRY: (none provided)")
             for name, value in self.props.items():
-                self.log.info("DRY: name: {}, value({}): {}".format(name, type(value), value))
+                self.log.info("DRY: name: {}, value({}): {}".format(
+                    name, type(value), value))
         else:
             with open(self.props_file, 'w+') as props_file:
                 c = configparser.ConfigParser()
@@ -410,11 +414,11 @@ class SpecJBBRun:
             except Exception:
                 continue
 
-            specjbb_options = options[jar_index+2:-1]
+            specjbb_options = options[jar_index + 2:-1]
 
             if contains_forbidden_flag(specjbb_options):
-                self.log.error("component arguments would have been NON-COMPLIANT")
+                self.log.error(
+                    "component arguments would have been NON-COMPLIANT")
                 return False
 
         return True
-

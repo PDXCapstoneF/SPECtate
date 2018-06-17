@@ -1,20 +1,19 @@
 {
-	"TemplateData": {
-		"MyTemplate": {
-			"args": [
-				"Host",
-				"Port"
-			]
-
-		}
-	},
-	"RunList": [
-		{
-			"template_type": "MyTemplate",
-			"args": {
-				"Host": "localhost",
-				"Port": 24000
-			}
-		}
-	]
+  "TemplateData": {
+    "MyTemplate": {
+      "args": [
+        "Host",
+        "Port"
+      ]
+    }
+  },
+  "RunList": [
+    {
+      "template_type": "MyTemplate",
+      "args": {
+        "Host": "localhost",
+        "Port": 24000
+      }
+    }
+  ]
 }

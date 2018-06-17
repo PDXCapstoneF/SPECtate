@@ -34,6 +34,7 @@ from src import benchmark_run
 
 log = logging.getLogger(__name__)
 
+
 def to_list(s):
     if s["run_type"].lower() in ["hbir", "hbir_rt"]:
         return [
@@ -113,12 +114,19 @@ def do_run(arguments):
 
         s.run(arguments['--dry-run'])
 
+
 def do_script(arguments):
-    call(["perl", "scripts/{}.pl".format(arguments["<script>"])] + arguments["ARG"])
+    call(["perl", "scripts/{}.pl".format(arguments["<script>"])] +
+         arguments["ARG"])
+
 
 def do_scripts(arguments):
     log.info("These are the scripts available to run using 'script':")
-    log.info([script for script in os.listdir(join(dirname(__file__), "scripts")) if script.endswith("pl")])
+    log.info([
+        script for script in os.listdir(join(dirname(__file__), "scripts"))
+        if script.endswith("pl")
+    ])
+
 
 def do_compliant(arguments):
     with open(arguments['<config>'], 'r') as f:

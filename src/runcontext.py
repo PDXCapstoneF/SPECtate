@@ -2,6 +2,7 @@ import curses
 
 
 class runcontext:
+
     def __init__(self, stdscr, xoffset, draw):
         height, width = stdscr.getmaxyx()
         self.stdscr = stdscr
@@ -29,10 +30,11 @@ class runcontext:
             self._refresh(self.index % self.logmax)
 
     def _refresh(self, c):
-        self.pad.refresh(0, 0, self.maxy - c, self.xoffset, self.maxy, self.width - self.xoffset - 1)
+        self.pad.refresh(0, 0, self.maxy - c, self.xoffset, self.maxy,
+                         self.width - self.xoffset - 1)
         if c < self.logmax - 1:
-            self.pad.refresh(c + 1, 0, self.starty, self.xoffset, (self.maxy - c), self.width - self.xoffset - 1)
-
+            self.pad.refresh(c + 1, 0, self.starty, self.xoffset,
+                             (self.maxy - c), self.width - self.xoffset - 1)
 
     def handle_out(self, msg):
         while True:
@@ -50,7 +52,6 @@ class runcontext:
                 break
             self.stdscr.erase()
             self._resize(self.stdscr)
-
 
     @staticmethod
     def _remove_control_chars(s):

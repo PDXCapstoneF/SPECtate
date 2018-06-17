@@ -37,15 +37,17 @@ def display_run(stdscr, runinfo, y=STARTY + 2):
     :param y: The current y value
     :return: The new y value, as well as the max length of any property in the current run
     """
-    mem = [attr for attr in dir(runinfo) if not callable(getattr(runinfo, attr)) and not attr.startswith("_")]
+    mem = [
+        attr for attr in dir(runinfo)
+        if not callable(getattr(runinfo, attr)) and not attr.startswith("_")
+    ]
     valueoffset = len(max(mem, key=len)) + 2
     for name in mem:
         if name == 'properties':
             stdscr.addstr(y, xoffset, name)
         else:
             stdscr.addstr(y, xoffset, "{}:".format(name))
-            stdscr.addstr(y, xoffset + valueoffset,
-                          str(getattr(runinfo, name)))
+            stdscr.addstr(y, xoffset + valueoffset, str(getattr(runinfo, name)))
         y += 1
     return y, valueoffset
 
@@ -72,12 +74,14 @@ def select_from(stdscr, x, y, value, slist, redraw):
         curses_safe_addstr(stdscr, 0, 0, str(value))
         curses_safe_addstr(stdscr, 1, 0, str(type(value)))
         curses_safe_addstr(stdscr, 2, 0, ','.join(map(str, slist)))
-        curses_safe_addstr(stdscr, 3, 0, ','.join(list(map(str, map(type, slist)))))
+        curses_safe_addstr(stdscr, 3, 0, ','.join(
+            list(map(str, map(type, slist)))))
         stdscr.getch()
         stdscr.clear()
         stdscr.refresh()
 
-    draw_status_bar(stdscr, "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
+    draw_status_bar(stdscr,
+                    "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
     while k != KEY_ENTER and k != ord('q'):
         pad.clear()
         value = str(slist[idx])
@@ -99,7 +103,9 @@ def select_from(stdscr, x, y, value, slist, redraw):
             stdscr.erase()
             height, width = stdscr.getmaxyx()
             redraw(stdscr)
-            draw_status_bar(stdscr, "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
+            draw_status_bar(
+                stdscr,
+                "Press 'q' to exit and 'UP' or 'DOWN' to select a value")
     return slist[idx]
 
 
@@ -114,6 +120,7 @@ def input_text(stdscr, x, y, value, validator, redraw):
     :param validator: A validator to ensure only proper keys are entered.
     :return: A validated value
     """
+
     def _resize(screen):
         screen.erase()
         stdscr.refresh()
@@ -123,6 +130,7 @@ def input_text(stdscr, x, y, value, validator, redraw):
         p = curses.newpad(1, x)
         stdscr.refresh()
         return w, x, p
+
     k = 0
     value = list(str(value))
     idx = len(value)
@@ -181,8 +189,8 @@ def input_text(stdscr, x, y, value, validator, redraw):
             #   o X
             #               I
             # I - ((W - o) - (W - X))
-            pad.refresh(0, idx - ((width - 1 - x) -
-                                  (width - 1 - cursorx)), y, x, y, width - 1)
+            pad.refresh(0, idx - ((width - 1 - x) - (width - 1 - cursorx)), y,
+                        x, y, width - 1)
         else:
             pad.refresh(0, 0, y, x, y, width - 1)
         k = stdscr.getch()
@@ -211,6 +219,7 @@ def draw_save_config(stdscr):
 
 
 def draw_edit_props(stdscr, p):
+
     def _resize(std):
         h, w = stdscr.getmaxyx()
         sy = draw_title(std)
@@ -233,21 +242,25 @@ def draw_edit_props(stdscr, p):
             if cury < height - 5:
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty,
-                            xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty, xoffset,
+                            height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if cury > starty:
                 cury -= 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty,
-                            xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty, xoffset,
+                            height - 5, width - xoffset - 1)
         elif k == KEY_ENTER:
             if p[index].valid_opts:
-                value = select_from(stdscr, xoffset + startx, cury, p[index].value, p[index].valid_opts, _resize)
+                value = select_from(stdscr, xoffset + startx, cury,
+                                    p[index].value, p[index].valid_opts,
+                                    _resize)
                 p[index].value = value
             else:
-                value = input_text(stdscr, xoffset + startx, cury, p[index].value, p[index].input_validator, _resize)
+                value = input_text(stdscr, xoffset + startx, cury,
+                                   p[index].value, p[index].input_validator,
+                                   _resize)
                 if not p[index].value_validator(value):
                     draw_show_message(stdscr, p[index].help_text)
                 else:
@@ -264,6 +277,7 @@ def draw_edit_props(stdscr, p):
 
 # Calls display_run, and allows user to select and edit any of the run options
 def draw_edit_run(stdscr, runinfo):
+
     def _resize(std):
         ey, ex = display_run(std, runinfo, draw_title(std))
         draw_status_bar(std, "Press 'q' to exit or 'ENTER' to edit a value")
@@ -272,7 +286,10 @@ def draw_edit_run(stdscr, runinfo):
     k = 0
     y = STARTY + 2
     cury = y
-    array = [attr for attr in dir(runinfo) if not callable(getattr(runinfo, attr)) and not attr.startswith("_")]
+    array = [
+        attr for attr in dir(runinfo)
+        if not callable(getattr(runinfo, attr)) and not attr.startswith("_")
+    ]
     endy, startx = _resize(stdscr)
 
     while k != ord('q'):  # 27 == 'ESC'
@@ -283,36 +300,43 @@ def draw_edit_run(stdscr, runinfo):
         elif k == KEY_ENTER:
             name = array[cury - y]
             if name == 'verbose' or name == 'skip_report' or name == 'ignore_kit_validation':
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [True, False], _resize)
+                value = select_from(stdscr, xoffset + startx, cury,
+                                    getattr(runinfo, name), [True, False],
+                                    _resize)
                 setattr(runinfo, name, value)
             elif name == 'report_level':
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), [0, 1, 2], _resize)
+                value = select_from(stdscr, xoffset + startx, cury,
+                                    getattr(runinfo, name), [0, 1, 2], _resize)
                 setattr(runinfo, name, value)
             elif name == 'run_type':
-                value = select_from(stdscr, xoffset + startx, cury, getattr(runinfo, name), run_types, _resize)
+                value = select_from(stdscr, xoffset + startx, cury,
+                                    getattr(runinfo, name), run_types, _resize)
                 setattr(runinfo, name, value)
             elif name == 'properties':
                 draw_edit_props(stdscr, runinfo.properties.get_all())
             elif name == 'jdk':
-                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name),
-                                   lambda x: True,_resize)  # start editing at end of value
+                value = input_text(stdscr, xoffset + startx, cury,
+                                   getattr(runinfo, name), lambda x: True,
+                                   _resize)  # start editing at end of value
                 if not os.path.exists(value):
                     draw_show_message(stdscr, "Warning: jdk path not found")
                 setattr(runinfo, name, value)
             elif name == 'num_runs' or name == 'numa_nodes':
-                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name),
-                                   objects.number_validator,_resize)  # start editing at end of value
+                value = input_text(stdscr, xoffset + startx, cury,
+                                   getattr(runinfo,
+                                           name), objects.number_validator,
+                                   _resize)  # start editing at end of value
                 setattr(runinfo, name, value)
             else:
-                value = input_text(stdscr, xoffset + startx, cury, getattr(runinfo, name),
-                                   lambda x: True,_resize)  # start editing at end of value
-                if(name == 'spec_dir'):
+                value = input_text(stdscr, xoffset + startx, cury,
+                                   getattr(runinfo, name), lambda x: True,
+                                   _resize)  # start editing at end of value
+                if (name == 'spec_dir'):
                     cur_config.set_spec_dir(value)
                 else:
                     setattr(runinfo, name, value)
         elif k == curses.KEY_RESIZE:
             stdscr.erase()
-
 
         stdscr.clear()
         stdscr.refresh()
@@ -322,7 +346,9 @@ def draw_edit_run(stdscr, runinfo):
         k = stdscr.getch()
     return runinfo
 
-def draw_generic_get_input(stdscr, message, validator = lambda x:True):
+
+def draw_generic_get_input(stdscr, message, validator=lambda x: True):
+
     def _resize(std):
         y = draw_title(std)
         s = curses_safe_addstr(std, y, xoffset, message)
@@ -333,9 +359,6 @@ def draw_generic_get_input(stdscr, message, validator = lambda x:True):
     stdscr.clear()
     sy, x = _resize(stdscr)
     return input_text(stdscr, sy, x, "", validator, _resize)
-
-
-
 
 
 def edit_config(stdscr):
@@ -350,9 +373,15 @@ def edit_config(stdscr):
         stdscr.clear()
         stdscr.refresh()
         sy = draw_title(stdscr)
-        curses_safe_addstr(stdscr, sy + len(cur_config.runs), xoffset, "{}. Add new run:".format(len(cur_config.runs) + 1))
-        draw_status_bar(stdscr, "Press 'ENTER' to edit a run | Press 'RIGHT' to adjust run position | Press q to quit")
-        draw_notice_bar(stdscr, "Press 'C' to change config type: {}".format(cur_config.type))
+        curses_safe_addstr(stdscr, sy + len(cur_config.runs), xoffset,
+                           "{}. Add new run:".format(len(cur_config.runs) + 1))
+        draw_status_bar(
+            stdscr,
+            "Press 'ENTER' to edit a run | Press 'RIGHT' to adjust run position | Press q to quit"
+        )
+        draw_notice_bar(
+            stdscr,
+            "Press 'C' to change config type: {}".format(cur_config.type))
         if position:
             stdscr.move(cury, xoffset + 2)
         else:
@@ -373,22 +402,31 @@ def edit_config(stdscr):
         if k == curses.KEY_DOWN:
             if (not position and cury < endy) or (position and cury < endy - 1):
                 if position:
-                    cur_config.runs[index + 1], cur_config.runs[index] = cur_config.runs[index], cur_config.runs[index + 1]
+                    cur_config.runs[index + 1], cur_config.runs[
+                        index] = cur_config.runs[index], cur_config.runs[index +
+                                                                         1]
                 cury += 1
                 index += 1
-            elif (not position and index < len(cur_config.runs) - 1) or (position and index < len(cur_config.runs) - 1):
+            elif (not position and index < len(cur_config.runs) - 1) or (
+                    position and index < len(cur_config.runs) - 1):
                 if position:
-                    cur_config.runs[index + 1], cur_config.runs[index] = cur_config.runs[index], cur_config.runs[index + 1]
+                    cur_config.runs[index + 1], cur_config.runs[
+                        index] = cur_config.runs[index], cur_config.runs[index +
+                                                                         1]
                 index += 1
         elif k == curses.KEY_UP:
             if cury > starty:
                 if position:
-                    cur_config.runs[index - 1], cur_config.runs[index] = cur_config.runs[index], cur_config.runs[index - 1]
+                    cur_config.runs[index - 1], cur_config.runs[
+                        index] = cur_config.runs[index], cur_config.runs[index -
+                                                                         1]
                 cury -= 1
                 index -= 1
             elif index > 0:
                 if position:
-                    cur_config.runs[index - 1], cur_config.runs[index] = cur_config.runs[index], cur_config.runs[index - 1]
+                    cur_config.runs[index - 1], cur_config.runs[
+                        index] = cur_config.runs[index], cur_config.runs[index -
+                                                                         1]
                 index -= 1
         elif k == curses.KEY_LEFT:
             position = False
@@ -396,7 +434,9 @@ def edit_config(stdscr):
             position = True
         elif k == curses.KEY_DC and index < len(cur_config.runs):
             position = False
-            draw_status_bar(stdscr, "Remove run {} from this config? (y/N)".format(cur_config.runs[index].tag))
+            draw_status_bar(
+                stdscr, "Remove run {} from this config? (y/N)".format(
+                    cur_config.runs[index].tag))
             resp = stdscr.getch()
             if resp == ord('y') or resp == ord('Y'):
                 del cur_config.runs[index]
@@ -414,7 +454,8 @@ def edit_config(stdscr):
                         newrun.spec_dir = r.spec_dir
                         break
                 cur_config.runs.append(newrun)
-            cur_config.runs[index] = draw_edit_run(stdscr, cur_config.runs[index])
+            cur_config.runs[index] = draw_edit_run(stdscr,
+                                                   cur_config.runs[index])
         elif k == ord('c') or k == ord('C'):
             cur_config.switch_type()
         elif k == curses.KEY_RESIZE:
@@ -429,7 +470,7 @@ def edit_config(stdscr):
 
 def draw_title(stdscr):
     height, width = stdscr.getmaxyx()
-    title = "SPECtate - curses"[:width - 1]
+    title = "SPECtate - curses" [:width - 1]
     start_x_title = int((width // 2) - (len(title) // 2) - len(title) % 2)
 
     # Turning on attributes for title
@@ -437,7 +478,7 @@ def draw_title(stdscr):
     stdscr.attron(curses.A_BOLD)
 
     stdscr.attron(curses.color_pair(1))
-    curses_safe_addstr(stdscr,STARTY, start_x_title, "SPECtate - curses")
+    curses_safe_addstr(stdscr, STARTY, start_x_title, "SPECtate - curses")
     stdscr.attroff(curses.color_pair(1))
     # Turning off attributes for title
     stdscr.attroff(curses.color_pair(2))
@@ -450,8 +491,9 @@ def draw_notice_bar(stdscr, noticebarstr):
     stdscr.attron(curses.color_pair(3))
     if len(noticebarstr) > width:
         noticebarstr = noticebarstr[:width - 1]
-    start_x = int((width // 2) - (len(noticebarstr) // 2) - len(noticebarstr) % 2)
-    curses_safe_addstr(stdscr,height - 3, start_x, noticebarstr)
+    start_x = int((width // 2) - (len(noticebarstr) // 2) -
+                  len(noticebarstr) % 2)
+    curses_safe_addstr(stdscr, height - 3, start_x, noticebarstr)
     stdscr.attroff(curses.color_pair(3))
 
 
@@ -460,8 +502,9 @@ def draw_status_bar(stdscr, statusbarstr):
     stdscr.attron(curses.color_pair(3))
     if len(statusbarstr) > width:
         statusbarstr = statusbarstr[:width - 1]
-    curses_safe_addstr(stdscr,height - 1, 0, statusbarstr)
-    curses_safe_addstr(stdscr,height - 1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+    curses_safe_addstr(stdscr, height - 1, 0, statusbarstr)
+    curses_safe_addstr(stdscr, height - 1, len(statusbarstr),
+                       " " * (width - len(statusbarstr) - 1))
     stdscr.attroff(curses.color_pair(3))
 
 
@@ -490,15 +533,17 @@ def draw_get_config_path(stdscr):
     cur_path = ""
     stdscr.clear()
     stdscr.refresh()
+
     def _resize(std):
         sy = draw_title(std)
         draw_status_bar(std, "Please enter the path of a config")
 
-        curses_safe_addstr(std,sy, xoffset, "Config file path:")
+        curses_safe_addstr(std, sy, xoffset, "Config file path:")
         return sy
 
     y = _resize(stdscr)
-    path = input_text(stdscr, xoffset + len("Config file path:") + 1, y, "", lambda x: True, _resize)
+    path = input_text(stdscr, xoffset + len("Config file path:") + 1, y, "",
+                      lambda x: True, _resize)
     if not os.path.exists(path) and not path.endswith('.json'):
         path += '.json'
     if os.path.isfile(path):
@@ -514,6 +559,7 @@ def draw_get_path(stdscr):
     :param stdscr:
     :return: A string path
     """
+
     def _resize(std):
         sy = draw_title(std)
         draw_status_bar(stdscr, "Please enter the path of SPECjbb")
@@ -524,7 +570,8 @@ def draw_get_path(stdscr):
     stdscr.clear()
     stdscr.refresh()
     y = _resize(stdscr)
-    return input_text(stdscr, xoffset + len("Config file path:") + 1, y, "", lambda x: True, _resize)
+    return input_text(stdscr, xoffset + len("Config file path:") + 1, y, "",
+                      lambda x: True, _resize)
 
 
 def run_config(stdscr):
@@ -538,6 +585,7 @@ def run_config(stdscr):
         return True
     index = 0
     context = runcontext(stdscr, xoffset, draw_title)
+
     def _handle(msg):
         msg = _remove_control_chars(msg)
         if msg.isspace():
@@ -550,7 +598,8 @@ def run_config(stdscr):
         pad.addstr(c, 0, msg)  # c == new bottom
         pad.refresh(0, 0, maxy - c, xoffset, maxy, width - xoffset - 1)
         if c < logmax - 1:
-            pad.refresh(c + 1, 0, cury, xoffset, (maxy - c), width - xoffset - 1)
+            pad.refresh(c + 1, 0, cury, xoffset, (maxy - c),
+                        width - xoffset - 1)
         # if(index < maxy - cury):
         #   pad.refresh(0, 0, cury, xoffset, cury + c, width - xoffset - 1)
         #  if(c < logmax - 1):
@@ -594,13 +643,17 @@ def run_config(stdscr):
         cur_config.set_spec_dir(draw_get_path(stdscr))
         result = cur_config.run(_handle, lambda x: x)
         if result == 2:
-            draw_status_bar(stdscr, "Invalid SPECjbb path. Press any key to continue")
+            draw_status_bar(stdscr,
+                            "Invalid SPECjbb path. Press any key to continue")
             return stdscr.getch()
 
     if result == -1:
-        draw_status_bar(stdscr, "An error occured running the benchmark. Press any key to continue")
+        draw_status_bar(
+            stdscr,
+            "An error occured running the benchmark. Press any key to continue")
         return stdscr.getch()
-    draw_status_bar(stdscr, "All runs have been completed - Press any key to continue")
+    draw_status_bar(stdscr,
+                    "All runs have been completed - Press any key to continue")
     return stdscr.getch()
 
 
@@ -612,14 +665,17 @@ def create_config(stdscr):
     """
     global cur_path
     global cur_config
+
     def _resize(std):
         sy = draw_title(std)
         curses_safe_addstr(std, sy, xoffset, "Enter config name:")
         return sy
+
     stdscr.clear()
     stdscr.refresh()
     y = _resize(stdscr)
-    path = input_text(stdscr, xoffset + len("Enter config name:") + 1, y, "", lambda x: True, _resize).strip()
+    path = input_text(stdscr, xoffset + len("Enter config name:") + 1, y, "",
+                      lambda x: True, _resize).strip()
     if path.isspace() or path == "":
 
         draw_show_message(stdscr, "Config name cannot be blank")
@@ -628,13 +684,18 @@ def create_config(stdscr):
         stdscr.clear()
         stdscr.refresh()
         y = draw_title(stdscr)
-        curses_safe_addstr(stdscr, y, xoffset, "Warning: file {} already exists, overwrite? (y/N)".format(path))
+        curses_safe_addstr(
+            stdscr, y, xoffset,
+            "Warning: file {} already exists, overwrite? (y/N)".format(path))
 
         k = stdscr.getch()
         while k == curses.KEY_RESIZE:
             stdscr.erase()
             y = draw_title(stdscr)
-            curses_safe_addstr(stdscr, y, xoffset, "Warning: file {} already exists, overwrite? (y/N)".format(path))
+            curses_safe_addstr(
+                stdscr, y, xoffset,
+                "Warning: file {} already exists, overwrite? (y/N)".format(
+                    path))
             k = stdscr.getch()
         if k != ord('Y') and k != ord('y'):
             return True
@@ -685,17 +746,20 @@ def pad_runs(stdscr, runlist):
 
 
 def draw_view_props(stdscr, p):
+
     def _draw():
         h, w = stdscr.getmaxyx()
         stdscr.clear()
         stdscr.refresh()
         sy = draw_title(stdscr)
         if show_all:
-            draw_status_bar(stdscr, "Press 'q' to exit | Press 'a' to hide defaults")
+            draw_status_bar(stdscr,
+                            "Press 'q' to exit | Press 'a' to hide defaults")
         else:
-            draw_status_bar(stdscr, "Press 'q' to exit | Press 'a' to show all properties")
+            draw_status_bar(
+                stdscr, "Press 'q' to exit | Press 'a' to show all properties")
         if len(visprops) > 0:
-            curses_safe_addstr(stdscr,h - 3, 0, visprops[index].desc)
+            curses_safe_addstr(stdscr, h - 3, 0, visprops[index].desc)
         pad.refresh(index - (cury - sy), 0, sy, xoffset, h - 5, w - xoffset - 1)
         stdscr.move(cury, xoffset)
         stdscr.refresh()
@@ -707,8 +771,7 @@ def draw_view_props(stdscr, p):
     k = 0
     visprops = p.get_modified()
     pad, startx = pad_props(stdscr, visprops)
-    height, width, starty =_draw()
-
+    height, width, starty = _draw()
 
     if len(visprops) == 0:
         pad.addstr(0, 0, "No properties to display")
@@ -720,14 +783,15 @@ def draw_view_props(stdscr, p):
             if cury < height - 5:
                 cury += 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty,
-                            xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty, xoffset,
+                            height - 5, width - xoffset - 1)
         elif k == curses.KEY_UP and index > 0:
             index -= 1
             if cury > starty:
                 cury -= 1
             else:
-                pad.refresh(index - (cury - starty), 0, starty, xoffset, height - 5, width - xoffset - 1)
+                pad.refresh(index - (cury - starty), 0, starty, xoffset,
+                            height - 5, width - xoffset - 1)
         elif k == ord('a') or k == ord('A'):
             show_all = not show_all
             if show_all:
@@ -753,12 +817,13 @@ def draw_view_props(stdscr, p):
 
 
 def draw_view_run(stdscr, runinfo):
+
     def _draw():
         stdscr.clear()
         stdscr.refresh()
         ey, ex = display_run(stdscr, runinfo, draw_title(stdscr))
-        draw_status_bar(
-            stdscr, "Press 'q' to exit or 'ENTER' to view run properties")
+        draw_status_bar(stdscr,
+                        "Press 'q' to exit or 'ENTER' to view run properties")
 
         return ey, ex
 
@@ -817,6 +882,7 @@ def view_runs(stdscr):
         k = stdscr.getch()
     return True
 
+
 def draw_load_config(stdscr):
     global cur_config
     if os.path.exists(cur_path):
@@ -826,6 +892,7 @@ def draw_load_config(stdscr):
         elif not isinstance(cur_config, spec_config):
             draw_show_message(stdscr, "Invalid config file format")
     return True
+
 
 def load_config(path: str):
     """
@@ -839,18 +906,14 @@ def load_config(path: str):
     except:
         return None
 
-opts = [
-        run_config,
-        create_config,
-        edit_config,
-        view_runs
-    ]
+
+opts = [run_config, create_config, edit_config, view_runs]
 menunames = [
-"1. Run a config",
-    "2. Create a config",
-"3. Edit a config",
-"4. View a config"
+    "1. Run a config", "2. Create a config", "3. Edit a config",
+    "4. View a config"
 ]
+
+
 def draw_menu(stdscr):
     global cur_config
     k = 0
@@ -862,13 +925,12 @@ def draw_menu(stdscr):
         # Declaration of strings
 
         for s in menunames:
-            if(len(s) + xoffset >= width):
+            if (len(s) + xoffset >= width):
                 s = s[:width - xoffset - 1]
             std.addstr(dy, xoffset, s)
             dy += 1
 
         return sy, dy - 1
-
 
     while k != ord('q'):
         cur_config = None
@@ -880,12 +942,10 @@ def draw_menu(stdscr):
         elif k == curses.KEY_RESIZE:
             stdscr.erase()
 
-
         stdscr.clear()
         stdscr.refresh()
 
         starty, y = _resize(stdscr)
-
 
         if k == curses.KEY_DOWN and cursor_y < y:
             cursor_y += 1
@@ -904,7 +964,8 @@ def draw_menu(stdscr):
         k = stdscr.getch()
     return True
 
-def resize_wrapper(stdscr, child = None, redraw = None):
+
+def resize_wrapper(stdscr, child=None, redraw=None):
     if child is None:
         child = draw_menu
     noerror = None
@@ -921,7 +982,8 @@ def resize_wrapper(stdscr, child = None, redraw = None):
             traceback.format_exc()
             i = 0
             for line in TracebackException(
-                    type(exc_type), exc_obj, exc_tb, limit=None).format(chain=True):
+                    type(exc_type), exc_obj, exc_tb,
+                    limit=None).format(chain=True):
                 curses_safe_addstr(stdscr, i, 0, str(line))
                 i += 1
             curses_safe_addstr(stdscr, 2, 0, str(e))
@@ -935,6 +997,7 @@ def resize_wrapper(stdscr, child = None, redraw = None):
         if not redraw is None:
             redraw(stdscr)
 
+
 def curses_init(stdscr):
     # Start colors in curses
     curses.start_color()
@@ -942,6 +1005,7 @@ def curses_init(stdscr):
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
     resize_wrapper(stdscr, draw_menu)
+
 
 def curses_safe_addstr(stdscr, y, x, str):
     height, width = stdscr.getmaxyx()
@@ -952,9 +1016,9 @@ def curses_safe_addstr(stdscr, y, x, str):
     stdscr.addstr(y, x, str)
     return str
 
-def main():
-        curses.wrapper(curses_init)
 
+def main():
+    curses.wrapper(curses_init)
 
 
 if __name__ == "__main__":
